@@ -28,7 +28,7 @@ func (a *authMiddleware) CurrentUser() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		bearerToken := c.Get("Authorization")
 		if bearerToken == "" {
-			return fiber.NewError(401, "unauthorized")
+			return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 		}
 
 		var tokenString string
@@ -38,22 +38,22 @@ func (a *authMiddleware) CurrentUser() fiber.Handler {
 		}
 
 		if tokenString == "" {
-			return fiber.NewError(401, "unauthorized")
+			return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 		}
 
 		mapClaims, err := jwt.ParseToken(tokenString)
 		if err != nil {
-			return fiber.NewError(401, err.Error())
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
 
 		email := mapClaims["email"].(string)
 		if email == "" {
-			return fiber.NewError(401, "unauthorized")
+			return fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 		}
 
 		user, err := a.userRepository.FindOneByEmail(c.Context(), email)
 		if err != nil {
-			return fiber.NewError(401, err.Error())
+			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
 
 		c.Locals("user", user)

@@ -3,9 +3,11 @@ package handler
 import (
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
-	"github.com/kyh0703/flow/internal/core/dto"
-	"github.com/kyh0703/flow/internal/core/dto/auth"
 	"github.com/kyh0703/flow/internal/core/middleware"
+	"github.com/kyh0703/flow/internal/core/service/auth"
+	"github.com/kyh0703/flow/internal/pkg/response"
+
+	dto "github.com/kyh0703/flow/internal/core/dto/auth"
 )
 
 type AuthHandler interface {
@@ -19,6 +21,7 @@ type AuthHandler interface {
 type authHandler struct {
 	validate       *validator.Validate
 	authMiddleware middleware.AuthMiddleware
+	authService    auth.Service
 }
 
 func NewAuthHandler(
@@ -37,16 +40,17 @@ func (h *authHandler) Table() []Mapper {
 		Mapping(fiber.MethodPost, "/auth/signup", h.SignUp),
 		Mapping(fiber.MethodPost, "/auth/signin", h.SignIn),
 		Mapping(fiber.MethodPost, "/auth/signout", h.SignOut),
+		Mapping(fiber.MethodPost, "/auth/refresh", h.Refresh),
 	}
 }
 
 func (h *authHandler) Whoami(c *fiber.Ctx) error {
 	user := c.Locals("user")
-	return dto.Response(c, fiber.StatusOK, user)
+	return response.Success(c, fiber.StatusOK, user)
 }
 
 func (h *authHandler) SignUp(c *fiber.Ctx) error {
-	var signup auth.SignUp
+	var signup dto.SignUp
 	if err := c.BodyParser(&signup); err != nil {
 		return fiber.NewError(400, err.Error())
 	}
@@ -55,11 +59,16 @@ func (h *authHandler) SignUp(c *fiber.Ctx) error {
 		return fiber.NewError(400, err.Error())
 	}
 
-	return dto.Response(c, fiber.StatusOK, nil)
+	user, err := h.authService.SignUp(c.Context(), &signup)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, user)
 }
 
 func (h *authHandler) SignIn(c *fiber.Ctx) error {
-	var signin auth.SignIn
+	var signin dto.SignIn
 	if err := c.BodyParser(&signin); err != nil {
 		return fiber.NewError(400, err.Error())
 	}
@@ -68,11 +77,20 @@ func (h *authHandler) SignIn(c *fiber.Ctx) error {
 		return fiber.NewError(400, err.Error())
 	}
 
-	return dto.Response(c, fiber.StatusOK, nil)
+	token, err := h.authService.SignIn(c.Context(), &signin)
+	if err != nil {
+		return err
+	}
+
+	return response.Success(c, fiber.StatusOK, token)
+}
+
+func (h *authHandler) SignOut(c *fiber.Ctx) error {
+	return response.Success(c, fiber.StatusOK, nil)
 }
 
 func (h *authHandler) Refresh(c *fiber.Ctx) error {
-	var refresh auth.Refresh
+	var refresh dto.Refresh
 	if err := c.BodyParser(&refresh); err != nil {
 		return fiber.NewError(400, err.Error())
 	}
@@ -81,10 +99,10 @@ func (h *authHandler) Refresh(c *fiber.Ctx) error {
 		return fiber.NewError(400, err.Error())
 	}
 
-	return dto.Response(c, fiber.StatusOK, nil)
-}
+	token, err := h.authService.RefreshToken(c.Context(), &refresh)
+	if err != nil {
+		return err
+	}
 
-func (h *authHandler) SignOut(c *fiber.Ctx) error {
-	c.ClearCookie()
-	return dto.Response(c, fiber.StatusOK, nil)
+	return response.Success(c, fiber.StatusOK, token)
 }

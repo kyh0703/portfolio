@@ -10,6 +10,6 @@ import (
 type Service interface {
 	SignUp(ctx context.Context, req *auth.SignUp) (*model.User, error)
 	SignIn(ctx context.Context, req *auth.SignIn) (*auth.Token, error)
-	RefreshToken(ctx context.Context, req *auth.Refresh) (*auth.Token, error)
 	SignOut(ctx context.Context) error
+	RefreshToken(ctx context.Context, req *auth.Refresh) (*auth.Token, error)
 }

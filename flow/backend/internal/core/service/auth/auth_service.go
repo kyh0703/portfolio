@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,15 +15,47 @@ import (
 )
 
 type authService struct {
+	authRepository repository.AuthRepository
 	userRepository repository.UserRepository
 }
 
 func NewAuthService(
+	authRepository repository.AuthRepository,
 	userRepository repository.UserRepository,
 ) Service {
 	return &authService{
+		authRepository: authRepository,
 		userRepository: userRepository,
 	}
+}
+
+func (a *authService) generateNewTokens(ctx context.Context, user model.User) (*auth.Token, error) {
+	accessExpire := time.Now().Add(jwt.AccessTokenExpireDuration)
+	accessToken, err := jwt.GenerateToken(user.Email, accessExpire)
+	if err != nil {
+		return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	refreshExpire := time.Now().Add(jwt.RefreshTokenExpireDuration)
+	refreshToken, err := jwt.GenerateToken(user.Email, refreshExpire)
+	if err != nil {
+		return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	if _, err := a.authRepository.CreateOne(ctx, model.CreateTokenParams{
+		UserID:       user.ID,
+		RefreshToken: refreshToken,
+		ExpiresAt:    refreshExpire.Unix(),
+	}); err != nil {
+		return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return &auth.Token{
+		AccessToken:   accessToken,
+		AccessExpire:  accessExpire.Unix(),
+		RefreshToken:  refreshToken,
+		RefreshExpire: refreshExpire.Unix(),
+	}, nil
 }
 
 func (a *authService) SignUp(ctx context.Context, req *auth.SignUp) (*model.User, error) {
@@ -59,7 +93,7 @@ func (a *authService) SignUp(ctx context.Context, req *auth.SignUp) (*model.User
 func (a *authService) SignIn(ctx context.Context, req *auth.SignIn) (*auth.Token, error) {
 	user, err := a.userRepository.FindOneByEmail(ctx, req.Email)
 	if err != nil {
-		return nil, fiber.NewError(500, err.Error())
+		return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	ok, err := password.Compare(req.Password, user.Password)
@@ -67,33 +101,78 @@ func (a *authService) SignIn(ctx context.Context, req *auth.SignIn) (*auth.Token
 		return nil, fiber.NewError(fiber.StatusUnauthorized, "invalid email or password")
 	}
 
+	token, err := a.authRepository.FindOneByUserID(ctx, user.ID)
+	if err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+
+		return a.generateNewTokens(ctx, user)
+	}
+
+	expire := time.Unix(token.ExpiresAt, 0)
+	if expire.After(time.Now()) {
+		if err := a.authRepository.DeleteOne(ctx, token.ID); err != nil {
+			return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+
+		return a.generateNewTokens(ctx, user)
+	}
+
 	accessExpire := time.Now().Add(jwt.AccessTokenExpireDuration)
 	accessToken, err := jwt.GenerateToken(req.Email, accessExpire)
 	if err != nil {
-		return nil, fiber.NewError(500, err.Error())
+		return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
-
-	refreshExpire := time.Now().Add(jwt.RefreshTokenExpireDuration)
-	refreshToken, err := jwt.GenerateToken(req.Email, refreshExpire)
-	if err != nil {
-		return nil, fiber.NewError(500, err.Error())
-	}
-
-	// TODO Save
 
 	return &auth.Token{
 		AccessToken:   accessToken,
 		AccessExpire:  accessExpire.Unix(),
-		RefreshToken:  refreshToken,
-		RefreshExpire: refreshExpire.Unix(),
+		RefreshToken:  token.RefreshToken,
+		RefreshExpire: token.ExpiresAt,
 	}, nil
 }
 
-func (a *authService) RefreshToken(ctx context.Context, req *auth.Refresh) (*auth.Token, error) {
-	panic("unimplemented")
+func (a *authService) SignOut(ctx context.Context) error {
+	return nil
 }
 
-func (a *authService) SignOut(ctx context.Context) error {
-	// TODO context 제거
-	panic("unimplemented")
+func (a *authService) RefreshToken(ctx context.Context, req *auth.Refresh) (*auth.Token, error) {
+	mapClaims, err := jwt.ParseToken(req.RefreshToken)
+	if err != nil {
+		return nil, fiber.NewError(fiber.StatusUnauthorized, err.Error())
+	}
+
+	email := mapClaims["email"].(string)
+	if email == "" {
+		return nil, fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
+	}
+
+	user, err := a.userRepository.FindOneByEmail(ctx, email)
+	if err != nil {
+		return nil, fiber.NewError(fiber.StatusUnauthorized, err.Error())
+	}
+
+	token, err := a.authRepository.FindOneByUserID(ctx, user.ID)
+	if err != nil {
+		return nil, fiber.NewError(fiber.StatusUnauthorized, err.Error())
+	}
+
+	expire := time.Unix(token.ExpiresAt, 0)
+	if expire.After(time.Now()) {
+		return nil, fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
+	}
+
+	accessExpire := time.Now().Add(jwt.AccessTokenExpireDuration)
+	accessToken, err := jwt.GenerateToken(email, accessExpire)
+	if err != nil {
+		return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
+	}
+
+	return &auth.Token{
+		AccessToken:   accessToken,
+		AccessExpire:  accessExpire.Unix(),
+		RefreshToken:  token.RefreshToken,
+		RefreshExpire: token.ExpiresAt,
+	}, nil
 }

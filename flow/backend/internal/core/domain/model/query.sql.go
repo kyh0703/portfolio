@@ -186,6 +186,36 @@ func (q *Queries) CreateSubFlow(ctx context.Context, arg CreateSubFlowParams) (S
 	return i, err
 }
 
+const createToken = `-- name: CreateToken :one
+INSERT INTO tokens (
+  user_id,
+  refresh_token,
+  expires_at
+) VALUES (
+  ?, ?, ?
+)
+RETURNING id, user_id, refresh_token, expires_at, create_at
+`
+
+type CreateTokenParams struct {
+	UserID       int64
+	RefreshToken string
+	ExpiresAt    int64
+}
+
+func (q *Queries) CreateToken(ctx context.Context, arg CreateTokenParams) (Token, error) {
+	row := q.db.QueryRowContext(ctx, createToken, arg.UserID, arg.RefreshToken, arg.ExpiresAt)
+	var i Token
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.RefreshToken,
+		&i.ExpiresAt,
+		&i.CreateAt,
+	)
+	return i, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   email,
@@ -265,6 +295,16 @@ WHERE id = ?
 
 func (q *Queries) DeleteSubFlow(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, deleteSubFlow, id)
+	return err
+}
+
+const deleteToken = `-- name: DeleteToken :exec
+DELETE FROM tokens
+WHERE id = ?
+`
+
+func (q *Queries) DeleteToken(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteToken, id)
 	return err
 }
 
@@ -358,6 +398,42 @@ func (q *Queries) GetSubFlow(ctx context.Context, id int64) (SubFlow, error) {
 		&i.FlowID,
 		&i.Name,
 		&i.Description,
+		&i.CreateAt,
+	)
+	return i, err
+}
+
+const getToken = `-- name: GetToken :one
+SELECT id, user_id, refresh_token, expires_at, create_at FROM tokens
+WHERE id = ? LIMIT 1
+`
+
+func (q *Queries) GetToken(ctx context.Context, id int64) (Token, error) {
+	row := q.db.QueryRowContext(ctx, getToken, id)
+	var i Token
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.RefreshToken,
+		&i.ExpiresAt,
+		&i.CreateAt,
+	)
+	return i, err
+}
+
+const getTokenByUserID = `-- name: GetTokenByUserID :one
+SELECT id, user_id, refresh_token, expires_at, create_at FROM tokens
+WHERE user_id = ? LIMIT 1
+`
+
+func (q *Queries) GetTokenByUserID(ctx context.Context, userID int64) (Token, error) {
+	row := q.db.QueryRowContext(ctx, getTokenByUserID, userID)
+	var i Token
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.RefreshToken,
+		&i.ExpiresAt,
 		&i.CreateAt,
 	)
 	return i, err
@@ -555,6 +631,40 @@ func (q *Queries) ListSubFlows(ctx context.Context, flowID int64) ([]SubFlow, er
 	return items, nil
 }
 
+const listTokens = `-- name: ListTokens :many
+SELECT id, user_id, refresh_token, expires_at, create_at FROM tokens
+ORDER BY create_at
+`
+
+func (q *Queries) ListTokens(ctx context.Context) ([]Token, error) {
+	rows, err := q.db.QueryContext(ctx, listTokens)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Token
+	for rows.Next() {
+		var i Token
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.RefreshToken,
+			&i.ExpiresAt,
+			&i.CreateAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listUsers = `-- name: ListUsers :many
 SELECT id, email, password, name, bio, update_at, create_at FROM users
 ORDER BY name
@@ -705,6 +815,32 @@ type UpdateSubFlowParams struct {
 
 func (q *Queries) UpdateSubFlow(ctx context.Context, arg UpdateSubFlowParams) error {
 	_, err := q.db.ExecContext(ctx, updateSubFlow, arg.Name, arg.Description, arg.ID)
+	return err
+}
+
+const updateToken = `-- name: UpdateToken :exec
+UPDATE tokens SET
+user_id = ?,
+refresh_token = ?,
+expires_at = ?
+WHERE id = ?
+RETURNING id, user_id, refresh_token, expires_at, create_at
+`
+
+type UpdateTokenParams struct {
+	UserID       int64
+	RefreshToken string
+	ExpiresAt    int64
+	ID           int64
+}
+
+func (q *Queries) UpdateToken(ctx context.Context, arg UpdateTokenParams) error {
+	_, err := q.db.ExecContext(ctx, updateToken,
+		arg.UserID,
+		arg.RefreshToken,
+		arg.ExpiresAt,
+		arg.ID,
+	)
 	return err
 }
 

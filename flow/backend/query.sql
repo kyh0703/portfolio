@@ -36,6 +36,40 @@ RETURNING *;
 DELETE FROM users
 WHERE id = ?;
 
+-- name: GetToken :one
+SELECT * FROM tokens
+WHERE id = ? LIMIT 1;
+
+-- name: GetTokenByUserID :one
+SELECT * FROM tokens
+WHERE user_id = ? LIMIT 1;
+
+-- name: ListTokens :many
+SELECT * FROM tokens
+ORDER BY create_at;
+
+-- name: CreateToken :one
+INSERT INTO tokens (
+  user_id,
+  refresh_token,
+  expires_at
+) VALUES (
+  ?, ?, ?
+)
+RETURNING *;
+
+-- name: UpdateToken :exec
+UPDATE tokens SET
+user_id = ?,
+refresh_token = ?,
+expires_at = ?
+WHERE id = ?
+RETURNING *;
+
+-- name: DeleteToken :exec
+DELETE FROM tokens
+WHERE id = ?;
+
 -- name: CreateFlow :one
 INSERT INTO flows (
   name,
