@@ -1,28 +1,34 @@
 package entity
 
+import "github.com/kyh0703/flow/internal/pkg/constant"
+
+type Group struct {
+	ID     string `json:"id"`
+	Extent bool   `json:"extent"`
+	Expand string `json:"expand"`
+}
 type Position struct {
-	X int32
-	Y int32
+	X int32 `json:"x"`
+	Y int32 `json:"y"`
 }
 
 type Style struct {
-	BgColor     string
-	Color       string
-	BorderStyle string
-	BorderColor string
-	Width       int32
-	Height      int32
-	Hidden      bool
+	BgColor     string `json:"bgColor"`
+	Color       string `json:"color"`
+	BorderStyle string `json:"borderStyle"`
+	BorderColor string `json:"borderColor"`
+	Hidden      bool   `json:"hidden"`
 }
 
 type Node struct {
-	ID        int32
-	SubFlowID int32
-	NodeID    string
-	Kind      string
-	Label     string
-	GroupID   string
-	Position  Position
-	Style     Style
-	Desc      string
+	ID        string            `json:"id"`
+	SubFlowID int64             `json:"subFlowId"`
+	Type      constant.NodeType `json:"type"`
+	Width     int32             `json:"width"`
+	Height    int32             `json:"height"`
+	Label     string            `json:"label"`
+	Group     Group             `json:"group"`
+	Position  Position          `json:"position"`
+	Style     Style             `json:"style"`
+	Desc      string            `json:"desc"`
 }
