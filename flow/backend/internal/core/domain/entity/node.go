@@ -16,12 +16,12 @@ type Style struct {
 }
 
 type Node struct {
-	Id        int32
-	SubFlowId int32
-	NodeId    string
+	ID        int32
+	SubFlowID int32
+	NodeID    string
 	Kind      string
 	Label     string
-	GroupId   string
+	GroupID   string
 	Position  Position
 	Style     Style
 	Desc      string

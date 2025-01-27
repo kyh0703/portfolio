@@ -52,11 +52,11 @@ func (h *authHandler) Whoami(c *fiber.Ctx) error {
 func (h *authHandler) SignUp(c *fiber.Ctx) error {
 	var signup dto.SignUp
 	if err := c.BodyParser(&signup); err != nil {
-		return fiber.NewError(400, err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	if err := h.validate.Struct(signup); err != nil {
-		return fiber.NewError(400, err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	user, err := h.authService.SignUp(c.Context(), &signup)
@@ -70,11 +70,11 @@ func (h *authHandler) SignUp(c *fiber.Ctx) error {
 func (h *authHandler) SignIn(c *fiber.Ctx) error {
 	var signin dto.SignIn
 	if err := c.BodyParser(&signin); err != nil {
-		return fiber.NewError(400, err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	if err := h.validate.Struct(signin); err != nil {
-		return fiber.NewError(400, err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	token, err := h.authService.SignIn(c.Context(), &signin)
@@ -92,11 +92,11 @@ func (h *authHandler) SignOut(c *fiber.Ctx) error {
 func (h *authHandler) Refresh(c *fiber.Ctx) error {
 	var refresh dto.Refresh
 	if err := c.BodyParser(&refresh); err != nil {
-		return fiber.NewError(400, err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	if err := h.validate.Struct(refresh); err != nil {
-		return fiber.NewError(400, err.Error())
+		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
 	token, err := h.authService.RefreshToken(c.Context(), &refresh)

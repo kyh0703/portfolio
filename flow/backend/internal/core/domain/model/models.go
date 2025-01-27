@@ -11,8 +11,8 @@ import (
 type Edge struct {
 	ID        interface{}
 	SubFlowID int64
-	Source    int64
-	Target    int64
+	Source    string
+	Target    string
 	Type      string
 	Label     sql.NullString
 	Hidden    sql.NullInt64

@@ -54,8 +54,8 @@ CREATE TABLE nodes (
 CREATE TABLE edges (
   id uuid PRIMARY KEY,
   sub_flow_id INTEGER NOT NULL,
-  source INTEGER NOT NULL,
-  target INTEGER NOT NULL,
+  source TEXT NOT NULL,
+  target TEXT NOT NULL,
   type TEXT NOT NULL,
   label TEXT,
   hidden INTEGER,

@@ -30,8 +30,8 @@ RETURNING id, sub_flow_id, source, target, type, label, hidden, marker_end, poin
 type CreateEdgeParams struct {
 	ID        interface{}
 	SubFlowID int64
-	Source    int64
-	Target    int64
+	Source    string
+	Target    string
 	Type      string
 	Label     sql.NullString
 	Hidden    sql.NullInt64
@@ -715,8 +715,8 @@ RETURNING id, sub_flow_id, source, target, type, label, hidden, marker_end, poin
 `
 
 type UpdateEdgeParams struct {
-	Source    int64
-	Target    int64
+	Source    string
+	Target    string
 	Type      string
 	Label     sql.NullString
 	Hidden    sql.NullInt64

@@ -6,6 +6,10 @@ import (
 	"github.com/kyh0703/flow/internal/core/domain/model"
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+// counterfeiter:generate . EdgeRecorder
+
 type EdgeRecorder interface {
 	CreateOne(ctx context.Context, arg model.CreateEdgeParams) (model.Edge, error)
 	FindOne(ctx context.Context, id string) (model.Edge, error)
@@ -26,8 +30,8 @@ func NewEdgeRecorder(
 	}
 }
 
-func (e *edgeRecorder) CreateOne(ctx context.Context, arg model.CreateEdgeParams) (model.Edge, error) {
-	return e.queries.CreateEdge(ctx, arg)
+func (e *edgeRecorder) CreateOne(ctx context.Context, param model.CreateEdgeParams) (model.Edge, error) {
+	return e.queries.CreateEdge(ctx, param)
 }
 
 func (e *edgeRecorder) FindOne(ctx context.Context, id string) (model.Edge, error) {
@@ -38,8 +42,8 @@ func (e *edgeRecorder) GetList(ctx context.Context, subFlowID int64) ([]model.Ed
 	return e.queries.ListEdges(ctx, subFlowID)
 }
 
-func (e *edgeRecorder) UpdateOne(ctx context.Context, arg model.UpdateEdgeParams) error {
-	return e.queries.UpdateEdge(ctx, arg)
+func (e *edgeRecorder) UpdateOne(ctx context.Context, param model.UpdateEdgeParams) error {
+	return e.queries.UpdateEdge(ctx, param)
 }
 
 func (e *edgeRecorder) DeleteOne(ctx context.Context, id string) error {
