@@ -9,12 +9,15 @@ import {
   keyframes,
   width
 } from './src/themes'
+import tailwindcssAnimate from 'tailwindcss-animate'
+import tailwindScrollbarHide from 'tailwind-scrollbar-hide'
 
 export default {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.css",
   ],
   theme: {
     extend: {
@@ -28,5 +31,5 @@ export default {
       animation,
     },
   },
-  plugins: [require('tailwindcss-animate'), require('tailwind-scrollbar-hide')],
+  plugins: [tailwindcssAnimate, tailwindScrollbarHide],
 } satisfies Config;

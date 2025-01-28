@@ -94,10 +94,10 @@
 
 @layer base {
   * {
-    @apply select-none border-border;
+    @apply select-none border-none;
   }
   body {
-    @apply m-0 bg-background font-noto text-foreground;
+    @apply bg-background font-noto text-foreground;
   }
 
   html,

@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import NotFoundIllustration from '/public/images/illustrations/not-found.png'
+import NotFoundIllustration from '../../public/images/illustrations/not-found.png'
 
 export default function NotFound() {
   return (

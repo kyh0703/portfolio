@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from '../button'
 import { RefreshIcon } from '../icon'
-import InternalServerIllustration from '/public/images/illustrations/internal-server-error.png'
+import InternalServerIllustration from '../../../../public/images/illustrations/internal-server-error.png'
 
 export default function InternalServerError({ message }: { message?: string }) {
   const router = useRouter()
