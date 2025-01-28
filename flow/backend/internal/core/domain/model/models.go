@@ -57,7 +57,7 @@ type Token struct {
 	ID           int64
 	UserID       int64
 	RefreshToken string
-	ExpiresAt    int64
+	ExpiresIn    int64
 	CreateAt     sql.NullString
 }
 

@@ -190,27 +190,27 @@ const createToken = `-- name: CreateToken :one
 INSERT INTO tokens (
   user_id,
   refresh_token,
-  expires_at
+  expires_in
 ) VALUES (
   ?, ?, ?
 )
-RETURNING id, user_id, refresh_token, expires_at, create_at
+RETURNING id, user_id, refresh_token, expires_in, create_at
 `
 
 type CreateTokenParams struct {
 	UserID       int64
 	RefreshToken string
-	ExpiresAt    int64
+	ExpiresIn    int64
 }
 
 func (q *Queries) CreateToken(ctx context.Context, arg CreateTokenParams) (Token, error) {
-	row := q.db.QueryRowContext(ctx, createToken, arg.UserID, arg.RefreshToken, arg.ExpiresAt)
+	row := q.db.QueryRowContext(ctx, createToken, arg.UserID, arg.RefreshToken, arg.ExpiresIn)
 	var i Token
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.RefreshToken,
-		&i.ExpiresAt,
+		&i.ExpiresIn,
 		&i.CreateAt,
 	)
 	return i, err
@@ -404,7 +404,7 @@ func (q *Queries) GetSubFlow(ctx context.Context, id int64) (SubFlow, error) {
 }
 
 const getToken = `-- name: GetToken :one
-SELECT id, user_id, refresh_token, expires_at, create_at FROM tokens
+SELECT id, user_id, refresh_token, expires_in, create_at FROM tokens
 WHERE id = ? LIMIT 1
 `
 
@@ -415,14 +415,14 @@ func (q *Queries) GetToken(ctx context.Context, id int64) (Token, error) {
 		&i.ID,
 		&i.UserID,
 		&i.RefreshToken,
-		&i.ExpiresAt,
+		&i.ExpiresIn,
 		&i.CreateAt,
 	)
 	return i, err
 }
 
 const getTokenByUserID = `-- name: GetTokenByUserID :one
-SELECT id, user_id, refresh_token, expires_at, create_at FROM tokens
+SELECT id, user_id, refresh_token, expires_in, create_at FROM tokens
 WHERE user_id = ? LIMIT 1
 `
 
@@ -433,7 +433,7 @@ func (q *Queries) GetTokenByUserID(ctx context.Context, userID int64) (Token, er
 		&i.ID,
 		&i.UserID,
 		&i.RefreshToken,
-		&i.ExpiresAt,
+		&i.ExpiresIn,
 		&i.CreateAt,
 	)
 	return i, err
@@ -632,7 +632,7 @@ func (q *Queries) ListSubFlows(ctx context.Context, flowID int64) ([]SubFlow, er
 }
 
 const listTokens = `-- name: ListTokens :many
-SELECT id, user_id, refresh_token, expires_at, create_at FROM tokens
+SELECT id, user_id, refresh_token, expires_in, create_at FROM tokens
 ORDER BY create_at
 `
 
@@ -649,7 +649,7 @@ func (q *Queries) ListTokens(ctx context.Context) ([]Token, error) {
 			&i.ID,
 			&i.UserID,
 			&i.RefreshToken,
-			&i.ExpiresAt,
+			&i.ExpiresIn,
 			&i.CreateAt,
 		); err != nil {
 			return nil, err
@@ -822,15 +822,15 @@ const updateToken = `-- name: UpdateToken :exec
 UPDATE tokens SET
 user_id = ?,
 refresh_token = ?,
-expires_at = ?
+expires_in = ?
 WHERE id = ?
-RETURNING id, user_id, refresh_token, expires_at, create_at
+RETURNING id, user_id, refresh_token, expires_in, create_at
 `
 
 type UpdateTokenParams struct {
 	UserID       int64
 	RefreshToken string
-	ExpiresAt    int64
+	ExpiresIn    int64
 	ID           int64
 }
 
@@ -838,7 +838,7 @@ func (q *Queries) UpdateToken(ctx context.Context, arg UpdateTokenParams) error 
 	_, err := q.db.ExecContext(ctx, updateToken,
 		arg.UserID,
 		arg.RefreshToken,
-		arg.ExpiresAt,
+		arg.ExpiresIn,
 		arg.ID,
 	)
 	return err
