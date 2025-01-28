@@ -2,20 +2,171 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --main: 240 33% 96%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --dialog: 0 0% 100%;
+    --dialog-foreground: 210, 11%, 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 226 36% 39%;
+    --primary-foreground: 173 44% 96%;
+
+    --secondary: 177 55% 45%;
+    --secondary-foreground: 173 44% 96%;
+
+    --error: 10 85% 61%;
+    --error-foreground: 173 44% 96%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --active: 0, 0%, 98%;
+    --active-foreground: 0, 0%, 36%;
+
+    --search: 240, 33%, 96%;
+    --search-border: 240, 33%, 96%;
+
+    --icon: 210, 9%, 31%;
+    --grid-header: 216, 38%, 97%;
+    --text: 210, 9%, 31%;
+    --border: 200, 7%, 92%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --main: 214 12% 12%;
+    --background: 210 11% 15%;
+    --foreground: 0 0% 100%;
+
+    --dialog: 210, 11%, 15%;
+    --dialog-foreground: 0, 0%, 100%;
+
+    --popover: 210 11% 15%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 0 0% 90%;
+    --primary-foreground: 210 11% 15%;
+
+    --secondary: 177 55% 45%;
+    --secondary-foreground: 173 44% 96%;
+
+    --error: 10 85% 61%;
+    --error-foreground: 173 44% 96%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --active: 210, 11%, 17%;
+    --active-foreground: 0 0% 100%;
+
+    --search: 210, 11%, 15%;
+    --search-border: 0, 0%, 100%, 0.5;
+
+    --icon: 0 0% 100%;
+    --grid-header: 210, 11%, 17%;
+    --text: 0, 0%, 100%;
+    --border: 210, 11%, 22%;
+    --input: 210, 3%, 40%;
+    --ring: 212.7 26.8% 83.9%;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply select-none border-border;
+  }
+  body {
+    @apply m-0 bg-background font-noto text-foreground;
+  }
+
+  html,
+  body {
+    @apply h-dvh w-dvw overflow-hidden font-poppins text-text;
+  }
+
+  h1 {
+    @apply text-2xl;
+  }
+  h2 {
+    @apply text-lg font-semibold leading-[20px] tracking-[-0.01em];
+  }
+  h3 {
+    @apply text-base font-semibold tracking-[-0.01em];
+  }
+
+  *::-webkit-scrollbar {
+    width: 15px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    @apply bg-gray-350;
+    border-radius: 10px;
+    background-clip: padding-box;
+    border: 5px solid transparent;
+  }
+}
+
+@layer components {
+  .node-handle {
+    @apply absolute left-0 top-0 h-full w-full transform-none rounded-none border-none opacity-0 !important;
+  }
+
+  .dark .react-flow__background {
+    @apply bg-background;
+  }
+
+  .ag-theme-quartz-dark,
+  .ag-theme-quartz {
+    --ag-grid-size: 8px;
+    --ag-border-color: hsl(var(--border));
+    --ag-header-background-color: hsl(var(--grid-header));
+    --ag-font-family: var(--font-popins);
+  }
+
+  .error-msg {
+    @apply ml-2 text-wrap text-center text-xs text-error;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .nested-cursor-pointer * {
+    @apply cursor-pointer;
+  }
+
+  .dark-icon {
+    @apply hidden dark:block;
+  }
+
+  .light-icon {
+    @apply block dark:hidden;
+  }
+
+  .text-truncate {
+    @apply overflow-hidden text-ellipsis whitespace-nowrap;
+  }
 }

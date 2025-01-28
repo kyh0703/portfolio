@@ -1,4 +1,14 @@
 import type { Config } from "tailwindcss";
+import {
+  animation,
+  borderRadius,
+  colors,
+  fontFamily,
+  fontSize,
+  height,
+  keyframes,
+  width
+} from './src/themes'
 
 export default {
   content: [
@@ -8,11 +18,15 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-      },
+      colors,
+      fontSize,
+      fontFamily,
+      width,
+      height,
+      borderRadius,
+      keyframes,
+      animation,
     },
   },
-  plugins: [],
+  plugins: [require('tailwindcss-animate'), require('tailwind-scrollbar-hide')],
 } satisfies Config;
