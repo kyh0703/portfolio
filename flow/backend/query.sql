@@ -52,7 +52,7 @@ ORDER BY create_at;
 INSERT INTO tokens (
   user_id,
   refresh_token,
-  expires_at
+  expires_in
 ) VALUES (
   ?, ?, ?
 )
@@ -62,7 +62,7 @@ RETURNING *;
 UPDATE tokens SET
 user_id = ?,
 refresh_token = ?,
-expires_at = ?
+expires_in = ?
 WHERE id = ?
 RETURNING *;
 

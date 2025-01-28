@@ -12,7 +12,7 @@ CREATE TABLE tokens (
   id INTEGER PRIMARY KEY,
   user_id INTEGER NOT NULL,
   refresh_token TEXT NOT NULL,
-  expires_at INTEGER NOT NULL,
+  expires_in INTEGER NOT NULL,
   create_at TEXT DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 )
