@@ -8,8 +8,7 @@ import (
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
-// counterfeiter:generate . AuthRepository
-
+//counterfeiter:generate . AuthRepository
 type AuthRepository interface {
 	CreateOne(ctx context.Context, arg model.CreateTokenParams) (model.Token, error)
 	FindOne(ctx context.Context, id int64) (model.Token, error)

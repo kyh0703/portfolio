@@ -6,8 +6,7 @@ import (
 	"github.com/kyh0703/flow/internal/core/domain/model"
 )
 
-// counterfeiter:generate . NodeRepository
-
+//counterfeiter:generate . NodeRepository
 type NodeRepository interface {
 	CreateOne(ctx context.Context, arg model.CreateNodeParams) (model.Node, error)
 	FindOne(ctx context.Context, id string) (model.Node, error)

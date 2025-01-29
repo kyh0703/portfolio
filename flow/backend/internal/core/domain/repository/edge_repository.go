@@ -6,8 +6,7 @@ import (
 	"github.com/kyh0703/flow/internal/core/domain/entity"
 )
 
-// counterfeiter:generate . EdgeRepository
-
+//counterfeiter:generate . EdgeRepository
 type EdgeRepository interface {
 	CreateOne(ctx context.Context, param entity.Edge) (*entity.Edge, error)
 	FindOne(ctx context.Context, id string) (*entity.Edge, error)

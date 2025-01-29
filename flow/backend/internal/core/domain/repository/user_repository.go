@@ -6,8 +6,7 @@ import (
 	"github.com/kyh0703/flow/internal/core/domain/model"
 )
 
-// counterfeiter:generate . UserRepository
-
+//counterfeiter:generate . UserRepository
 type UserRepository interface {
 	CreateOne(ctx context.Context, arg model.CreateUserParams) (model.User, error)
 	FindOne(ctx context.Context, id int64) (model.User, error)
