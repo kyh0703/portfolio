@@ -1,11 +1,10 @@
-package recorder
+package middleware
 
 import "go.uber.org/fx"
 
 var Module = fx.Module(
-	"recorder",
+	"middleware",
 	fx.Provide(
-		NewNodeRecorder,
-		NewEdgeRecorder,
+		NewAuthMiddleware,
 	),
 )

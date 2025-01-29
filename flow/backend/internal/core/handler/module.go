@@ -4,7 +4,7 @@ import (
 	"go.uber.org/fx"
 )
 
-var HandlerModule = fx.Module(
+var Module = fx.Module(
 	"handler",
 	fx.Provide(
 		AsHandler(NewAuthHandler),

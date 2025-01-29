@@ -2,11 +2,13 @@ package repository
 
 import "go.uber.org/fx"
 
-var RepositoryModule = fx.Provide(
+var Module = fx.Module(
 	"repository",
-	NewAuthRepository,
-	NewUserRepository,
-	NewSubFlowRepository,
-	NewNodeRepository,
-	NewEdgeRepository,
+	fx.Provide(
+		NewAuthRepository,
+		NewUserRepository,
+		NewSubFlowRepository,
+		NewNodeRepository,
+		NewEdgeRepository,
+	),
 )

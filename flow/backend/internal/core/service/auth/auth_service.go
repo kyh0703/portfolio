@@ -45,16 +45,16 @@ func (a *authService) generateNewTokens(ctx context.Context, user model.User) (*
 	if _, err := a.authRepository.CreateOne(ctx, model.CreateTokenParams{
 		UserID:       user.ID,
 		RefreshToken: refreshToken,
-		ExpiresAt:    refreshExpire.Unix(),
+		ExpiresIn:    refreshExpire.Unix(),
 	}); err != nil {
 		return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	return &auth.Token{
-		AccessToken:   accessToken,
-		AccessExpire:  accessExpire.Unix(),
-		RefreshToken:  refreshToken,
-		RefreshExpire: refreshExpire.Unix(),
+		AccessToken:      accessToken,
+		AccessExpiresIn:  accessExpire.Unix(),
+		RefreshToken:     refreshToken,
+		RefreshExpiresIn: refreshExpire.Unix(),
 	}, nil
 }
 
@@ -68,7 +68,7 @@ func (a *authService) SignUp(ctx context.Context, req *auth.SignUp) (*model.User
 		return nil, fiber.NewError(409, "email already exists")
 	}
 
-	if req.Password != req.PasswordConfirm {
+	if req.Password != req.ConfirmPassword {
 		return nil, fiber.NewError(400, "password and password confirm do not match")
 	}
 
@@ -110,7 +110,7 @@ func (a *authService) SignIn(ctx context.Context, req *auth.SignIn) (*auth.Token
 		return a.generateNewTokens(ctx, user)
 	}
 
-	expire := time.Unix(token.ExpiresAt, 0)
+	expire := time.Unix(token.ExpiresIn, 0)
 	if expire.After(time.Now()) {
 		if err := a.authRepository.DeleteOne(ctx, token.ID); err != nil {
 			return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
@@ -126,10 +126,10 @@ func (a *authService) SignIn(ctx context.Context, req *auth.SignIn) (*auth.Token
 	}
 
 	return &auth.Token{
-		AccessToken:   accessToken,
-		AccessExpire:  accessExpire.Unix(),
-		RefreshToken:  token.RefreshToken,
-		RefreshExpire: token.ExpiresAt,
+		AccessToken:      accessToken,
+		AccessExpiresIn:  accessExpire.Unix(),
+		RefreshToken:     token.RefreshToken,
+		RefreshExpiresIn: token.ExpiresIn,
 	}, nil
 }
 
@@ -158,7 +158,7 @@ func (a *authService) RefreshToken(ctx context.Context, req *auth.Refresh) (*aut
 		return nil, fiber.NewError(fiber.StatusUnauthorized, err.Error())
 	}
 
-	expire := time.Unix(token.ExpiresAt, 0)
+	expire := time.Unix(token.ExpiresIn, 0)
 	if expire.After(time.Now()) {
 		return nil, fiber.NewError(fiber.StatusUnauthorized, "unauthorized")
 	}
@@ -170,9 +170,9 @@ func (a *authService) RefreshToken(ctx context.Context, req *auth.Refresh) (*aut
 	}
 
 	return &auth.Token{
-		AccessToken:   accessToken,
-		AccessExpire:  accessExpire.Unix(),
-		RefreshToken:  token.RefreshToken,
-		RefreshExpire: token.ExpiresAt,
+		AccessToken:      accessToken,
+		AccessExpiresIn:  accessExpire.Unix(),
+		RefreshToken:     token.RefreshToken,
+		RefreshExpiresIn: token.ExpiresIn,
 	}, nil
 }
