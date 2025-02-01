@@ -10,6 +10,9 @@ import (
 	dto "github.com/kyh0703/flow/internal/core/dto/auth"
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+//counterfeiter:generate . AuthHandler
 type AuthHandler interface {
 	Handler
 	SignUp(c *fiber.Ctx) error
