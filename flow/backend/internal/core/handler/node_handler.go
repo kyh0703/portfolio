@@ -2,6 +2,7 @@ package handler
 
 import "github.com/gofiber/fiber/v2"
 
+//counterfeiter:generate . NodeHandler
 type NodeHandler interface {
 	Handler
 	CreateOne(c *fiber.Ctx) error

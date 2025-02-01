@@ -8,6 +8,9 @@ import (
 	"github.com/kyh0703/flow/internal/pkg/jwt"
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+//counterfeiter:generate . AuthMiddleware
 type AuthMiddleware interface {
 	CurrentUser() fiber.Handler
 }

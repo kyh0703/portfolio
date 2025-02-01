@@ -5,6 +5,7 @@ import (
 	"github.com/kyh0703/flow/internal/core/domain/repository"
 )
 
+//counterfeiter:generate . EdgeHandler
 type EdgeHandler interface {
 	Handler
 	CreateOne(c *fiber.Ctx) error

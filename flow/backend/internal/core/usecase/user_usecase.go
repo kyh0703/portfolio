@@ -6,6 +6,9 @@ import (
 	"github.com/kyh0703/flow/internal/core/domain/model"
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+//counterfeiter:generate . UserUsecase
 type UserUsecase interface {
 	Create(ctx context.Context, email, username, password string)
 	Get(ctx context.Context, email string)

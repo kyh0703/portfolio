@@ -6,8 +6,7 @@ import (
 	"github.com/kyh0703/flow/internal/core/domain/model"
 )
 
-// counterfeiter:generate . NodeRecorder
-
+//counterfeiter:generate . NodeRecorder
 type NodeRecorder interface {
 	CreateOne(ctx context.Context, arg model.CreateNodeParams) (model.Node, error)
 	FindOne(ctx context.Context, id string) (model.Node, error)

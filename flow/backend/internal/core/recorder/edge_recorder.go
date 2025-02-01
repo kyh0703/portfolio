@@ -8,8 +8,7 @@ import (
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 
-// counterfeiter:generate . EdgeRecorder
-
+//counterfeiter:generate . EdgeRecorder
 type EdgeRecorder interface {
 	CreateOne(ctx context.Context, arg model.CreateEdgeParams) (model.Edge, error)
 	FindOne(ctx context.Context, id string) (model.Edge, error)

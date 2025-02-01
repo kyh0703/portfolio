@@ -7,6 +7,9 @@ import (
 	"github.com/kyh0703/flow/internal/core/dto/auth"
 )
 
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
+
+//counterfeiter:generate . Service
 type Service interface {
 	SignUp(ctx context.Context, req *auth.SignUp) (*model.User, error)
 	SignIn(ctx context.Context, req *auth.SignIn) (*auth.Token, error)

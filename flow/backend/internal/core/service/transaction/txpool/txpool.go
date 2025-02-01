@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/gofrs/uuid"
-	"github.com/kyh0703/flow/internal/core/service/transaction/dto"
 )
 
 type TxPool struct {
