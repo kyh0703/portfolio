@@ -6,7 +6,7 @@ CREATE TABLE users (
   bio TEXT,
   update_at TEXT DEFAULT CURRENT_TIMESTAMP,
   create_at TEXT DEFAULT CURRENT_TIMESTAMP
-)
+);
 
 CREATE TABLE tokens (
   id INTEGER PRIMARY KEY,
@@ -15,7 +15,7 @@ CREATE TABLE tokens (
   expires_in INTEGER NOT NULL,
   create_at TEXT DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE flows (
   id INTEGER PRIMARY KEY,
@@ -23,20 +23,20 @@ CREATE TABLE flows (
   description TEXT,
   update_at TEXT DEFAULT CURRENT_TIMESTAMP,
   create_at TEXT DEFAULT CURRENT_TIMESTAMP
-)
+);
 
 CREATE TABLE sub_flows (
   id INTEGER PRIMARY KEY,
   flow_id INTEGER NOT NULL,
   name TEXT NOT NULL,
-  description TEXT
+  description TEXT,
   update_at TEXT DEFAULT CURRENT_TIMESTAMP,
   create_at TEXT DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (flow_id) REFERENCES flows(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE nodes (
-  id uuid PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   sub_flow_id INTEGER NOT NULL,
   type TEXT NOT NULL,
   parent TEXT,
@@ -49,10 +49,10 @@ CREATE TABLE nodes (
   update_at TEXT DEFAULT CURRENT_TIMESTAMP,
   create_at TEXT DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (sub_flow_id) REFERENCES sub_flows(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE edges (
-  id uuid PRIMARY KEY,
+  id TEXT PRIMARY KEY,
   sub_flow_id INTEGER NOT NULL,
   source TEXT NOT NULL,
   target TEXT NOT NULL,
@@ -63,5 +63,5 @@ CREATE TABLE edges (
   points TEXT,
   update_at TEXT DEFAULT CURRENT_TIMESTAMP,
   create_at TEXT DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (sub_flow_id) REFERENCES edges(id) ON DELETE CASCADE
-)
+  FOREIGN KEY (sub_flow_id) REFERENCES sub_flows(id) ON DELETE CASCADE
+);

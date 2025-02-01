@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/gofrs/uuid"
+	"github.com/kyh0703/flow/internal/core/dto/transaction"
 )
 
 type TxPool struct {
@@ -21,52 +22,52 @@ func NewTxPool() *TxPool {
 	}
 }
 
-func (pool *TxPool) PrintTx() {
-	pool.mutex.RLock()
-	defer pool.mutex.RUnlock()
+func (p *TxPool) PrintTx() {
+	p.mutex.RLock()
+	defer p.mutex.RUnlock()
 
-	for _, tx := range pool.txMap {
+	for _, tx := range p.txMap {
 		fmt.Println(tx)
 	}
 }
 
-func (pool *TxPool) BeginTx(inner *dto.TxConfigDto) {
+func (p *TxPool) BeginTx(inner *transaction.TxData) {
 	// create tx data.
-	pool.mutex.Lock()
-	defer pool.mutex.Unlock()
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 	// compute tx type and count.
 	uuid, _ := uuid.NewV4()
-	pool.wg.Add(1)
+	p.wg.Add(1)
 	go func() {
-		defer pool.wg.Done()
-		defer pool.EndTx(uuid)
+		defer p.wg.Done()
+		defer p.EndTx(uuid)
 	}()
 }
 
-func (pool *TxPool) EndTx(id uuid.UUID) {
-	pool.mutex.Lock()
-	defer pool.mutex.Unlock()
+func (p *TxPool) EndTx(id uuid.UUID) {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 
-	tx, ok := pool.txMap[id]
+	tx, ok := p.txMap[id]
 	if !ok {
 		return
 	}
 	tx.Close()
-	delete(pool.txMap, id)
+	delete(p.txMap, id)
 }
 
-func (pool *TxPool) EndAllTx() {
-	pool.mutex.Lock()
-	defer pool.mutex.Unlock()
+func (p *TxPool) EndAllTx() {
+	p.mutex.Lock()
+	defer p.mutex.Unlock()
 
-	for _, tx := range pool.txMap {
+	for _, tx := range p.txMap {
 		tx.Close()
 	}
-	pool.wg.Wait()
-	for k := range pool.txMap {
-		delete(pool.txMap, k)
+	p.wg.Wait()
+	for k := range p.txMap {
+		delete(p.txMap, k)
 	}
-	for t := range pool.txCountMap {
-		delete(pool.txCountMap, t)
+	for t := range p.txCountMap {
+		delete(p.txCountMap, t)
 	}
 }

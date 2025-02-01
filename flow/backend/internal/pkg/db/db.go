@@ -3,7 +3,10 @@ package db
 import (
 	"context"
 	"database/sql"
+	_ "embed"
 	"time"
+
+	_ "modernc.org/sqlite"
 
 	"github.com/kyh0703/flow/configs"
 	"github.com/kyh0703/flow/internal/core/domain/model"
