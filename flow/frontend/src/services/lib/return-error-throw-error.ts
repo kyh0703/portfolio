@@ -14,8 +14,8 @@ export const returnFetchThrowError: ReturnFetch = (args) =>
 
         const text = await response.text()
         const body = parseJsonSafely(text) as CustomResponse
-        if (body.errorcode) {
-          throw new CustomError(body.errorcode, response.status)
+        if (body.code) {
+          throw new CustomError(body.code, response.status)
         }
 
         throw new Error(text)

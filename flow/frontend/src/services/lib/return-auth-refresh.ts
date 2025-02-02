@@ -1,8 +1,8 @@
 import logger from '@/utils/logger'
 import type { ReturnFetch } from 'return-fetch'
 import returnFetch from 'return-fetch'
-import type { ApiResponse, Token } from '..'
-import { getTokens, setTokens } from './token'
+import type { ApiResponse } from '..'
+import { setToken } from './token'
 
 let retryCount = 0
 let refreshing = false
@@ -17,11 +17,6 @@ export const returnFetchAuthRefresh: ReturnFetch = (args) =>
           return response
         }
 
-        const token = getTokens()!
-        if (!token) {
-          return response
-        }
-
         if (refreshing) {
           await refreshPromise
           return fetch(...requestArgs)
@@ -29,15 +24,12 @@ export const returnFetchAuthRefresh: ReturnFetch = (args) =>
 
         refreshing = true
         refreshPromise = fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_PATH}/token`,
+          `${process.env.NEXT_PUBLIC_API_BASE_PATH}/auth/refresh`,
           {
-            method: 'PUT',
+            method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              refreshToken: token.refreshToken,
-            }),
           },
         )
           .then(async (responseToRefresh) => {
@@ -45,16 +37,18 @@ export const returnFetchAuthRefresh: ReturnFetch = (args) =>
               throw Error('failed to refresh cookie')
             }
 
-            const newToken =
-              (await responseToRefresh.json()) as ApiResponse<Token>
+            const newToken = (await responseToRefresh.json()) as ApiResponse<{
+              accessToken: string
+              accessExpiresIn: number
+            }>
+
+            setToken(newToken.data.accessToken, newToken.data.accessExpiresIn)
 
             retryCount += 1
             logger.debug(
               `🔄 succeeded to refresh and retry request ${retryCount}`,
               newToken,
             )
-
-            setTokens(newToken.data)
 
             refreshing = false
             refreshPromise = null

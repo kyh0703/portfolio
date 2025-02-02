@@ -1,7 +1,5 @@
 import type { ApiResponse } from '@/services'
 import { fetchExtended } from '@/services/lib/fetch'
-import camelcaseKeys from 'camelcase-keys'
-import snakecaseKeys from 'snakecase-keys'
 
 export const signup = async (data: {
   name: string
@@ -13,8 +11,8 @@ export const signup = async (data: {
     ApiResponse<{ name: string; desc: string }[]>
   >(`${process.env.NEXT_PUBLIC_API_BASE_PATH}/auth/signup`, {
     method: 'POST',
-    body: JSON.stringify(snakecaseKeys(data, { deep: true })),
+    body: JSON.stringify(data),
   })
 
-  return camelcaseKeys(response.body.data, { deep: true })
+  return response.body.data
 }

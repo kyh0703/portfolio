@@ -1,20 +1,17 @@
-import type { Token } from '..'
+let accessToken: Token | null = null
 
-export const getTokens = () => {
-  if (typeof window === 'undefined') {
-    return
-  }
-  const auth = window.sessionStorage.getItem('auth')
-  if (!auth) {
-    return
-  }
-  const token: Token = JSON.parse(auth)
-  return { ...token }
+export type Token = {
+  token: string
+  expiresIn: number
 }
 
-export const setTokens = (token: Token) => {
-  if (typeof window === 'undefined') {
-    return
+export const getToken = (): Token | null => {
+  return accessToken
+}
+
+export const setToken = (token: string, expiresIn: number) => {
+  accessToken = {
+    token: token,
+    expiresIn: expiresIn,
   }
-  window.sessionStorage.setItem('auth', JSON.stringify(token))
 }

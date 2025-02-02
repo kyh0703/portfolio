@@ -1,10 +1,5 @@
 import { errorMessages, type ErrorCode } from '@/constants/http-error'
 
-export type Token = {
-  accessToken: string
-  refreshToken: string
-}
-
 export type CustomResponse = {
   code: number
   message: number

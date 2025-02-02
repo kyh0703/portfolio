@@ -11,7 +11,7 @@ export const signin = async ({
 }) => {
   const response = await fetchExtended<
     ApiResponse<{ name: string; desc: string }[]>
-  >(`${process.env.NEXT_PUBLIC_API_BASE_PATH}/api/signin`, {
+  >(`${process.env.NEXT_PUBLIC_API_BASE_PATH}/auth/signin`, {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   })
