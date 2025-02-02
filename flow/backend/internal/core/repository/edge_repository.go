@@ -40,7 +40,7 @@ func (e *edgeRepository) CreateOne(ctx context.Context, param entity.Edge) (*ent
 	}
 
 	response := param
-	response.ID = edge.ID.(string)
+	response.ID = edge.ID
 	return &response, nil
 }
 

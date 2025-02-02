@@ -9,64 +9,65 @@ import (
 )
 
 type Edge struct {
-	ID        interface{}
-	SubFlowID int64
-	Source    string
-	Target    string
-	Type      string
-	Label     sql.NullString
-	Hidden    sql.NullInt64
-	MarkerEnd sql.NullString
-	Points    sql.NullString
-	UpdateAt  sql.NullString
-	CreateAt  sql.NullString
+	ID        string         `json:"id"`
+	SubFlowID int64          `json:"subFlowId"`
+	Source    string         `json:"source"`
+	Target    string         `json:"target"`
+	Type      string         `json:"type"`
+	Label     sql.NullString `json:"label"`
+	Hidden    sql.NullInt64  `json:"hidden"`
+	MarkerEnd sql.NullString `json:"markerEnd"`
+	Points    sql.NullString `json:"points"`
+	UpdateAt  sql.NullString `json:"updateAt"`
+	CreateAt  sql.NullString `json:"createAt"`
 }
 
 type Flow struct {
-	ID          int64
-	Name        string
-	Description sql.NullString
-	UpdateAt    sql.NullString
-	CreateAt    sql.NullString
+	ID          int64          `json:"id"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	UpdateAt    sql.NullString `json:"updateAt"`
+	CreateAt    sql.NullString `json:"createAt"`
 }
 
 type Node struct {
-	ID          interface{}
-	SubFlowID   int64
-	Type        string
-	Parent      sql.NullString
-	Position    sql.NullString
-	Styles      sql.NullString
-	Width       sql.NullInt64
-	Height      sql.NullInt64
-	Hidden      sql.NullInt64
-	Description sql.NullString
-	UpdateAt    sql.NullString
-	CreateAt    sql.NullString
+	ID          string         `json:"id"`
+	SubFlowID   int64          `json:"subFlowId"`
+	Type        string         `json:"type"`
+	Parent      sql.NullString `json:"parent"`
+	Position    sql.NullString `json:"position"`
+	Styles      sql.NullString `json:"styles"`
+	Width       sql.NullInt64  `json:"width"`
+	Height      sql.NullInt64  `json:"height"`
+	Hidden      sql.NullInt64  `json:"hidden"`
+	Description sql.NullString `json:"description"`
+	UpdateAt    sql.NullString `json:"updateAt"`
+	CreateAt    sql.NullString `json:"createAt"`
 }
 
 type SubFlow struct {
-	ID          int64
-	FlowID      int64
-	Name        string
-	Description interface{}
-	CreateAt    sql.NullString
+	ID          int64          `json:"id"`
+	FlowID      int64          `json:"flowId"`
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	UpdateAt    sql.NullString `json:"updateAt"`
+	CreateAt    sql.NullString `json:"createAt"`
 }
 
 type Token struct {
-	ID           int64
-	UserID       int64
-	RefreshToken string
-	ExpiresIn    int64
-	CreateAt     sql.NullString
+	ID           int64          `json:"id"`
+	UserID       int64          `json:"userId"`
+	RefreshToken string         `json:"refreshToken"`
+	ExpiresIn    int64          `json:"expiresIn"`
+	CreateAt     sql.NullString `json:"createAt"`
 }
 
 type User struct {
-	ID       int64
-	Email    string
-	Password string
-	Name     string
-	Bio      sql.NullString
-	UpdateAt sql.NullString
-	CreateAt sql.NullString
+	ID       int64          `json:"id"`
+	Email    string         `json:"email"`
+	Password string         `json:"password"`
+	Name     string         `json:"name"`
+	Bio      sql.NullString `json:"bio"`
+	UpdateAt sql.NullString `json:"updateAt"`
+	CreateAt sql.NullString `json:"createAt"`
 }

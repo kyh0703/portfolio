@@ -28,15 +28,15 @@ RETURNING id, sub_flow_id, source, target, type, label, hidden, marker_end, poin
 `
 
 type CreateEdgeParams struct {
-	ID        interface{}
-	SubFlowID int64
-	Source    string
-	Target    string
-	Type      string
-	Label     sql.NullString
-	Hidden    sql.NullInt64
-	MarkerEnd sql.NullString
-	Points    sql.NullString
+	ID        string         `json:"id"`
+	SubFlowID int64          `json:"subFlowId"`
+	Source    string         `json:"source"`
+	Target    string         `json:"target"`
+	Type      string         `json:"type"`
+	Label     sql.NullString `json:"label"`
+	Hidden    sql.NullInt64  `json:"hidden"`
+	MarkerEnd sql.NullString `json:"markerEnd"`
+	Points    sql.NullString `json:"points"`
 }
 
 func (q *Queries) CreateEdge(ctx context.Context, arg CreateEdgeParams) (Edge, error) {
@@ -79,8 +79,8 @@ RETURNING id, name, description, update_at, create_at
 `
 
 type CreateFlowParams struct {
-	Name        string
-	Description sql.NullString
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
 }
 
 func (q *Queries) CreateFlow(ctx context.Context, arg CreateFlowParams) (Flow, error) {
@@ -115,16 +115,16 @@ RETURNING id, sub_flow_id, type, parent, position, styles, width, height, hidden
 `
 
 type CreateNodeParams struct {
-	ID          interface{}
-	SubFlowID   int64
-	Type        string
-	Parent      sql.NullString
-	Position    sql.NullString
-	Styles      sql.NullString
-	Width       sql.NullInt64
-	Height      sql.NullInt64
-	Hidden      sql.NullInt64
-	Description sql.NullString
+	ID          string         `json:"id"`
+	SubFlowID   int64          `json:"subFlowId"`
+	Type        string         `json:"type"`
+	Parent      sql.NullString `json:"parent"`
+	Position    sql.NullString `json:"position"`
+	Styles      sql.NullString `json:"styles"`
+	Width       sql.NullInt64  `json:"width"`
+	Height      sql.NullInt64  `json:"height"`
+	Hidden      sql.NullInt64  `json:"hidden"`
+	Description sql.NullString `json:"description"`
 }
 
 func (q *Queries) CreateNode(ctx context.Context, arg CreateNodeParams) (Node, error) {
@@ -165,12 +165,12 @@ INSERT INTO sub_flows (
 ) VALUES (
   ?, ?
 )
-RETURNING id, flow_id, name, description, create_at
+RETURNING id, flow_id, name, description, update_at, create_at
 `
 
 type CreateSubFlowParams struct {
-	Name        string
-	Description interface{}
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
 }
 
 func (q *Queries) CreateSubFlow(ctx context.Context, arg CreateSubFlowParams) (SubFlow, error) {
@@ -181,6 +181,7 @@ func (q *Queries) CreateSubFlow(ctx context.Context, arg CreateSubFlowParams) (S
 		&i.FlowID,
 		&i.Name,
 		&i.Description,
+		&i.UpdateAt,
 		&i.CreateAt,
 	)
 	return i, err
@@ -198,9 +199,9 @@ RETURNING id, user_id, refresh_token, expires_in, create_at
 `
 
 type CreateTokenParams struct {
-	UserID       int64
-	RefreshToken string
-	ExpiresIn    int64
+	UserID       int64  `json:"userId"`
+	RefreshToken string `json:"refreshToken"`
+	ExpiresIn    int64  `json:"expiresIn"`
 }
 
 func (q *Queries) CreateToken(ctx context.Context, arg CreateTokenParams) (Token, error) {
@@ -230,11 +231,11 @@ RETURNING id, email, password, name, bio, update_at, create_at
 `
 
 type CreateUserParams struct {
-	Email    string
-	Password string
-	Name     string
-	Bio      sql.NullString
-	UpdateAt sql.NullString
+	Email    string         `json:"email"`
+	Password string         `json:"password"`
+	Name     string         `json:"name"`
+	Bio      sql.NullString `json:"bio"`
+	UpdateAt sql.NullString `json:"updateAt"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -263,7 +264,7 @@ DELETE FROM edges
 WHERE id = ?
 `
 
-func (q *Queries) DeleteEdge(ctx context.Context, id interface{}) error {
+func (q *Queries) DeleteEdge(ctx context.Context, id string) error {
 	_, err := q.db.ExecContext(ctx, deleteEdge, id)
 	return err
 }
@@ -283,7 +284,7 @@ DELETE FROM nodes
 WHERE id = ?
 `
 
-func (q *Queries) DeleteNode(ctx context.Context, id interface{}) error {
+func (q *Queries) DeleteNode(ctx context.Context, id string) error {
 	_, err := q.db.ExecContext(ctx, deleteNode, id)
 	return err
 }
@@ -323,7 +324,7 @@ SELECT id, sub_flow_id, source, target, type, label, hidden, marker_end, points,
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetEdge(ctx context.Context, id interface{}) (Edge, error) {
+func (q *Queries) GetEdge(ctx context.Context, id string) (Edge, error) {
 	row := q.db.QueryRowContext(ctx, getEdge, id)
 	var i Edge
 	err := row.Scan(
@@ -365,7 +366,7 @@ SELECT id, sub_flow_id, type, parent, position, styles, width, height, hidden, d
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetNode(ctx context.Context, id interface{}) (Node, error) {
+func (q *Queries) GetNode(ctx context.Context, id string) (Node, error) {
 	row := q.db.QueryRowContext(ctx, getNode, id)
 	var i Node
 	err := row.Scan(
@@ -386,7 +387,7 @@ func (q *Queries) GetNode(ctx context.Context, id interface{}) (Node, error) {
 }
 
 const getSubFlow = `-- name: GetSubFlow :one
-SELECT id, flow_id, name, description, create_at FROM sub_flows
+SELECT id, flow_id, name, description, update_at, create_at FROM sub_flows
 WHERE id = ? LIMIT 1
 `
 
@@ -398,6 +399,7 @@ func (q *Queries) GetSubFlow(ctx context.Context, id int64) (SubFlow, error) {
 		&i.FlowID,
 		&i.Name,
 		&i.Description,
+		&i.UpdateAt,
 		&i.CreateAt,
 	)
 	return i, err
@@ -597,7 +599,7 @@ func (q *Queries) ListNodes(ctx context.Context, subFlowID int64) ([]Node, error
 }
 
 const listSubFlows = `-- name: ListSubFlows :many
-SELECT id, flow_id, name, description, create_at FROM sub_flows
+SELECT id, flow_id, name, description, update_at, create_at FROM sub_flows
 WHERE flow_id = ?
 ORDER BY name
 `
@@ -616,6 +618,7 @@ func (q *Queries) ListSubFlows(ctx context.Context, flowID int64) ([]SubFlow, er
 			&i.FlowID,
 			&i.Name,
 			&i.Description,
+			&i.UpdateAt,
 			&i.CreateAt,
 		); err != nil {
 			return nil, err
@@ -715,14 +718,14 @@ RETURNING id, sub_flow_id, source, target, type, label, hidden, marker_end, poin
 `
 
 type UpdateEdgeParams struct {
-	Source    string
-	Target    string
-	Type      string
-	Label     sql.NullString
-	Hidden    sql.NullInt64
-	MarkerEnd sql.NullString
-	Points    sql.NullString
-	ID        interface{}
+	Source    string         `json:"source"`
+	Target    string         `json:"target"`
+	Type      string         `json:"type"`
+	Label     sql.NullString `json:"label"`
+	Hidden    sql.NullInt64  `json:"hidden"`
+	MarkerEnd sql.NullString `json:"markerEnd"`
+	Points    sql.NullString `json:"points"`
+	ID        string         `json:"id"`
 }
 
 func (q *Queries) UpdateEdge(ctx context.Context, arg UpdateEdgeParams) error {
@@ -748,9 +751,9 @@ RETURNING id, name, description, update_at, create_at
 `
 
 type UpdateFlowParams struct {
-	Name        string
-	Description sql.NullString
-	ID          int64
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	ID          int64          `json:"id"`
 }
 
 func (q *Queries) UpdateFlow(ctx context.Context, arg UpdateFlowParams) error {
@@ -773,15 +776,15 @@ RETURNING id, sub_flow_id, type, parent, position, styles, width, height, hidden
 `
 
 type UpdateNodeParams struct {
-	Type        string
-	Parent      sql.NullString
-	Position    sql.NullString
-	Styles      sql.NullString
-	Width       sql.NullInt64
-	Height      sql.NullInt64
-	Hidden      sql.NullInt64
-	Description sql.NullString
-	ID          interface{}
+	Type        string         `json:"type"`
+	Parent      sql.NullString `json:"parent"`
+	Position    sql.NullString `json:"position"`
+	Styles      sql.NullString `json:"styles"`
+	Width       sql.NullInt64  `json:"width"`
+	Height      sql.NullInt64  `json:"height"`
+	Hidden      sql.NullInt64  `json:"hidden"`
+	Description sql.NullString `json:"description"`
+	ID          string         `json:"id"`
 }
 
 func (q *Queries) UpdateNode(ctx context.Context, arg UpdateNodeParams) error {
@@ -804,13 +807,13 @@ UPDATE sub_flows SET
 name = ?,
 description = ?
 WHERE id = ?
-RETURNING id, flow_id, name, description, create_at
+RETURNING id, flow_id, name, description, update_at, create_at
 `
 
 type UpdateSubFlowParams struct {
-	Name        string
-	Description interface{}
-	ID          int64
+	Name        string         `json:"name"`
+	Description sql.NullString `json:"description"`
+	ID          int64          `json:"id"`
 }
 
 func (q *Queries) UpdateSubFlow(ctx context.Context, arg UpdateSubFlowParams) error {
@@ -828,10 +831,10 @@ RETURNING id, user_id, refresh_token, expires_in, create_at
 `
 
 type UpdateTokenParams struct {
-	UserID       int64
-	RefreshToken string
-	ExpiresIn    int64
-	ID           int64
+	UserID       int64  `json:"userId"`
+	RefreshToken string `json:"refreshToken"`
+	ExpiresIn    int64  `json:"expiresIn"`
+	ID           int64  `json:"id"`
 }
 
 func (q *Queries) UpdateToken(ctx context.Context, arg UpdateTokenParams) error {
@@ -856,12 +859,12 @@ RETURNING id, email, password, name, bio, update_at, create_at
 `
 
 type UpdateUserParams struct {
-	Email    string
-	Name     string
-	Password string
-	Bio      sql.NullString
-	UpdateAt sql.NullString
-	ID       int64
+	Email    string         `json:"email"`
+	Name     string         `json:"name"`
+	Password string         `json:"password"`
+	Bio      sql.NullString `json:"bio"`
+	UpdateAt sql.NullString `json:"updateAt"`
+	ID       int64          `json:"id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {

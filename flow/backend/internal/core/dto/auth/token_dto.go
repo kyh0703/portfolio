@@ -1,13 +1,13 @@
 package auth
 
 type AccessToken struct {
-	AccessToken     string `json:"access_token"`
-	AccessExpiresIn int64  `json:"access_expires_in"`
+	AccessToken     string `json:"accessToken"`
+	AccessExpiresIn int64  `json:"accessExpiresIn"`
 }
 
 type RefreshToken struct {
-	RefreshToken     string `json:"refresh_token"`
-	RefreshExpiresIn int64  `json:"refresh_expires_in"`
+	RefreshToken     string `json:"refreshToken"`
+	RefreshExpiresIn int64  `json:"refreshExpiresIn"`
 }
 
 type Token struct {
