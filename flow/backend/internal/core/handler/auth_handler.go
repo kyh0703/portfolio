@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"time"
+
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
 	"github.com/kyh0703/flow/internal/core/middleware"
@@ -30,10 +32,12 @@ type authHandler struct {
 func NewAuthHandler(
 	validate *validator.Validate,
 	authMiddleware middleware.AuthMiddleware,
+	authService auth.Service,
 ) AuthHandler {
 	return &authHandler{
 		validate:       validate,
 		authMiddleware: authMiddleware,
+		authService:    authService,
 	}
 }
 
@@ -62,12 +66,20 @@ func (h *authHandler) SignUp(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 
-	user, err := h.authService.SignUp(c.Context(), &signup)
+	token, err := h.authService.SignUp(c.Context(), &signup)
 	if err != nil {
 		return err
 	}
 
-	return response.Success(c, fiber.StatusOK, user)
+	c.Cookie(&fiber.Cookie{
+		Name:     "token",
+		Value:    token.Refresh.RefreshToken,
+		Expires:  time.Unix(token.Refresh.RefreshExpiresIn, 0),
+		HTTPOnly: true,
+		Secure:   false,
+	})
+
+	return response.Success(c, fiber.StatusOK, token)
 }
 
 func (h *authHandler) SignIn(c *fiber.Ctx) error {
@@ -84,6 +96,14 @@ func (h *authHandler) SignIn(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "token",
+		Value:    token.Refresh.RefreshToken,
+		Expires:  time.Unix(token.Refresh.RefreshExpiresIn, 0),
+		HTTPOnly: true,
+		Secure:   false,
+	})
 
 	return response.Success(c, fiber.StatusOK, token)
 }

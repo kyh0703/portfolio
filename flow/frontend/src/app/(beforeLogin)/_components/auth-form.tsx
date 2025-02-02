@@ -9,8 +9,8 @@ import {
   CardTitle,
 } from '@/ui/card'
 import { useState } from 'react'
-import { SignupForm } from './signup-form'
 import { SigninForm } from './signin-form'
+import { SignupForm } from './signup-form'
 
 export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true)

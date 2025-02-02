@@ -51,30 +51,34 @@ func (a *authService) generateNewTokens(ctx context.Context, user model.User) (*
 	}
 
 	return &auth.Token{
-		AccessToken:      accessToken,
-		AccessExpiresIn:  accessExpire.Unix(),
-		RefreshToken:     refreshToken,
-		RefreshExpiresIn: refreshExpire.Unix(),
+		Access: auth.AccessToken{
+			AccessToken:     accessToken,
+			AccessExpiresIn: accessExpire.Unix(),
+		},
+		Refresh: auth.RefreshToken{
+			RefreshToken:     refreshToken,
+			RefreshExpiresIn: refreshExpire.Unix(),
+		},
 	}, nil
 }
 
-func (a *authService) SignUp(ctx context.Context, req *auth.SignUp) (*model.User, error) {
+func (a *authService) SignUp(ctx context.Context, req *auth.SignUp) (*auth.Token, error) {
 	existUser, err := a.userRepository.FindOneByEmail(ctx, req.Email)
 	if err != nil {
-		return nil, fiber.NewError(500, err.Error())
+		return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	if existUser.ID != 0 {
-		return nil, fiber.NewError(409, "email already exists")
+		return nil, fiber.NewError(fiber.StatusConflict, "email already exists")
 	}
 
 	if req.Password != req.ConfirmPassword {
-		return nil, fiber.NewError(400, "password and password confirm do not match")
+		return nil, fiber.NewError(fiber.StatusNotFound, "password and password confirm do not match")
 	}
 
 	hash, err := password.Hashed(req.Password)
 	if err != nil {
-		return nil, fiber.NewError(500, err.Error())
+		return nil, fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
 
 	createdUser, err := a.userRepository.CreateOne(ctx, model.CreateUserParams{
@@ -87,7 +91,7 @@ func (a *authService) SignUp(ctx context.Context, req *auth.SignUp) (*model.User
 		return nil, fiber.NewError(500, err.Error())
 	}
 
-	return &createdUser, nil
+	return a.generateNewTokens(ctx, createdUser)
 }
 
 func (a *authService) SignIn(ctx context.Context, req *auth.SignIn) (*auth.Token, error) {
@@ -126,10 +130,14 @@ func (a *authService) SignIn(ctx context.Context, req *auth.SignIn) (*auth.Token
 	}
 
 	return &auth.Token{
-		AccessToken:      accessToken,
-		AccessExpiresIn:  accessExpire.Unix(),
-		RefreshToken:     token.RefreshToken,
-		RefreshExpiresIn: token.ExpiresIn,
+		Access: auth.AccessToken{
+			AccessToken:     accessToken,
+			AccessExpiresIn: accessExpire.Unix(),
+		},
+		Refresh: auth.RefreshToken{
+			RefreshToken:     token.RefreshToken,
+			RefreshExpiresIn: token.ExpiresIn,
+		},
 	}, nil
 }
 
@@ -170,9 +178,13 @@ func (a *authService) RefreshToken(ctx context.Context, req *auth.Refresh) (*aut
 	}
 
 	return &auth.Token{
-		AccessToken:      accessToken,
-		AccessExpiresIn:  accessExpire.Unix(),
-		RefreshToken:     token.RefreshToken,
-		RefreshExpiresIn: token.ExpiresIn,
+		Access: auth.AccessToken{
+			AccessToken:     accessToken,
+			AccessExpiresIn: accessExpire.Unix(),
+		},
+		Refresh: auth.RefreshToken{
+			RefreshToken:     token.RefreshToken,
+			RefreshExpiresIn: token.ExpiresIn,
+		},
 	}, nil
 }

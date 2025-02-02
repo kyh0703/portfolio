@@ -2,12 +2,12 @@
 
 import { Button } from '@/app/_components/button'
 import FormInput from '@/app/_components/form-input'
-import { signIn } from '@/services/auth/api/singin'
+import { signin } from '@/services/auth/api/singin'
+import logger from '@/utils/logger'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
-import logger from '@/utils/logger'
-import { useRouter } from 'next/navigation'
 
 const SigninSchema = z.object({
   email: z.string().email(),
@@ -18,13 +18,17 @@ type Signin = z.infer<typeof SigninSchema>
 
 export function SigninForm() {
   const router = useRouter()
-  const { handleSubmit, control } = useForm<Signin>({
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<Signin>({
     resolver: zodResolver(SigninSchema),
   })
 
   const onSubmit = async (data: Signin) => {
     try {
-      const response = await signIn(data.email, data.password)
+      const response = await signin(data)
       console.log(response)
       router.push('/dashboard')
     } catch (error) {
@@ -39,15 +43,17 @@ export function SigninForm() {
         name="email"
         type="email"
         placeholder="your@email.com"
-        required
       />
+      {errors.email && <p className="error-msg">{errors.email.message}</p>}
       <FormInput
         control={control}
         name="password"
         type="password"
         placeholder="••••••••"
-        required
       />
+      {errors.password && (
+        <p className="error-msg">{errors.password.message}</p>
+      )}
       <Button className="w-full" type="submit">
         로그인
       </Button>

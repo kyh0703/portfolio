@@ -1,10 +1,13 @@
 'use client'
 
-import FormInput from '@/app/_components/form-input'
 import { Button } from '@/app/_components/button'
+import FormInput from '@/app/_components/form-input'
+import { signup } from '@/services/auth/api/signup'
+import logger from '@/utils/logger'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
 
 const SignupSchema = z
   .object({
@@ -23,17 +26,29 @@ const SignupSchema = z
 type Signup = z.infer<typeof SignupSchema>
 
 export function SignupForm() {
-  const { handleSubmit, control } = useForm<Signup>({
+  const router = useRouter()
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<Signup>({
     resolver: zodResolver(SignupSchema),
   })
 
-  const onSubmit = (data: Signup) => {
-    console.log(data)
+  const onSubmit = async (data: Signup) => {
+    try {
+      const response = await signup(data)
+      console.log(response)
+      router.push('/dashboard')
+    } catch (error) {
+      logger.error(error)
+    }
   }
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-      <FormInput control={control} name="name" placeholder="홍길동" required />
+      <FormInput control={control} name="name" placeholder="홍길동" />
+      {errors.name && <p className="error-msg">{errors.name.message}</p>}
       <FormInput
         control={control}
         name="email"
@@ -41,6 +56,7 @@ export function SignupForm() {
         placeholder="your@email.com"
         required
       />
+      {errors.email && <p className="error-msg">{errors.email.message}</p>}
       <FormInput
         control={control}
         name="password"
@@ -48,6 +64,9 @@ export function SignupForm() {
         placeholder="••••••••"
         required
       />
+      {errors.password && (
+        <p className="error-msg">{errors.password.message}</p>
+      )}
       <FormInput
         control={control}
         name={'confirmPassword'}
@@ -56,6 +75,9 @@ export function SignupForm() {
         placeholder="••••••••"
         required
       />
+      {errors.confirmPassword && (
+        <p className="error-msg">{errors.confirmPassword.message}</p>
+      )}
       <Button className="w-full" type="submit">
         회원가입
       </Button>

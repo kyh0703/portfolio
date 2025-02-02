@@ -1,29 +1,20 @@
 package logger
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/kyh0703/flow/configs"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-var Zap *Sugared
+var Logger *Sugared
 
 type Sugared struct {
 	*zap.SugaredLogger
 }
 
-func New(config *configs.Config) *Sugared {
+func init() {
 	level := zap.InfoLevel
-	if config.App.LogLevel != "" {
-		levelFromEnv, err := zapcore.ParseLevel(config.App.LogLevel)
-		if err != nil {
-			fmt.Println("Invalid Level, defaulting to INFO: %w", err)
-		}
-		level = levelFromEnv
-	}
 
 	var encoderConfig zapcore.EncoderConfig
 	var encoding string
@@ -61,13 +52,31 @@ func New(config *configs.Config) *Sugared {
 		InitialFields: map[string]interface{}{},
 	}
 
-	Zap = &Sugared{
+	Logger = &Sugared{
 		zap.Must(zapConfig.Build()).Sugar(),
 	}
-
-	return Zap
 }
 
-func (l *Sugared) Printf(format string, args ...interface{}) {
-	l.Infof(format, args...)
+func Debug(args ...interface{}) {
+	Logger.Debug(args...)
+}
+
+func Debugf(template string, args ...interface{}) {
+	Logger.Debugf(template, args...)
+}
+
+func Info(args ...interface{}) {
+	Logger.Info(args...)
+}
+
+func Infof(template string, args ...interface{}) {
+	Logger.Infof(template, args...)
+}
+
+func Error(args ...interface{}) {
+	Logger.Error(args...)
+}
+
+func Errorf(template string, args ...interface{}) {
+	Logger.Errorf(template, args...)
 }
