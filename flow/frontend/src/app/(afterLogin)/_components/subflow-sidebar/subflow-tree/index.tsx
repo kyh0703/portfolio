@@ -3,7 +3,6 @@
 import ConfirmModal from '@/app/_components/confirm-modal'
 import { Modal } from '@/app/_components/modal'
 import { useYjs } from '@/contexts/yjs-context'
-import useValidate from '@/hooks/use-validation'
 import useYjsData from '@/hooks/use-yjs-data'
 import { FlowTreeData } from '@/models/subflow-list'
 import {
@@ -20,6 +19,7 @@ import { useModalStore } from '@/store/modal'
 import { height as themeHeight } from '@/themes'
 import { cn } from '@/utils/cn'
 import logger from '@/utils/logger'
+import { getSubFlowPath } from '@/utils/route-path'
 import {
   containsMainEnd,
   containsTypeFolder,
@@ -27,19 +27,20 @@ import {
   convertFlowTreeData,
   generateCopyName,
   getParentNodeId,
+  isMainEnd,
 } from '@/utils/tree'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useReducer, useRef, useState } from 'react'
-import { DeleteHandler, NodeApi, Tree, TreeApi } from 'react-arborist'
+import { NodeApi, Tree, TreeApi } from 'react-arborist'
 import { toast } from 'react-toastify'
 import useResizeObserver from 'use-resize-observer'
 import { v4 as uuidv4 } from 'uuid'
+import { useShallow } from 'zustand/react/shallow'
+import PropertiesModal from '../_components/properties-modal'
 import useTree from '../lib/use-tree'
 import Action from './action'
-import SubflowPropertiesModal from './modal'
 import Node from './node'
-
 export default function SubFlowTree({ search }: { search: string }) {
   const { ref, width, height } = useResizeObserver()
   const treeHeight = height
@@ -49,13 +50,11 @@ export default function SubFlowTree({ search }: { search: string }) {
   const router = useRouter()
   const { ydoc } = useYjs()
   const { clearSubFlow } = useYjsData(ydoc)
-  const { id: flowId } = useUserContext()
-  const [closeTab, setFlowName] = useFlowTabStore((state) => [
-    state.closeTab,
-    state.setFlowName,
-  ])
+  const { id: flowId, mode: flowMode } = useUserContext()
+  const [isOpenTab, closeTab, setFlowName] = useFlowTabStore(
+    useShallow((state) => [state.isOpenTab, state.closeTab, state.setFlowName]),
+  )
   const openModal = useModalStore((state) => state.openModal)
-  const { validateSubFlow } = useValidate()
 
   const clipboardNodes = useRef<NodeApi<FlowTreeData>[]>([])
   const treeRef = useRef<TreeApi<FlowTreeData>>(null)
@@ -77,10 +76,12 @@ export default function SubFlowTree({ search }: { search: string }) {
 
   const createSubFlow = ({
     name,
+    updateDate,
     id,
     desc = '',
   }: {
     name: string
+    updateDate: Date
     id?: number
     desc?: string
   }) => ({
@@ -94,7 +95,7 @@ export default function SubFlowTree({ search }: { search: string }) {
       },
       out: { arg: [] },
     },
-    updateDate: new Date(),
+    updateDate,
   })
 
   const createNodeData = (
@@ -103,7 +104,6 @@ export default function SubFlowTree({ search }: { search: string }) {
   ) => ({
     ...baseData,
     ...additionalData,
-    updateDate: new Date(),
   })
 
   const {
@@ -121,60 +121,56 @@ export default function SubFlowTree({ search }: { search: string }) {
       })
     },
     onBeforeCreate: async (args) => {
-      try {
-        const response = await addSubFlowMutate(
-          createSubFlow({ name: args.name }),
-        )
-        return { id: response.flowId.toString() }
-      } catch (error) {
-        logger.error('failed to create subflow', error)
-      }
+      const response = await addSubFlowMutate(
+        createSubFlow({
+          name: args.name,
+          updateDate: args.node.data.updateDate,
+        }),
+      )
+      return { id: response.flowId.toString() }
     },
     onBeforeDelete: async (args) => {
-      try {
-        args.nodes.forEach(async (node) => {
-          if (node.data.type === 'file') {
-            await removeSubFlowMutate({ subFlowId: node.data.databaseId! })
-            const deleteSubFlowId = node.data.databaseId!
-            const moveSubFlowId = closeTab(flowId, deleteSubFlowId)
-            clearSubFlow('' + deleteSubFlowId)
-            router.push(`/subflows/${moveSubFlowId}`)
+      let hasFile = false
+      let moveSubFlowId
+      for await (const node of args.nodes) {
+        if (node.data.type === 'file') {
+          hasFile = true
+          await removeSubFlowMutate({ subFlowId: node.data.databaseId! })
+          const deleteSubFlowId = node.data.databaseId!
+          if (isOpenTab(flowId, deleteSubFlowId)) {
+            moveSubFlowId = closeTab(flowId, deleteSubFlowId)
           }
-        })
-      } catch (error) {
-        logger.error('failed to delete subflow', error)
+          clearSubFlow(flowMode, '' + deleteSubFlowId)
+        }
+      }
+      if (hasFile) {
+        router.push(getSubFlowPath(moveSubFlowId))
       }
     },
     onBeforeRename: async (args) => {
-      try {
-        await updateSubFlowMutate({
-          subFlowId: args.node.data.databaseId!,
-          updateSubFlow: {
-            ...args.node.data,
-            id: args.node.data.databaseId!,
-            name: args.name,
-          },
-        })
-        setFlowName(flowId, {
+      await updateSubFlowMutate({
+        subFlowId: args.node.data.databaseId!,
+        updateSubFlow: {
+          ...args.node.data,
           id: args.node.data.databaseId!,
           name: args.name,
-        })
-      } catch (error) {
-        logger.error('failed to update subflow', error)
-      }
+        },
+      })
+      setFlowName(flowId, {
+        id: args.node.data.databaseId!,
+        name: args.name,
+      })
     },
     onKeyDown: (event) => {
       const selectedIds = treeRef.current?.selectedIds
       const selectedNodes = treeRef.current?.selectedNodes
-
-      if (!selectedIds || !selectedNodes) return
+      if (!selectedIds || !selectedNodes) {
+        return
+      }
 
       switch (event.key) {
         case 'Delete':
-          handleDelete({
-            ids: [],
-            nodes: selectedNodes,
-          })
+          handleOpenDeleteModal(selectedNodes)
         case 'Enter':
           if (
             selectedNodes[0].data.type === 'file' &&
@@ -200,7 +196,6 @@ export default function SubFlowTree({ search }: { search: string }) {
           break
       }
     },
-    onValidateName: validateSubFlow,
   })
 
   const handleCutAction = (selectedNodes: NodeApi<FlowTreeData>[]) => {
@@ -255,11 +250,19 @@ export default function SubFlowTree({ search }: { search: string }) {
   const handleReplicate = useCallback(
     async (originName: string, originId: number) => {
       const copyName = generateCopyName(treeData, originName)
+      const newSubFlow = createSubFlow({
+        name: copyName,
+        updateDate: new Date(),
+      })
       const response = await replicateSubFlowMutate({
         subFlowId: originId,
-        subFlow: createSubFlow({ name: copyName }),
+        subFlow: newSubFlow,
       })
-      return { flowId: response.flowId, flowName: copyName }
+      return {
+        flowId: response.flowId,
+        flowName: copyName,
+        updateDate: newSubFlow.updateDate,
+      }
     },
     [replicateSubFlowMutate, treeData],
   )
@@ -269,6 +272,7 @@ export default function SubFlowTree({ search }: { search: string }) {
       const newChildren: FlowTreeData = createNodeData(node, {
         id: uuidv4(),
         name: generateCopyName(treeData, node.name),
+        updateDate: new Date(),
         type: 'folder',
         children: [],
       })
@@ -289,6 +293,7 @@ export default function SubFlowTree({ search }: { search: string }) {
                   createNodeData(child, {
                     id: uuidv4(),
                     name: response.flowName,
+                    updateDate: response.updateDate,
                     type: 'file',
                     databaseId: response.flowId,
                   }),
@@ -320,8 +325,8 @@ export default function SubFlowTree({ search }: { search: string }) {
     }
   }
 
-  const handleDelete: DeleteHandler<FlowTreeData> = ({ nodes }) => {
-    if (containsMainEnd(nodes)) {
+  const handleOpenDeleteModal = (nodes: NodeApi<FlowTreeData>[]) => {
+    if (isMainEnd(nodes)) {
       toast.warn('main, end는 삭제할 수 없습니다.')
       return
     }
@@ -330,7 +335,7 @@ export default function SubFlowTree({ search }: { search: string }) {
 
     setModalContent(
       containsTypeFolder(clipboardNodes.current!)
-        ? '폴더를 삭제하면 하위의 모든 SubFlow가 삭제됩니다. 정말 삭제하시겠습니까?'
+        ? '폴더를 삭제하면 하위의 모든 SubFlow가 상위 폴더로 이동합니다.'
         : '정말 삭제하시겠습니까?',
     )
 
@@ -339,57 +344,50 @@ export default function SubFlowTree({ search }: { search: string }) {
 
   const handleSubmitPropertiesModal = useCallback(
     async (origin: FlowTreeData, replace: FlowTreeData) => {
+      if (origin.name === replace.name && origin.desc === replace.desc) return
+
       const tree = treeRef.current
       if (!tree) return
 
-      if (origin.name === replace.name && origin.desc === replace.desc) return
-
-      if (origin.name !== replace.name) {
-        const node = tree.get(origin.id)
-        if (node) {
-          node.submit(replace.name)
-        }
-      }
-      if (origin.desc !== replace.desc) {
-        if (origin.type === 'file') {
-          updateSubFlowMutate(
-            {
-              subFlowId: replace.databaseId!,
-              updateSubFlow: createSubFlow({
+      if (origin.type === 'file') {
+        updateSubFlowMutate(
+          {
+            subFlowId: replace.databaseId!,
+            updateSubFlow: createSubFlow({
+              name: replace.name,
+              desc: replace.desc,
+              updateDate: origin.updateDate,
+            }),
+          },
+          {
+            onSuccess: () => {
+              setFlowName(flowId, {
+                id: origin.databaseId!,
                 name: replace.name,
-                desc: replace.desc,
-              }),
-            },
-            {
-              onSuccess: () => {
-                setFlowName(flowId, {
-                  id: origin.databaseId!,
-                  name: replace.name,
-                })
-              },
-            },
-          )
-        }
-
-        updateSubFlowTreeMutate({
-          flowtree: convertFlowTree(
-            (function updateNode(nodes) {
-              return nodes.map((node) => {
-                if (node.id === origin.id) {
-                  node = { ...node, desc: replace.desc }
-                }
-                if (node.children && node.children.length > 0) {
-                  node = {
-                    ...node,
-                    children: updateNode(node.children),
-                  }
-                }
-                return node
               })
-            })(treeData),
-          ),
-        })
+            },
+          },
+        )
       }
+
+      updateSubFlowTreeMutate({
+        flowtree: convertFlowTree(
+          (function updateNode(nodes) {
+            return nodes.map((node) => {
+              if (node.id === origin.id) {
+                node = { ...node, name: replace.name, desc: replace.desc }
+              }
+              if (node.children && node.children.length > 0) {
+                node = {
+                  ...node,
+                  children: updateNode(node.children),
+                }
+              }
+              return node
+            })
+          })(treeData),
+        ),
+      })
     },
     [
       flowId,
@@ -414,7 +412,7 @@ export default function SubFlowTree({ search }: { search: string }) {
         <ConfirmModal content={modalMessage} onConfirm={handleConfirmDelete} />
       </Modal>
       <Modal id="sub-flow-property-modal" title="Flow Properties">
-        <SubflowPropertiesModal onSubmit={handleSubmitPropertiesModal} />
+        <PropertiesModal onSubmit={handleSubmitPropertiesModal} />
       </Modal>
       <div ref={ref} className="flex h-full w-full flex-col">
         <div className="flex w-full justify-between px-1">
@@ -426,7 +424,7 @@ export default function SubFlowTree({ search }: { search: string }) {
             onCreateFlow={() => handleCreate('leaf')}
           />
         </div>
-        <div className={cn('w-full')} onKeyDown={onKeyDown}>
+        <div className="w-full" onKeyDown={onKeyDown}>
           <Tree
             ref={treeRef}
             data={treeData}
@@ -443,9 +441,12 @@ export default function SubFlowTree({ search }: { search: string }) {
             onMove={onMove}
             onCreate={onCreate}
             onRename={onRename}
-            onDelete={handleDelete}
+            onDelete={onDelete}
+            onContextMenu={(e) => e.preventDefault()}
           >
-            {Node}
+            {(data) => (
+              <Node {...data} onOpenDeleteModal={handleOpenDeleteModal} />
+            )}
           </Tree>
         </div>
       </div>

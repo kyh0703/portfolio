@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/app/_components/button'
+import type { BuildType } from '@/models/build'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,8 +11,9 @@ import {
 import { Wrench } from 'lucide-react'
 
 type IdleButtonProps = {
-  onClick?: (buildType: 'build' | 'rebuild' | 'buildstop') => void
+  onClick?: (buildType: BuildType) => void
 }
+
 export default function IdleButton({ onClick }: IdleButtonProps) {
   return (
     <DropdownMenu>

@@ -5,6 +5,7 @@ import {
   DEFAULT_COMMAND_NODE_WIDTH,
 } from '@/constants/xyflow'
 import {
+  useAlign,
   useCursorStateSynced,
   useEdges,
   useEdgesStateSynced,
@@ -38,13 +39,13 @@ import {
   type AppNode,
   type CustomEdgeType,
   type CustomNodeType,
+  type EdgeMouseHandler,
   type NodeMouseHandler,
   type OnConnect,
   type OnConnectStart,
   type OnInit,
   type OnNodeDrag,
 } from '@xyflow/react'
-import '@xyflow/react/dist/style.css'
 import { useTheme } from 'next-themes'
 import { useSearchParams } from 'next/navigation'
 import {
@@ -72,7 +73,13 @@ import {
   isValidConnection,
 } from './tools/validator'
 
+import '@xyflow/react/dist/style.css'
+import { EdgeContextMenu, type EdgeContextMenuProps } from './edge/context-menu'
+import BookmarkDialog from './node/bookmark-dialog'
+import type { FlowMode } from '@/models/flow'
+
 type FlowMainProps = {
+  flowMode: FlowMode
   subFlowId: number
   initialNodes: AppNode[]
   initialEdges: AppEdge[]
@@ -80,6 +87,7 @@ type FlowMainProps = {
 }
 
 export default function FlowMain({
+  flowMode,
   subFlowId,
   initialNodes,
   initialEdges,
@@ -119,6 +127,8 @@ export default function FlowMain({
   const [cursors, onMouseMove] = useCursorStateSynced(subFlowId)
   const [nodeContextMenu, setNodeContextMenu] =
     useState<NodeContextMenuProps | null>(null)
+  const [edgeContextMenu, setEdgeContextMenu] =
+    useState<EdgeContextMenuProps | null>(null)
   const [edgeMenu, setEdgeMenu] = useState<EdgeMenuProps | null>(null)
 
   useInitialize(subFlowId)
@@ -140,25 +150,26 @@ export default function FlowMain({
   } = useReactFlow<AppNode, AppEdge>()
   const { selectNode, unselectNode } = useSelect()
   const { saveHistory } = useUndoRedo(subFlowId)
+  const { alignEdge } = useAlign(subFlowId)
 
   const { mutateAsync: addNodeMutate } = useAddNode()
-  const updateNodesMutation = useUpdateNodes()
+  const { mutateAsync: updateNodesMutate } = useUpdateNodes()
 
   const handleInit: OnInit<AppNode, AppEdge> = useCallback(() => {
     setInit(true)
   }, [])
 
   const handleNodeDragStart: OnNodeDrag<AppNode> = useCallback(
-    (event, node, nodes) => {
-      saveHistory('update', nodes, [])
-      updateNodesMutation.reset()
+    (event, dragNode, dragNodes) => {
+      logger.debug('onNodeDragStart', dragNodes)
+      saveHistory('update', dragNodes, [])
     },
-    [saveHistory, updateNodesMutation],
+    [saveHistory],
   )
 
   const handleNodeDragStop: OnNodeDrag<AppNode> = useCallback(
-    async (event, node, dragNodes) => {
-      logger.debug('onNodeDragStop', node, nodes)
+    async (event, dragNode, dragNodes) => {
+      logger.debug('onNodeDragStop', dragNodes)
       dragNodes.map((dragNode) => {
         if (!hasParentNode(dragNode.type!)) {
           return dragNode
@@ -198,16 +209,16 @@ export default function FlowMain({
 
         return dragNode
       })
+      await updateNodesMutate({ nodes: dragNodes })
       setNodes((nodes) => [...nodes, ...dragNodes])
-      updateNodesMutation.mutate({ nodes: dragNodes })
     },
-    [getIntersectingNodes, nodes, setNodes, updateNodesMutation],
+    [getIntersectingNodes, setNodes, updateNodesMutate],
   )
 
   const handleNodeClick: NodeMouseHandler<AppNode> = useCallback(
     (_, node) => {
       if (editMode === 'grab') {
-        if (!hasPropertyNode(node.type!)) {
+        if (!hasPropertyNode(flowMode, node.type!)) {
           setNodeContextMenu(null)
         } else {
           setSelectedNode(subFlowId, {
@@ -219,7 +230,7 @@ export default function FlowMain({
         }
       }
     },
-    [editMode, setNodeContextMenu, setSelectedNode, subFlowId],
+    [editMode, flowMode, setSelectedNode, subFlowId],
   )
 
   const handleNodesDelete: OnNodesDelete<AppNode> = useCallback(
@@ -454,6 +465,7 @@ export default function FlowMain({
   const handleDeselect = useCallback(() => {
     setNodeContextMenu(null)
     setEdgeMenu(null)
+    setEdgeContextMenu(null)
     setSelectedNode(subFlowId, null)
   }, [setSelectedNode, subFlowId])
 
@@ -463,6 +475,25 @@ export default function FlowMain({
       event.stopPropagation()
       setNodeContextMenu({
         id: node.id,
+        mouse: {
+          x: event.clientX,
+          y: event.clientY,
+        },
+      })
+    },
+    [],
+  )
+
+  const handleEdgeContextMenu: EdgeMouseHandler<AppEdge> = useCallback(
+    (event, edge) => {
+      event.preventDefault()
+      event.stopPropagation()
+      if (edge.type === 'Ghost') {
+        return
+      }
+
+      setEdgeContextMenu({
+        id: edge.id,
         mouse: {
           x: event.clientX,
           y: event.clientY,
@@ -524,7 +555,7 @@ export default function FlowMain({
   )
 
   const handleMiniMapNodeClick = useCallback(
-    (event: ReactMouseEvent<Element, MouseEvent>, node: AppNode) => {
+    (_: ReactMouseEvent<Element, MouseEvent>, node: AppNode) => {
       if (node.parentId) {
         return
       }
@@ -619,6 +650,7 @@ export default function FlowMain({
           onNodesChange={onNodesChange}
           onNodesDelete={handleNodesDelete}
           onEdgesChange={onEdgesChange}
+          onEdgeDoubleClick={(_, edge) => alignEdge(edge)}
           onConnectStart={handleConnectStart}
           onConnect={handleConnect}
           onConnectEnd={handleConnectEnd}
@@ -630,6 +662,7 @@ export default function FlowMain({
           onPaneClick={handleDeselect}
           onPaneContextMenu={handlePaneContextMenu}
           onNodeContextMenu={handleNodeContextMenu}
+          onEdgeContextMenu={handleEdgeContextMenu}
           onContextMenu={handleContextMenu}
         >
           <Background variant={BackgroundVariant.Dots} />
@@ -651,8 +684,12 @@ export default function FlowMain({
           {nodeContextMenu && (
             <NodeContextMenu {...nodeContextMenu} onClick={handleDeselect} />
           )}
+          {edgeContextMenu && (
+            <EdgeContextMenu {...edgeContextMenu} onClick={handleDeselect} />
+          )}
           {edgeMenu && <EdgeMenu {...edgeMenu} onClick={handleDeselect} />}
           {process.env.NODE_ENV === 'development' && <DevTools />}
+          <BookmarkDialog />
         </ReactFlow>
       </div>
     </div>

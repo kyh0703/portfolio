@@ -1,11 +1,7 @@
 'use client'
 
 import { useQueryCommonFlowInFlow, useQuerySubFlows } from '@/services/flow'
-import { useAddSnapshot } from '@/services/snapshot'
 import { useBuildStore } from '@/store/build'
-import { useUserContext } from '@/store/context'
-import { useFlowTabStore } from '@/store/flow-tab'
-import { useManagementStore } from '@/store/management'
 import { useSubFlowStore } from '@/store/sub-flow'
 import {
   ResizableHandle,
@@ -16,13 +12,12 @@ import { Separator } from '@/ui/separator'
 import { useSuspenseQueries } from '@tanstack/react-query'
 import { ReactFlowProvider } from '@xyflow/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { useShallow } from 'zustand/react/shallow'
 import BlockingOverlay from '../blocking-overlay'
 import FlowPanel from '../flow-panel'
 import FlowTabs from '../flow-tabs'
-import NodeProperty from '../node-property'
+import NodeProperty from '../node-properties'
 
 type FlowLayoutProps = {
   subFlowId: number
@@ -36,18 +31,9 @@ export default function FlowLayout({
   focusTab,
 }: FlowLayoutProps) {
   const router = useRouter()
-  const { id: flowId } = useUserContext()
-  const useSnapshot = useManagementStore(
-    useShallow((state) => state.useSnapshot),
-  )
   const [isBuilding, isCompiling] = useBuildStore(
     useShallow((state) => [state.build.isBuilding, state.compile.isCompiling]),
   )
-  const [initializeTab, isOpenTab, openTab] = useFlowTabStore((state) => [
-    state.initializeTab,
-    state.isOpenTab,
-    state.openTab,
-  ])
   const selectedNode = useSubFlowStore(
     useShallow((state) => state.history[subFlowId]?.selectedNode),
   )
@@ -63,32 +49,11 @@ export default function FlowLayout({
   const subFlow =
     subFlows.find((subFlow) => subFlow.id === subFlowId) ??
     commonFlows.find((item) => item.id === subFlowId)
-
-  const addSnapshotMutation = useAddSnapshot()
-
-  useEffect(() => {
-    if (subFlow) {
-      if (!isOpenTab(flowId, subFlow) && useSnapshot) {
-        addSnapshotMutation.mutate(subFlowId)
-      }
-      openTab(flowId, subFlow)
-    } else {
-      toast.error(`SubFlow with id ${subFlowId} not found`)
-      const id = initializeTab(flowId, subFlows)
-      router.push(`/subflows/${id}`)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    flowId,
-    isOpenTab,
-    initializeTab,
-    openTab,
-    router,
-    subFlow,
-    subFlowId,
-    subFlows,
-    useSnapshot,
-  ])
+  if (!subFlow) {
+    toast.error(`SubFlow with id ${subFlowId} not found`)
+    router.push(`/subflows`)
+    return null
+  }
 
   return (
     <ReactFlowProvider>
@@ -103,7 +68,7 @@ export default function FlowLayout({
             <div className="flex h-full w-full flex-col">
               <FlowTabs />
               <Separator />
-              <FlowPanel subFlowId={subFlowId} focusNode={focusNode} />
+              <FlowPanel subFlow={subFlow} focusNode={focusNode} />
             </div>
           </div>
         </ResizablePanel>

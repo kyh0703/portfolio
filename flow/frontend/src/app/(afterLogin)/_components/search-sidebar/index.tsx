@@ -8,52 +8,50 @@ import { ReplaceProgress } from '@/models/web-socket/replace/progress'
 import { ReplaceRequest } from '@/models/web-socket/replace/request'
 import { ReplaceResult } from '@/models/web-socket/replace/result'
 import { SearchProgress } from '@/models/web-socket/search/progress'
-import type { SearchTreeData } from '@/models/web-socket/search/types'
-import { useQueryAllInFlow } from '@/services/flow'
+import type {
+  DefineData,
+  MenuData,
+  PropertyData,
+  SearchTreeData,
+} from '@/models/web-socket/search/types'
+import { getInFlows } from '@/services/flow'
+import { useBuildStore } from '@/store/build'
+import { useUserContext } from '@/store/context'
 import { useModalStore } from '@/store/modal'
 import { useSearchStore } from '@/store/search'
 import { Progress } from '@/ui/progress'
-import { cn } from '@/utils'
-import logger from '@/utils/logger'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { useEffect, useReducer, useRef, useState } from 'react'
 import {
-  DeleteHandler,
-  NodeApi,
-  RenameHandler,
-  Tree,
-  TreeApi,
-} from 'react-arborist'
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
+import { RenameHandler, Tree, TreeApi } from 'react-arborist'
 import { toast } from 'react-toastify'
 import useResizeObserver from 'use-resize-observer'
 import { useShallow } from 'zustand/react/shallow'
-import { globalItems as defines } from '../define-sidebar/items'
+import { filterDefineItem } from '../define-sidebar/filter'
+import { defineItems } from '../define-sidebar/types'
 import SearchAction from './_components/action'
 import SearchFilter from './_components/filter'
 import SearchInput from './_components/input'
 import node from './_components/node'
-import {
-  getDefineId,
-  getMenuId,
-  getPropertyId,
-  mapDefineNode,
-  mapDefineReplaceItem,
-  mapMenuNode,
-  mapMenuReplaceItem,
-  mapNodesHasOrigin,
-  mapPropertyNode,
-  mapPropertyNodeHasPath,
-  mapPropertyReplaceItem,
-} from './libs/map-node'
+import { getDefineNodeId, getMenuNodeId, getPropertyNodeId } from './_lib/tree'
+import { useTree } from './_lib/use-tree'
 
 export default function SearchSidebar() {
   const treeRef = useRef<TreeApi<SearchTreeData>>(null)
-  const [percent, setPercent] = useState(0)
-  const [status, setStatus] = useState<
-    'idle' | 'pending' | 'success' | 'failure'
-  >('idle')
-  const [height, setHeight] = useState(0)
+  const isReplaceAllRef = useRef(false)
 
+  const { type: flowType, mode: flowMode } = useUserContext()
+  const [height, setHeight] = useState(0)
+  const [percent, setPercent] = useState(0)
+
+  const isBuilding = useBuildStore(
+    useShallow((state) => state.build.isBuilding),
+  )
   const openModal = useModalStore((state) => state.openModal)
   const { send, subscribe } = useWebSocket()
   const { ref } = useResizeObserver<HTMLDivElement>({
@@ -69,37 +67,251 @@ export default function SearchSidebar() {
     false,
   )
 
-  const [
-    treeData,
-    search,
-    replace,
-    subFlowName,
-    nodeKind,
-    propertyName,
-    useMatchWholeWord,
-    useMatchCase,
-    setTreeData,
-    resetAll,
-    setHighlightText,
-  ] = useSearchStore(
+  const [options, resetAll, setHighlightText] = useSearchStore(
     useShallow((state) => [
-      state.data,
-      state.search,
-      state.replace,
-      state.subFlowName,
-      state.nodeKind,
-      state.propertyName,
-      state.useMatchWholeWord,
-      state.useMatchCase,
-      state.setData,
+      state.options,
       state.resetAll,
       state.setHighlightText,
     ]),
   )
 
   const {
-    data: { flow },
-  } = useSuspenseQuery(useQueryAllInFlow())
+    data: treeData,
+    onCreate,
+    onDelete,
+    onFind,
+    clear,
+    getIndex,
+  } = useTree()
+
+  const filteredDefineItems = useMemo(
+    () => [
+      ...new Set(
+        defineItems
+          .filter((item) =>
+            filterDefineItem(item, {
+              flowType,
+              flowMode,
+            }),
+          )
+          .map((item) => item.name),
+      ),
+    ],
+    [flowMode, flowType],
+  )
+
+  const removeParentNode = useCallback(
+    (childrenNodeId: string) => {
+      const targetChildNode = treeRef.current?.get(childrenNodeId)
+      const parentNode = targetChildNode?.parent
+      if (targetChildNode?.nextSibling === null && parentNode?.id) {
+        onDelete({ ids: [parentNode.id] })
+      }
+    },
+    [onDelete],
+  )
+
+  const handleReplaceProgress = useCallback(
+    ({
+      data: {
+        progress,
+        results: { properties, defines, menus },
+      },
+    }: Message<ReplaceProgress>) => {
+      if (
+        progress === 100 &&
+        defines.length === 0 &&
+        properties.length === 0 &&
+        menus.length === 0
+      ) {
+        toast.info('검색 결과가 없습니다.')
+      }
+
+      setPercent(progress)
+
+      let propertyNodeId = null
+      let defineNodeId = null
+      let menuNodeId = null
+
+      onDelete({
+        ids: properties.map((property) => {
+          propertyNodeId = getPropertyNodeId(property)
+          return propertyNodeId
+        }),
+      })
+      propertyNodeId && removeParentNode(propertyNodeId)
+
+      onDelete({
+        ids: defines.map((define) => {
+          defineNodeId = getDefineNodeId(define)
+          return defineNodeId
+        }),
+      })
+      defineNodeId && removeParentNode(defineNodeId)
+
+      onDelete({
+        ids: menus.map((menu) => {
+          menuNodeId = getMenuNodeId(menu)
+          return menuNodeId
+        }),
+      })
+      menuNodeId && removeParentNode(menuNodeId)
+    },
+    [onDelete, removeParentNode],
+  )
+
+  const handleSearchProgress = useCallback(
+    ({
+      data: { filters, progress, query, results },
+    }: Message<SearchProgress>) => {
+      const { properties, defines, menus } = results
+      const tree = treeRef.current
+      if (!tree) {
+        return
+      }
+      if (
+        progress === 100 &&
+        defines.length === 0 &&
+        properties.length === 0 &&
+        menus.length === 0
+      ) {
+        toast.info('검색 결과가 없습니다.')
+        return
+      }
+
+      const convertPropertyTreeDataHasOrigin = (property: PropertyData) => {
+        const parentId = `${property.subFlowName} / ${property.nodeName}`
+        const hasParentNode = onFind(parentId)
+
+        if (!hasParentNode) {
+          const parentNode = {
+            ...property,
+            id: parentId,
+            name: parentId,
+            children: [],
+          }
+          onCreate({
+            parentId: null,
+            index: getIndex(),
+            data: parentNode,
+          })
+        }
+
+        const childNode = {
+          ...property,
+          id: getPropertyNodeId(property),
+          name: `${property.path.split('.').pop()} / ${property.origin}`,
+        }
+
+        onCreate({
+          parentId,
+          index: hasParentNode?.children?.length ?? 0,
+          data: childNode,
+        })
+      }
+      const convertDefineTreeDataHasOrigin = (define: DefineData) => {
+        const parentId = `${define.scope} / ${define.defineType}`
+        const hasParentNode = onFind(parentId)
+
+        if (!hasParentNode) {
+          const parentNode = {
+            ...define,
+            id: parentId,
+            name: parentId,
+            children: [],
+          }
+          onCreate({
+            parentId: null,
+            index: getIndex(),
+            data: parentNode,
+          })
+        }
+
+        const childNode = {
+          ...define,
+          id: getDefineNodeId(define),
+          name: `${define.path.split('.').pop()} / ${define.origin}`,
+        }
+
+        onCreate({
+          parentId,
+          index: hasParentNode?.children?.length ?? 0,
+          data: childNode,
+        })
+      }
+      const convertMenuTreeDataHasOrigin = (menu: MenuData) => {
+        const parentId = `menu / ${menu.menuName}`
+        const hasParentNode = onFind(parentId)
+
+        if (!hasParentNode) {
+          const parentNode = {
+            ...menu,
+            id: parentId,
+            name: parentId,
+            children: [],
+          }
+          onCreate({
+            parentId: null,
+            index: getIndex(),
+            data: parentNode,
+          })
+        }
+
+        const childNode = {
+          ...menu,
+          id: getMenuNodeId(menu),
+          name: `${menu.path.split('.').pop()} / ${menu.origin}`,
+        }
+
+        onCreate({
+          parentId,
+          index: hasParentNode?.children?.length ?? 0,
+          data: childNode,
+        })
+      }
+      const convertPropertyTreeData = (property: PropertyData) => {
+        const id = `${property.subFlowName} / ${property.nodeName}`
+        const node = {
+          ...property,
+          id,
+          name: id,
+        }
+        onCreate({
+          parentId: null,
+          index: tree.root.children?.length ?? 0,
+          data: node,
+        })
+      }
+
+      // origin이 있는 경우
+      if (query || filters.propertyName) {
+        properties.forEach(convertPropertyTreeDataHasOrigin)
+        defines.forEach((define) => convertDefineTreeDataHasOrigin(define))
+        menus.forEach(convertMenuTreeDataHasOrigin)
+      } else {
+        // origin이 없는 경우
+        // 검색값 없음, Property Name 없음, Node Type(Node) 의 경우만 남음
+        properties.forEach(convertPropertyTreeData)
+      }
+      setPercent(progress)
+    },
+    [getIndex, onCreate, onFind],
+  )
+
+  const handleReplaceResult = useCallback(
+    (message: Message<ReplaceResult>) => {
+      const { status, errorCode, errorMessage } = message.data
+      setPercent(0)
+
+      if (status === 'success' && isReplaceAllRef.current) {
+        isReplaceAllRef.current = false
+        clear()
+      } else if (status === 'failure') {
+        toast.error(`${errorCode}: ${errorMessage}`)
+      }
+    },
+    [clear],
+  )
 
   useEffect(() => {
     const unsubscribeSearchProgress = subscribe(
@@ -125,277 +337,182 @@ export default function SearchSidebar() {
       unsubscribeReplaceProgress()
       unsubscribeReplaceResult()
     }
-  }, [subscribe])
+  }, [
+    handleReplaceProgress,
+    handleSearchProgress,
+    handleReplaceResult,
+    subscribe,
+  ])
 
-  const handleSearchResult = (message: Message<SearchResult>) => {
-    const { status, errorCode, errorMessage } = message.data
-    setStatus(status)
-    if (status === 'failure') {
-      toast.error(`${errorCode}: ${errorMessage}`)
-    }
-  }
-
-  const handleReplaceResult = (message: Message<ReplaceResult>) => {
-    const { status, errorCode, errorMessage } = message.data
-    setStatus(status)
-    if (status === 'failure') {
-      toast.error(`${errorCode}: ${errorMessage}`)
-    }
-  }
-
-  const handleOpenModalButton = () => openModal('confirm-replace-modal', null)
-
-  const handleCollapseAllButton = () => {
-    toggleIsOpenCollapseAll()
-    isOpenCollapseAll ? treeRef.current?.openAll() : treeRef.current?.closeAll()
-  }
-
-  const handleResetAllButton = () => {
-    if (isOpenCollapseAll) toggleIsOpenCollapseAll()
-    resetAll()
-  }
-
-  const handleSearchRequest = () => {
-    try {
-      const subFlowId = subFlowName
-        ? flow.find(({ name }) => name === subFlowName)!.id
-        : 0
-      const message = {
-        type: 'searchRequest',
-        data: {
-          query: search,
-          filters: {
-            subFlowId,
-            nodeKind,
-            nodeType: defines.includes(nodeKind) ? 'define' : 'node',
-            propertyName,
-            useMatchWholeWord,
-            useMatchCase,
-          },
-        },
-        timestamp: new Date(),
-      }
-
-      send(message)
-      setStatus('pending')
-      setTreeData([])
-      setHighlightText(search)
-    } catch (e) {
-      logger.error(e)
-    }
-  }
-
-  const createReplaceMessage = (): Message<ReplaceRequest> => ({
-    type: 'replaceRequest',
-    data: {
-      query: search,
-      replace,
-      target: {
-        properties: [],
-        defines: [],
-        menus: [],
-      },
+  const createReplaceMessage = (): ReplaceRequest => ({
+    query: options.search,
+    replace: options.replace,
+    target: {
+      properties: [],
+      defines: [],
+      menus: [],
     },
-    timestamp: new Date(),
   })
 
-  const addToReplaceTarget = (
-    targetArray: any[],
-    mapFunction: (node: SearchTreeData, replaceValue: string) => any,
-    targetNode: SearchTreeData,
-    replaceValue: string,
-  ) => {
-    targetArray.push(mapFunction(targetNode, replaceValue))
+  const getSubFlowIdFromSubFlowName = async () => {
+    let subFlowId = 0
+    if (options.subFlowName) {
+      const inflows = await getInFlows()
+      const targetSubFlowId = inflows.flow.find(
+        ({ name }) => name === options.subFlowName,
+      )
+      if (targetSubFlowId) {
+        subFlowId = targetSubFlowId.id
+      }
+    }
+
+    return subFlowId
   }
 
-  const addNodesToReplaceTarget = (
-    node: SearchTreeData,
-    message: Message<ReplaceRequest>,
-    replaceValue: string,
-  ) => {
-    const addNodeToTarget = (targetNode: SearchTreeData) => {
-      switch (targetNode.itemType) {
+  const handleSearchRequest = async () => {
+    clear()
+    sendSearchRequest()
+    setHighlightText(options.search)
+  }
+
+  const sendSearchRequest = async () => {
+    const subFlowId = await getSubFlowIdFromSubFlowName()
+
+    const message = {
+      query: options.search,
+      filters: {
+        subFlowId,
+        nodeKind: options.nodeKind,
+        nodeType: filteredDefineItems.includes(options.nodeKind)
+          ? 'define'
+          : 'node',
+        propertyName: options.propertyName,
+        useMatchWholeWord: options.useMatchWholeWord,
+        useMatchCase: options.useMatchCase,
+      },
+    }
+    send('searchRequest', message)
+  }
+
+  const convertSearchTree = (node: SearchTreeData) => {
+    const result = { ...node } as Partial<SearchTreeData>
+    delete result.id
+    delete result.name
+    result.replace = result.origin?.replaceAll(options.search, options.replace)
+    return result
+  }
+
+  const handleReplaceRequest: RenameHandler<SearchTreeData> = ({ node }) => {
+    if (isBuilding) {
+      toast.warn('빌드 중에는 편집할 수 없습니다.')
+      return
+    }
+    const message = createReplaceMessage()
+
+    if (node.isInternal) {
+      switch (node.data.itemType) {
         case 'property':
-          addToReplaceTarget(
-            message.data.target.properties,
-            mapPropertyReplaceItem,
-            targetNode,
-            replaceValue,
+          node.children?.forEach((child) => {
+            message.target.properties.push(
+              convertSearchTree(child.data) as PropertyData,
+            )
+          })
+          break
+        case 'define':
+          node.children?.forEach((child) => {
+            message.target.defines.push(
+              convertSearchTree(child.data) as DefineData,
+            )
+          })
+          break
+        case 'menu':
+          node.children?.forEach((child) => {
+            message.target.menus.push(convertSearchTree(child.data) as MenuData)
+          })
+          break
+      }
+    } else {
+      switch (node.data.itemType) {
+        case 'property':
+          message.target.properties.push(
+            convertSearchTree(node.data) as PropertyData,
           )
           break
         case 'define':
-          addToReplaceTarget(
-            message.data.target.defines,
-            mapDefineReplaceItem,
-            targetNode,
-            replaceValue,
+          message.target.defines.push(
+            convertSearchTree(node.data) as DefineData,
           )
           break
         case 'menu':
-          addToReplaceTarget(
-            message.data.target.menus,
-            mapMenuReplaceItem,
-            targetNode,
-            replaceValue,
-          )
+          message.target.menus.push(convertSearchTree(node.data) as MenuData)
           break
       }
     }
 
-    if (node.children && node.children.length > 0) {
-      node.children.forEach(addNodeToTarget)
-    } else {
-      addNodeToTarget(node)
-    }
-  }
-
-  const handleReplaceRequest: RenameHandler<SearchTreeData> = ({
-    name,
-    node,
-  }) => {
-    try {
-      const message = createReplaceMessage()
-      addNodesToReplaceTarget(node.data, message, name)
-      setStatus('pending')
-      send(message)
-    } catch (e) {
-      logger.error(e)
-    }
+    send('replaceRequest', message)
   }
 
   const handleReplaceAllRequest = () => {
-    try {
-      const message = createReplaceMessage()
-      const regex = new RegExp(search, useMatchCase ? 'g' : 'gi')
-      treeData.forEach((node) => {
-        const replaceValue = node.origin.replaceAll(regex, replace)
-        addNodesToReplaceTarget(node, message, replaceValue)
-      })
-      setStatus('pending')
-      send(message)
-    } catch (e) {
-      logger.error(e)
+    if (isBuilding) {
+      toast.warn('빌드 중에는 편집할 수 없습니다.')
+      return
     }
-  }
+    const message = createReplaceMessage()
 
-  const handleSearchProgress = ({
-    data: { filters, progress, query, results },
-  }: Message<SearchProgress>) => {
-    const { properties, defines, menus } = results
-
-    const showNoResultsToast = () => {
-      if (
-        progress === 100 &&
-        defines.length === 0 &&
-        properties.length === 0 &&
-        menus.length === 0
-      ) {
-        toast.info('검색 결과가 없습니다.')
+    treeData.forEach((node) => {
+      switch (node.itemType) {
+        case 'property':
+          node.children?.forEach((child) => {
+            message.target.properties.push(
+              convertSearchTree(child) as PropertyData,
+            )
+          })
+          break
+        case 'define':
+          node.children?.forEach((child) => {
+            message.target.defines.push(convertSearchTree(child) as DefineData)
+          })
+          break
+        case 'menu':
+          node.children?.forEach((child) => {
+            message.target.menus.push(convertSearchTree(child) as MenuData)
+          })
+          break
       }
-    }
-
-    const updateTreeData = () => {
-      if (query) {
-        useSearchStore.setState((state) => {
-          state.data = mapNodesHasOrigin(state.data, results)
-        })
-      } else {
-        let addDatas: SearchTreeData[] = []
-        if (filters.propertyName) {
-          addDatas = [
-            ...properties.map(mapPropertyNodeHasPath),
-            ...defines.map(mapDefineNode),
-            ...menus.map(mapMenuNode),
-          ]
-        } else if (filters.nodeKind) {
-          addDatas = properties.map(mapPropertyNode)
-        }
-        useSearchStore.setState((state) => ({
-          data: [...state.data, ...addDatas],
-        }))
-      }
-    }
-
-    showNoResultsToast()
-    setPercent(progress)
-    updateTreeData()
-  }
-
-  const handleReplaceProgress = ({
-    data: {
-      progress,
-      results: { properties, defines, menus },
-    },
-  }: Message<ReplaceProgress>) => {
-    if (
-      progress === 100 &&
-      defines.length === 0 &&
-      properties.length === 0 &&
-      menus.length === 0
-    ) {
-      toast.info('검색 결과가 없습니다.')
-    }
-
-    setPercent(progress)
-
-    let shouldDeleteNodeIds: string[] = []
-
-    shouldDeleteNodeIds = shouldDeleteNodeIds.concat(
-      properties.map(getPropertyId),
-      defines.map(getDefineId),
-      menus.map(getMenuId),
-    )
-
-    const removeNodes = (
-      nodes: SearchTreeData[],
-      idsToDelete: string[],
-    ): SearchTreeData[] => {
-      return nodes.reduce((acc: SearchTreeData[], node) => {
-        if (idsToDelete.includes(node.id)) {
-          return acc
-        }
-        const updatedNode = { ...node }
-        if (node.children) {
-          updatedNode.children = removeNodes(node.children, idsToDelete)
-        }
-        if (!updatedNode.children || updatedNode.children.length > 0) {
-          acc.push(updatedNode)
-        }
-        return acc
-      }, [])
-    }
-
-    useSearchStore.setState((state) => {
-      state.data = removeNodes(state.data, shouldDeleteNodeIds)
     })
+
+    send('replaceRequest', message)
+    isReplaceAllRef.current = true
   }
 
-  const handleDelete: DeleteHandler<SearchTreeData> = (args: {
-    ids: string[]
-    nodes: NodeApi<SearchTreeData>[]
-  }) => {
-    const deleteNode = (
-      nodes: SearchTreeData[],
-      idsToDelete: string[],
-    ): SearchTreeData[] => {
-      return nodes.reduce((acc: SearchTreeData[], node) => {
-        if (idsToDelete.includes(node.id)) {
-          return acc
-        }
-        const updatedNode = { ...node }
-        if (node.children) {
-          updatedNode.children = deleteNode(node.children, idsToDelete)
-        }
-        if (!updatedNode.children || updatedNode.children.length > 0) {
-          acc.push(updatedNode)
-        }
-        return acc
-      }, [])
+  const handleSearchResult = (message: Message<SearchResult>) => {
+    const { status, errorCode, errorMessage } = message.data
+    setPercent(0)
+    if (status === 'failure') {
+      toast.error(`${errorCode}: ${errorMessage}`)
     }
-
-    const newNodes = deleteNode(treeData, args.ids)
-    setTreeData(newNodes)
   }
+
+  const handleOpenModalButton = useCallback(() => {
+    openModal('confirm-replace-modal', null)
+  }, [openModal])
+
+  const handleCollapseAllButton = useCallback(() => {
+    toggleIsOpenCollapseAll()
+    if (isOpenCollapseAll) {
+      treeRef.current?.openAll()
+    } else {
+      treeRef.current?.closeAll()
+    }
+  }, [isOpenCollapseAll])
+
+  const handleResetAllButton = useCallback(() => {
+    if (isOpenCollapseAll) {
+      toggleIsOpenCollapseAll()
+    }
+    resetAll()
+    clear()
+  }, [clear, isOpenCollapseAll, resetAll])
 
   return (
     <aside className="flex h-full flex-col gap-0.5 overflow-hidden">
@@ -405,7 +522,7 @@ export default function SearchSidebar() {
           onConfirm={handleReplaceAllRequest}
         />
       </Modal>
-      {status === 'pending' && (
+      {percent !== 0 && (
         <Progress className="h-1 rounded-none" value={percent} />
       )}
       <SearchAction
@@ -419,7 +536,8 @@ export default function SearchSidebar() {
       <SearchInput
         onReplaceAll={handleOpenModalButton}
         onSubmit={handleSearchRequest}
-        disable={status === 'pending'}
+        treeDataLength={treeData.length}
+        disable={percent !== 0}
       />
       {isOpenFilter && <SearchFilter />}
       {treeData.length > 0 && (
@@ -435,14 +553,13 @@ export default function SearchSidebar() {
           data={treeData}
           width="100%"
           height={height}
-          rowClassName={cn(
-            'whitespace-nowrap cursor-pointer focus:outline-none',
-          )}
+          rowClassName="whitespace-nowrap cursor-pointer focus:outline-none"
           openByDefault={true}
+          rowHeight={25}
           disableDrag
           disableMultiSelection
           onRename={handleReplaceRequest}
-          onDelete={handleDelete}
+          onDelete={onDelete}
         >
           {node}
         </Tree>

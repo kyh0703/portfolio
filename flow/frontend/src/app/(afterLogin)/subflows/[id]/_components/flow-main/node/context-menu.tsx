@@ -1,6 +1,5 @@
 'use client'
 
-import { FoldIcon, UnfoldIcon } from '@/app/_components/icon'
 import { CHILD_PADDING } from '@/constants/xyflow'
 import {
   useAlign,
@@ -11,6 +10,7 @@ import {
 } from '@/hooks/xyflow'
 import { useFold } from '@/hooks/xyflow/use-fold'
 import { useAddNode, useUpdateNodes } from '@/services/subflow'
+import { useSubFlowStore } from '@/store/sub-flow'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +30,10 @@ import {
 import {
   AlignHorizontalSpaceAroundIcon,
   AlignVerticalSpaceAroundIcon,
+  BookmarkPlusIcon,
+  BookmarkXIcon,
+  FolderClosedIcon,
+  FolderOpenIcon,
   GroupIcon,
   SplitIcon,
   TrashIcon,
@@ -37,9 +41,6 @@ import {
 } from 'lucide-react'
 import { useCallback } from 'react'
 import ContextMenu from '../../../../../../_components/context-menu'
-
-const icon = 12
-const menuItemStyle = 'text-xs flex gap-3'
 
 export type NodeContextMenuProps = {
   id: string
@@ -51,17 +52,20 @@ export type NodeContextMenuProps = {
 }
 
 export function NodeContextMenu({ id, ...props }: NodeContextMenuProps) {
+  const [setBookmarkNodeId] = useSubFlowStore((state) => [
+    state.setBookmarkNodeId,
+  ])
+
   const store = useStoreApi()
   const { getNode, getNodes, setNodes } = useReactFlow<AppNode, AppEdge>()
-
   const targetNode = getNode(id)!
   const subFlowId = targetNode.data.subFlowId!
 
-  const { nodeFactory, getAllChildNodes } = useNodes()
+  const { nodeFactory, getAllChildNodes, setBookmark } = useNodes()
   const { saveHistory } = useUndoRedo(subFlowId)
   const { removeNode } = useRemove(subFlowId)
   const { fold, unfold } = useFold(subFlowId)
-  const { canAlign, align } = useAlign(subFlowId)
+  const { canAlignNode, alignNode } = useAlign(subFlowId)
   const detachNodes = useDetachNodes(subFlowId)
 
   const childNodes = getNodes().filter((node) => node.parentId === id)
@@ -83,6 +87,14 @@ export function NodeContextMenu({ id, ...props }: NodeContextMenuProps) {
   const handleDelete = useCallback(async () => {
     await removeNode(id)
   }, [removeNode, id])
+
+  const handleBookmark = useCallback(() => {
+    if (targetNode.data.bookmark) {
+      setBookmark(id, '')
+      return
+    }
+    setBookmarkNodeId(id)
+  }, [id, setBookmark, setBookmarkNodeId, targetNode.data.bookmark])
 
   const handleDetach = useCallback(async () => {
     await detachNodes([id])
@@ -147,9 +159,9 @@ export function NodeContextMenu({ id, ...props }: NodeContextMenuProps) {
 
   const handleAlign = useCallback(
     async (orientation: 'middle' | 'center') => {
-      await align(targetNode, selectedNodes, orientation)
+      await alignNode(targetNode, selectedNodes, orientation)
     },
-    [align, selectedNodes, targetNode],
+    [alignNode, selectedNodes, targetNode],
   )
 
   const handleFold = useCallback(async () => {
@@ -163,77 +175,85 @@ export function NodeContextMenu({ id, ...props }: NodeContextMenuProps) {
   }, [getAllChildNodes, targetNode, unfold])
 
   return (
-    <ContextMenu
-      left={props.mouse.x}
-      top={props.mouse.y}
-      onClick={props.onClick}
-    >
+    <ContextMenu left={props.mouse.x} top={props.mouse.y}>
       <DropdownMenu open={true} modal={false} onOpenChange={props.onClick}>
         <DropdownMenuTrigger />
         <DropdownMenuContent>
           <DropdownMenuItem
-            className={menuItemStyle}
+            className="flex gap-3 text-xs"
             disabled={
               targetNode.type === 'Start' || targetNode.type === 'Ghost'
             }
             onSelect={handleDelete}
           >
-            <TrashIcon size={icon} />
+            <TrashIcon size={12} />
             Delete
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            className={menuItemStyle}
+            className="flex gap-3 text-xs"
+            onSelect={handleBookmark}
+          >
+            {targetNode.data.bookmark ? (
+              <BookmarkXIcon size={12} />
+            ) : (
+              <BookmarkPlusIcon size={12} />
+            )}
+            Bookmark
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="flex gap-3 text-xs"
             disabled={!canGroup}
             onSelect={handleGroup}
           >
-            <GroupIcon size={icon} />
+            <GroupIcon size={12} />
             Group
           </DropdownMenuItem>
           <DropdownMenuItem
-            className={menuItemStyle}
+            className="flex gap-3 text-xs"
             disabled={!canUnGroup}
             onSelect={handleUngroup}
           >
-            <UngroupIcon size={icon} />
+            <UngroupIcon size={12} />
             Ungroup
           </DropdownMenuItem>
           <DropdownMenuItem
-            className={menuItemStyle}
+            className="flex gap-3 text-xs"
             disabled={!hasParent}
             onSelect={handleDetach}
           >
-            <SplitIcon size={icon} />
+            <SplitIcon size={12} />
             Detach
           </DropdownMenuItem>
           <DropdownMenuItem
-            className={menuItemStyle}
+            className="flex gap-3 text-xs"
             disabled={!canFold}
             onSelect={handleFold}
           >
-            <FoldIcon width={icon} height={icon} />
+            <FolderClosedIcon size={12} />
             Fold
           </DropdownMenuItem>
           <DropdownMenuItem
-            className={menuItemStyle}
+            className="flex gap-3 text-xs"
             disabled={!canUnfold}
             onSelect={handleUnfold}
           >
-            <UnfoldIcon width={icon} height={icon} />
+            <FolderOpenIcon size={12} />
             Unfold
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            className={menuItemStyle}
-            disabled={!canAlign}
+            className="flex gap-3 text-xs"
+            disabled={!canAlignNode}
             onSelect={() => handleAlign('center')}
           >
-            <AlignHorizontalSpaceAroundIcon size={icon} />
+            <AlignHorizontalSpaceAroundIcon size={12} />
             Align Center
           </DropdownMenuItem>
           <DropdownMenuItem
-            className={menuItemStyle}
-            disabled={!canAlign}
+            className="flex gap-3 text-xs"
+            disabled={!canAlignNode}
             onSelect={() => handleAlign('middle')}
           >
             <AlignVerticalSpaceAroundIcon size={12} />

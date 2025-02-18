@@ -16,7 +16,11 @@ export default function HighlightText({
   const [propertyName, origin] = text.split(' / ')
 
   if (!search) {
-    return <span><span className='opacity-60'>{propertyName}:</span> {origin}</span>
+    return (
+      <span>
+        <span className="opacity-60">{propertyName}:</span> {origin}
+      </span>
+    )
   }
 
   const regex = new RegExp(`(${search})`, useMatchCase ? 'g' : 'gi')
@@ -29,9 +33,14 @@ export default function HighlightText({
 
     if (isMatch) {
       return replace ? (
-        <span key={index} className='text-emerald-700 dark:text-emerald-200'>
-          <span className="font-bold line-through">{split}</span>
-          <mark>{replace}</mark>
+        <span
+          key={index}
+          className="bg-red-200 dark:bg-red-600 dark:bg-opacity-50"
+        >
+          <span className="line-through">{split}</span>
+          <span className="bg-lime-200 dark:bg-green-600 dark:bg-opacity-50">
+            {replace}
+          </span>
         </span>
       ) : (
         <b key={index}>{split}</b>
@@ -42,7 +51,7 @@ export default function HighlightText({
 
   return (
     <>
-      <span className='opacity-60'>{propertyName}: </span>
+      <span className="opacity-60">{propertyName}: </span>
       {splitOriginArray.map(renderSplitText)}
     </>
   )

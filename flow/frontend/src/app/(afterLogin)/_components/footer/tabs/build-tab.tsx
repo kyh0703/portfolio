@@ -8,6 +8,8 @@ import {
 } from '@/models/build'
 import { useBuildStore } from '@/store/build'
 import { ScrollArea } from '@/ui/scroll-area'
+import { formatViewTime } from '@/utils'
+import { getDefinePath, getSubFlowPath } from '@/utils/route-path'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 import { useShallow } from 'zustand/react/shallow'
@@ -23,11 +25,12 @@ const getLogLevelColor = (level: keyof typeof LogLevel) => {
     case 'TRC':
       return 'text-text'
     case 'DBG':
-      return 'text-green-500'
+      return 'text-orange-500'
     default:
       return 'text-gray-300'
   }
 }
+const timeLogTextColor = 'text-green-500'
 
 const formatMessageContent = (content: string) => {
   const uniqueMessages = new Set()
@@ -100,7 +103,7 @@ export default function BuildTab() {
         case 'userfunc':
         case 'track':
         case 'service':
-          router.push(`/defines/${message.scope}/${message.subFlowName}`)
+          router.push(getDefinePath(message.scope, message.subFlowName))
           break
         case 'menu':
         case 'packet':
@@ -109,14 +112,14 @@ export default function BuildTab() {
         case 'string':
         case 'menustat':
           router.push(
-            `/defines/${message.scope}/${message.subFlowName}/${message.nodeId}`,
+            getDefinePath(message.scope, message.subFlowName, message.nodeId),
           )
           break
       }
     } else {
       if (message.subFlowId && message.nodeName) {
         router.push(
-          `/subflows/${message.subFlowId}?focusNode=${message.nodeName}&focusTab=${message.tabName}`,
+          getSubFlowPath(message.subFlowId, message.nodeName, message.tabName),
         )
       }
     }
@@ -124,32 +127,57 @@ export default function BuildTab() {
 
   const formatMessage = (msg: BuildProgress<MessageLog> | BuildResult) => {
     const baseClassName =
-      'font-mono text-xs cursor-pointer rounded p-2 transition-colors duration-200 ease-in-out hover:bg-gray-100'
+      'font-mono text-xs cursor-pointer rounded p-2 transition-colors duration-200 ease-in-out hover:bg-gray-100 hover:dark:bg-opacity-20'
 
-    if (msg.type === 'buildResult') {
-      return (
-        <div key={msg.timestamp} className={baseClassName}>
-          {formatMessageContent(msg.data.message)}
-        </div>
-      )
+    switch (msg.type) {
+      case 'buildResult':
+        return (
+          <>
+            <div
+              key={`buildEndTime-${msg.timestamp}`}
+              className={`${baseClassName} ${timeLogTextColor}`}
+            >
+              {formatViewTime(msg.timestamp)}
+            </div>
+            <div key={msg.timestamp} className={baseClassName}>
+              {formatMessageContent(msg.data.message)}
+            </div>
+          </>
+        )
+      case 'buildStart':
+        return (
+          <>
+            <div
+              key={msg.timestamp}
+              className={`${baseClassName} ${getLogLevelColor(msg.data.logs.level)}`}
+            >
+              {msg.data.logs.message.message}
+            </div>
+            <div
+              key={`buildStartTime-${msg.timestamp}`}
+              className={`${baseClassName} ${timeLogTextColor}`}
+            >
+              {formatViewTime(msg.timestamp)}
+            </div>
+          </>
+        )
+      case 'buildProgress':
+        const { level, message } = msg.data.logs
+        const content =
+          level === 'ERR' || level === 'WRN'
+            ? `[${level}] ${message.message}`
+            : message.message
+
+        return (
+          <div
+            key={msg.timestamp}
+            className={`${baseClassName} ${getLogLevelColor(level)}`}
+            onClick={() => handleRowClick(msg.data.logs)}
+          >
+            {content}
+          </div>
+        )
     }
-
-    const { level, message } = msg.data.logs
-    const color = getLogLevelColor(level)
-    const content =
-      level === 'ERR' || level === 'WRN'
-        ? `[${level}] ${message.message}`
-        : message.message
-
-    return (
-      <div
-        key={msg.timestamp}
-        className={`${baseClassName} ${color}`}
-        onClick={() => handleRowClick(msg.data.logs)}
-      >
-        {content}
-      </div>
-    )
   }
 
   return (

@@ -30,6 +30,9 @@ import {
   ALargeSmall,
   Baseline,
   Eye,
+  GrabIcon,
+  GripIcon,
+  HandIcon,
   PaintBucket,
   RectangleHorizontal,
   SquareDashedMousePointer,
@@ -67,8 +70,6 @@ const connectionNodeIdSelector = (state: ReactFlowState) =>
   state.connection.fromHandle?.nodeId
 
 export function MemoNode({ id, selected, data }: CustomNodeProps) {
-  const focusRef = useRef(false)
-
   const editMode = useSubFlowStore(useShallow((state) => state.editMode))
   const { style } = data
   const {
@@ -163,21 +164,7 @@ export function MemoNode({ id, selected, data }: CustomNodeProps) {
   )
 
   return (
-    <div
-      className={twJoin(
-        'relative rounded-sm border-[3px]',
-        focusRef.current && 'nodrag',
-      )}
-      style={{
-        width,
-        height,
-        color,
-        backgroundColor,
-        borderColor,
-        borderStyle,
-        opacity,
-      }}
-    >
+    <div className={twJoin('relative')}>
       <NodeToolbar className="flex items-center justify-center gap-2">
         <ColorPickerIcon
           icon={<PaintBucket />}
@@ -241,55 +228,69 @@ export function MemoNode({ id, selected, data }: CustomNodeProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </NodeToolbar>
-      <div
-        className={twJoin(
-          'absolute',
-          'flex items-center justify-center',
-          'h-full w-full',
-          'left-1/2 top-1/2',
-          'z-[1] rounded-2xl',
-          '-translate-x-1/2 -translate-y-1/2 transform',
-        )}
-      >
-        {!isConnecting && (
-          <Handle
-            className="react-flow__memo node-handle"
-            style={{ zIndex: 2 }}
-            position={Position.Right}
-            type="source"
-          />
-        )}
+      <div className="drag-handle__custom absolute -top-4 right-0 flex">
+        <GripIcon size={12} />
       </div>
       <div
-        className={twJoin(
-          'absolute left-0 top-0 p-0',
-          'flex flex-col items-center justify-center',
-          'h-full w-full',
-          editMode === 'grab' && 'z-10',
-        )}
+        className="absolute h-full w-full rounded-sm border-[3px]"
+        style={{
+          width,
+          height,
+          color,
+          backgroundColor,
+          borderColor,
+          borderStyle,
+          opacity,
+        }}
       >
-        <NodeResizer
-          lineClassName={cn('!border-2')}
-          isVisible={selected}
-          onResizeEnd={handleResizeEnd}
-        />
-        <Textarea
-          style={{
-            width,
-            height,
-            background: 'transparent',
-            resize: 'none',
-            overflow: 'hidden',
-          }}
-          className={cn(
-            'hover-none border-none text-sm outline-none focus-visible:ring-0 focus-visible:ring-offset-0',
-            getFontSize(fontSize),
+        <div
+          className={twJoin(
+            'absolute',
+            'flex items-center justify-center',
+            'h-full w-full',
+            'left-1/2 top-1/2',
+            'z-[1] rounded-2xl',
+            '-translate-x-1/2 -translate-y-1/2 transform',
           )}
-          value={memo}
-          onFocus={() => (focusRef.current = true)}
-          onBlur={() => (focusRef.current = false)}
-          onChange={handleMemoChange}
-        />
+        >
+          {!isConnecting && (
+            <Handle
+              className="react-flow__memo node-handle"
+              style={{ zIndex: 2 }}
+              position={Position.Right}
+              type="source"
+            />
+          )}
+        </div>
+        <div
+          className={twJoin(
+            'absolute left-0 top-0 p-0',
+            'flex flex-col items-center justify-center',
+            'h-full w-full',
+            editMode === 'grab' && 'z-10',
+          )}
+        >
+          <NodeResizer
+            lineClassName={cn('!border-2')}
+            isVisible={selected}
+            onResizeEnd={handleResizeEnd}
+          />
+          <Textarea
+            style={{
+              width,
+              height,
+              background: 'transparent',
+              resize: 'none',
+              overflow: 'hidden',
+            }}
+            className={cn(
+              'hover-none border-none text-sm outline-none focus-visible:ring-0 focus-visible:ring-offset-0',
+              getFontSize(fontSize),
+            )}
+            value={memo}
+            onChange={handleMemoChange}
+          />
+        </div>
       </div>
     </div>
   )

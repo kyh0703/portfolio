@@ -10,8 +10,8 @@ export default function ExitButton() {
 
   return (
     <Button variant="ghost" size="icon" onClick={handleClick}>
-      <DarkExitIcon className="dark-icon" width={32} height={32} />
-      <ExitIcon className="light-icon" width={32} height={32} />
+      <DarkExitIcon className="dark-icon" size={32} />
+      <ExitIcon className="light-icon" size={32} />
     </Button>
   )
 }

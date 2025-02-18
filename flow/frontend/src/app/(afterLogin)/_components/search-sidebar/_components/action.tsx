@@ -59,7 +59,7 @@ export default function SearchAction({
         size="icon"
         onClick={toggleIsOpenFilter}
       >
-        <SettingsIcon width={15} height={15} />
+        <SettingsIcon size={15} />
       </Button>
     </div>
   )

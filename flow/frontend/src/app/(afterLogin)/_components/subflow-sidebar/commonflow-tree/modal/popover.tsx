@@ -15,16 +15,16 @@ export default function CommonFlowAddPopover({
 }: FlowAddPopoverProps) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const handleReplicateSubmit = (data: CommonFlowAddFormType) => {
+  const handleReplicateSubmit = (payload: CommonFlowAddFormType) => {
     setIsOpen(false)
-    onSubmit && onSubmit(data)
+    onSubmit && onSubmit({ ...payload, oldFlowId: data.oldFlowId })
   }
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
-          className="w-14 font-poppins"
+          className="h-7 w-14 font-poppins"
           variant="outline"
           onClick={() => setIsOpen(true)}
         >

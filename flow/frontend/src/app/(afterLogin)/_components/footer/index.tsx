@@ -1,23 +1,18 @@
 'use client'
 
-import { Button } from '@/app/_components/button'
 import { useLayoutStore, type FooterTab } from '@/store/layout'
 import { Separator } from '@/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs'
-import { ArrowDownFromLineIcon } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
+import FooterIcon from './icon'
 import BuildTab from './tabs/build-tab'
 import CompileTab from './tabs/compile-tab'
 
 const tabList: FooterTab[] = ['build', 'compile']
 
 export default function Footer() {
-  const [footerTab, triggerFooter, setFooterTab] = useLayoutStore(
-    useShallow((state) => [
-      state.footerTab,
-      state.triggerFooter,
-      state.setFooterTab,
-    ]),
+  const [footerTab, setFooterTab] = useLayoutStore(
+    useShallow((state) => [state.footerTab, state.setFooterTab]),
   )
 
   return (
@@ -35,12 +30,7 @@ export default function Footer() {
               </TabsTrigger>
             ))}
           </TabsList>
-          <Button variant="ghost" size="icon">
-            <ArrowDownFromLineIcon
-              size={15}
-              onClick={() => triggerFooter('down')}
-            />
-          </Button>
+          <FooterIcon />
         </div>
         <Separator />
         <div className="flex-grow overflow-hidden">

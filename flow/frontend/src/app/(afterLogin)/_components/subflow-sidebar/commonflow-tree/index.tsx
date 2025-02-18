@@ -1,7 +1,8 @@
 'use client'
 
+import ConfirmModal from '@/app/_components/confirm-modal'
 import { Modal } from '@/app/_components/modal'
-import { FlowTreeData } from '@/models/subflow-list'
+import { FlowTreeData, SubFlowList } from '@/models/subflow-list'
 import {
   useQueryCommonFlowTree,
   useUpdateCommonFlowTree,
@@ -9,11 +10,12 @@ import {
 import { useModalStore } from '@/store/modal'
 import { height as themeHeight } from '@/themes'
 import { cn } from '@/utils/cn'
-import { convertFlowTreeData } from '@/utils/tree'
+import { convertFlowTree, convertFlowTreeData } from '@/utils/tree'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useMemo, useReducer, useRef } from 'react'
-import { Tree, TreeApi } from 'react-arborist'
+import { useCallback, useMemo, useReducer, useRef } from 'react'
+import { NodeApi, Tree, TreeApi } from 'react-arborist'
 import useResizeObserver from 'use-resize-observer'
+import PropertiesModal from '../_components/properties-modal'
 import useTree from '../lib/use-tree'
 import Action from './action'
 import CommonFlowEditModal from './modal'
@@ -30,6 +32,7 @@ export default function CommonFlowTree({ search }: CommonSubFlowProps) {
     : 0
 
   const openModal = useModalStore((state) => state.openModal)
+  const clipboardNodes = useRef<NodeApi<FlowTreeData>[]>([])
   const treeRef = useRef<TreeApi<FlowTreeData>>(null)
   const [ascending, toggleAscending] = useReducer((state) => !state, false)
 
@@ -54,20 +57,16 @@ export default function CommonFlowTree({ search }: CommonSubFlowProps) {
   } = useTree<FlowTreeData>(flowTreeData, treeRef.current, ascending, {
     onTreeChange: async (flowtree: FlowTreeData[]) => {
       await updateCommonFlowTreeMutation({
-        flowtree,
+        flowtree: convertFlowTree(flowtree),
       })
     },
-    onBeforeDelete: async (args) => {
-      if (!treeRef.current) return
-      const node = args.nodes[0]
-      if (node.children!.length > 0) {
-        onMove({
-          dragIds: node.children!.map((n) => n.id),
-          dragNodes: node.children!,
-          parentId: node.level > 0 ? node.parent!.id : null,
-          parentNode: node.level > 0 ? node.parent : null,
-          index: 0,
-        })
+    onKeyDown: (event) => {
+      const selectedNode = treeRef.current?.selectedNodes[0]
+      switch (event.key) {
+        case 'Delete':
+          if (selectedNode && selectedNode.data.type === 'folder') {
+            handleOpenDeleteModal([selectedNode])
+          }
       }
     },
   })
@@ -101,31 +100,53 @@ export default function CommonFlowTree({ search }: CommonSubFlowProps) {
     openModal('common-flow-list-modal', null)
   }
 
-  const handleAddTree = (id: number, name: string) => {
-    const newNode = {
-      id: id.toString(),
-      name: name,
-      version: '1.0.0',
-      desc: '',
-      updateDate: new Date(),
-      databaseId: id,
-      type: 'file',
-      children: [],
-    } as FlowTreeData
+  const handleAddTree = (subFlowLists: SubFlowList[]) => {
+    const tree = treeRef.current
+    if (!tree) return
 
-    const newTree = [...treeData, newNode]
+    const newNodes = subFlowLists.map(
+      (flow) =>
+        ({
+          ...flow,
+          id: flow.id.toString(),
+          databaseId: flow.id,
+          type: 'file',
+        }) as FlowTreeData,
+    )
+
+    let newTree = []
+
+    const selectedNode = tree.selectedNodes[0]
+    if (selectedNode && selectedNode.isInternal) {
+      const addNodesToTree = (
+        nodes: FlowTreeData[],
+        newNodes: FlowTreeData[],
+      ): FlowTreeData[] => {
+        return nodes.map((node) => {
+          if (selectedNode.id === node.id) {
+            node.children = [...(node.children || []), ...newNodes]
+          } else if (node.children) {
+            node.children = addNodesToTree(node.children, newNodes)
+          }
+          return node
+        })
+      }
+      newTree = addNodesToTree(treeData, newNodes)
+    } else {
+      newTree = [...treeData, ...newNodes]
+    }
+
     updateCommonFlowTreeMutation({
-      flowtree: newTree,
+      flowtree: convertFlowTree(newTree),
     })
   }
-
-  const handleRemoveTree = (name: string) => {
+  const handleRemoveTreeByName = (names: string[]) => {
     const removeNodeByName = (nodes: FlowTreeData[]): FlowTreeData[] => {
       return nodes.reduce((acc: FlowTreeData[], node) => {
         if (node.children) {
           node.children = removeNodeByName(node.children)
         }
-        if (node.name !== name) {
+        if (!names.includes(node.name)) {
           acc.push(node)
         }
         return acc
@@ -134,28 +155,85 @@ export default function CommonFlowTree({ search }: CommonSubFlowProps) {
 
     const newTree = removeNodeByName(treeData)
     updateCommonFlowTreeMutation({
-      flowtree: newTree,
+      flowtree: convertFlowTree(newTree),
     })
   }
 
-  const handleChangeTree = (name: string, newId: number) => {
-    const newTree = treeData.map((data) => {
-      if (data.name === name) {
+  const handleChangeTree = (data: SubFlowList) => {
+    const updateNode = (node: FlowTreeData): FlowTreeData => {
+      if (node.name === data.name) {
         return {
+          ...node,
           ...data,
-          id: newId.toString(),
-          databaseId: newId,
+          id: data.id.toString(),
+          databaseId: data.id,
+        }
+      } else if (node.children) {
+        return {
+          ...node,
+          children: node.children.map(updateNode),
         }
       }
-      return data
-    })
+      return node
+    }
+
+    const newTree = treeData.map(updateNode)
     updateCommonFlowTreeMutation({
-      flowtree: newTree,
+      flowtree: convertFlowTree(newTree),
     })
   }
+
+  const handleOpenDeleteModal = (nodes: NodeApi<FlowTreeData>[]) => {
+    clipboardNodes.current = nodes
+
+    openModal('delete-common-flow-tree-modal', null)
+  }
+
+  const handleConfirmDelete = useCallback(() => {
+    onDelete({
+      ids: clipboardNodes.current.map((node) => node.id),
+      nodes: clipboardNodes.current,
+    })
+    clipboardNodes.current = []
+  }, [onDelete])
+
+  const handleSubmitPropertiesModal = useCallback(
+    async (origin: FlowTreeData, replace: FlowTreeData) => {
+      if (origin.name === replace.name && origin.desc === replace.desc) return
+
+      const tree = treeRef.current
+      if (!tree) return
+
+      updateCommonFlowTreeMutation({
+        flowtree: convertFlowTree(
+          (function updateNode(nodes) {
+            return nodes.map((node) => {
+              if (node.id === origin.id) {
+                node = { ...node, name: replace.name, desc: replace.desc }
+              }
+              if (node.children && node.children.length > 0) {
+                node = {
+                  ...node,
+                  children: updateNode(node.children),
+                }
+              }
+              return node as FlowTreeData
+            })
+          })(treeData),
+        ),
+      })
+    },
+    [treeData, updateCommonFlowTreeMutation],
+  )
 
   return (
     <>
+      <Modal id="delete-common-flow-tree-modal">
+        <ConfirmModal
+          content="폴더를 삭제하면 하위의 모든 Common SubFlow가 상위 폴더로 이동합니다."
+          onConfirm={handleConfirmDelete}
+        />
+      </Modal>
       <Modal
         id="common-flow-list-modal"
         title="Edit Common SubFlow"
@@ -163,9 +241,12 @@ export default function CommonFlowTree({ search }: CommonSubFlowProps) {
       >
         <CommonFlowEditModal
           handleAddTree={handleAddTree}
-          handleRemoveTree={handleRemoveTree}
+          handleRemoveTreeByName={handleRemoveTreeByName}
           handleChangeTree={handleChangeTree}
         />
+      </Modal>
+      <Modal id="common-sub-flow-property-modal" title="Flow Properties">
+        <PropertiesModal onSubmit={handleSubmitPropertiesModal} />
       </Modal>
       <div ref={ref} className="flex h-full w-full flex-col">
         <div className="flex w-full justify-between px-1">
@@ -177,12 +258,7 @@ export default function CommonFlowTree({ search }: CommonSubFlowProps) {
             onCreateFolder={handleCreate}
           />
         </div>
-        <div
-          className={cn('flex w-full grow')}
-          onKeyDown={(e) => {
-            if (treeRef.current) onKeyDown(e)
-          }}
-        >
+        <div className="w-full" onKeyDown={onKeyDown}>
           <Tree
             ref={treeRef}
             data={treeData}
@@ -201,8 +277,11 @@ export default function CommonFlowTree({ search }: CommonSubFlowProps) {
             onRename={onRename}
             onMove={onMove}
             onDelete={onDelete}
+            onContextMenu={(e) => e.preventDefault()}
           >
-            {Node}
+            {(data) => (
+              <Node {...data} onOpenDeleteModal={handleOpenDeleteModal} />
+            )}
           </Tree>
         </div>
       </div>

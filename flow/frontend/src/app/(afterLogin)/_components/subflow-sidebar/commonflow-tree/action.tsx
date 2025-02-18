@@ -31,9 +31,9 @@ export default function Action({
         onClick={onToggleAscending}
       >
         {ascending ? (
-          <ArrowDownNarrowWideIcon width={15} height={15} />
+          <ArrowDownNarrowWideIcon size={15} />
         ) : (
-          <ArrowDownWideNarrowIcon width={15} height={15} />
+          <ArrowDownWideNarrowIcon size={15} />
         )}
       </Button>
       <Button
@@ -42,7 +42,7 @@ export default function Action({
         size="icon"
         onClick={onCreateFolder}
       >
-        <FolderPlusIcon width={15} height={15} />
+        <FolderPlusIcon size={15} />
       </Button>
       <Button
         className={cn('flex items-center justify-center', 'h-6 w-6')}
@@ -50,7 +50,7 @@ export default function Action({
         size="icon"
         onClick={openModal}
       >
-        <AddIcon width={15} height={15} />
+        <AddIcon size={15} />
       </Button>
     </div>
   )

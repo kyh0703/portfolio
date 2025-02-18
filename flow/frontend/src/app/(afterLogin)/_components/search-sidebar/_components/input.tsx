@@ -2,6 +2,7 @@
 
 import { Button } from '@/app/_components/button'
 import { Input } from '@/app/_components/input'
+import { useUserContext } from '@/store/context'
 import { useSearchStore } from '@/store/search'
 import {
   ChevronDownIcon,
@@ -11,54 +12,66 @@ import {
 } from 'lucide-react'
 import { useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { globalItems as defines } from '../../define-sidebar/items'
+import { filterDefineItem } from '../../define-sidebar/filter'
+import { defineItems } from '../../define-sidebar/types'
 
 type SearchInputProps = {
   disable: boolean
+  treeDataLength: number
   onSubmit?: () => void
   onReplaceAll?: () => void
 }
 
 export default function SearchInput({
   disable,
+  treeDataLength,
   onSubmit,
   onReplaceAll,
 }: SearchInputProps) {
-  const [
-    data,
-    search,
-    replace,
-    nodeKind,
-    propertyName,
-    isOpenReplace,
-    setSearch,
-    setReplace,
-    toggleIsOpenReplace,
-  ] = useSearchStore(
+  const { type: flowType, mode: flowMode } = useUserContext()
+  const [options, setSearch, setReplace, toggleIsOpenReplace] = useSearchStore(
     useShallow((state) => [
-      state.data,
-      state.search,
-      state.replace,
-      state.nodeKind,
-      state.propertyName,
-      state.isOpenReplace,
+      state.options,
       state.setSearch,
       state.setReplace,
       state.toggleIsOpenReplace,
     ]),
   )
 
+  const filteredDefineItems = useMemo(
+    () => [
+      ...new Set(
+        defineItems
+          .filter((item) =>
+            filterDefineItem(item, {
+              flowType,
+              flowMode,
+            }),
+          )
+          .map((item) => item.name),
+      ),
+    ],
+    [flowMode, flowType],
+  )
+
   const disableSearch = useMemo(
     () =>
       disable ||
-      (!search && !nodeKind && !propertyName) ||
-      (defines.includes(nodeKind) && !search),
-    [disable, nodeKind, propertyName, search],
+      (!options.search && !options.nodeKind && !options.propertyName) ||
+      (filteredDefineItems.includes(options.nodeKind) && !options.search),
+    [
+      disable,
+      filteredDefineItems,
+      options.nodeKind,
+      options.propertyName,
+      options.search,
+    ],
   )
 
   const disableReplace = useMemo(
-    () => disable || !search || !replace || data.length === 0,
-    [data.length, disable, replace, search],
+    () =>
+      disable || !options.search || !options.replace || treeDataLength === 0,
+    [disable, options, treeDataLength],
   )
 
   return (
@@ -70,21 +83,21 @@ export default function SearchInput({
         disabled={disable}
         onClick={toggleIsOpenReplace}
       >
-        {isOpenReplace ? <ChevronDownIcon /> : <ChevronRightIcon />}
+        {options.isOpenReplace ? <ChevronDownIcon /> : <ChevronRightIcon />}
       </Button>
       <div className="space-y-1">
         <div className="flex grow overflow-hidden rounded-md border border-input bg-background ring-offset-background">
           <Input
             className="h-7 shrink grow border-none"
-            value={search}
+            value={options.search}
             placeholder="Search"
             disabled={disable}
             onChange={(e) => {
               setSearch(e.target.value)
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                onSubmit && onSubmit()
+              if (e.key === 'Enter' && !disableSearch) {
+                onSubmit?.()
               }
             }}
           />
@@ -98,14 +111,19 @@ export default function SearchInput({
             <SearchIcon />
           </Button>
         </div>
-        {isOpenReplace && (
+        {options.isOpenReplace && (
           <div className="flex grow overflow-hidden rounded-md border border-input bg-background ring-offset-background">
             <Input
               className="h-7 shrink grow border-none"
-              value={replace}
+              value={options.replace}
               placeholder="Replace"
               disabled={disable}
               onChange={(e) => setReplace(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !disableReplace) {
+                  onReplaceAll?.()
+                }
+              }}
             />
             <Button
               className="text-sx h-7 w-7 rounded-none bg-main p-1.5 hover:bg-input active:bg-input"

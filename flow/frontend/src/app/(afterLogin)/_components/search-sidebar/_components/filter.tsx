@@ -4,23 +4,22 @@ import { Checkbox } from '@/app/_components/checkbox'
 import Label from '@/app/_components/label'
 import { useQueryAllInFlow } from '@/services/flow'
 import { getNodePropertyByKind } from '@/services/subflow'
+import { useUserContext } from '@/store/context'
 import { useSearchStore } from '@/store/search'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { globalItems as defines } from '../../define-sidebar/items'
+import { filterDefineItem } from '../../define-sidebar/filter'
+import { defineItems } from '../../define-sidebar/types'
 import CustomFilterList, { nodes } from '../service/custom-filter-list'
 import NameAutocomplete from './name-autocomplete'
 import NodeTypeAutocomplete from './node-type-autocomplete'
 
 export default function SearchFilter() {
+  const { type: flowType, mode: flowMode } = useUserContext()
   const [propertyList, setPropertyList] = useState<string[]>([])
   const [
-    subFlowName,
-    nodeKind,
-    propertyName,
-    useMatchWholeWord,
-    useMatchCase,
+    options,
     toggleUseMatchWholeWord,
     toggleUseMatchCase,
     setSubFlowName,
@@ -28,11 +27,7 @@ export default function SearchFilter() {
     setPropertyName,
   ] = useSearchStore(
     useShallow((state) => [
-      state.subFlowName,
-      state.nodeKind,
-      state.propertyName,
-      state.useMatchWholeWord,
-      state.useMatchCase,
+      state.options,
       state.toggleUseMatchWholeWord,
       state.toggleUseMatchCase,
       state.setSubFlowName,
@@ -45,60 +40,87 @@ export default function SearchFilter() {
     data: { flow },
   } = useSuspenseQuery(useQueryAllInFlow())
 
+  const filteredDefineItems = useMemo(
+    () => [
+      ...new Set(
+        defineItems
+          .filter((item) =>
+            filterDefineItem(item, {
+              flowType,
+              flowMode,
+            }),
+          )
+          .map((item) => item.name),
+      ),
+    ],
+    [flowMode, flowType],
+  )
+
   const flowList = useMemo(
     () => new CustomFilterList(flow.map(({ name }) => name)),
     [flow],
   )
-  const defineList = useMemo(() => new CustomFilterList(defines), [])
+  const defineList = useMemo(
+    () => new CustomFilterList(filteredDefineItems),
+    [filteredDefineItems],
+  )
   const nodeList = useMemo(() => new CustomFilterList(nodes), [])
 
   const customFlowList = useMemo(
-    () => flowList.search(subFlowName).sort(),
-    [flowList, subFlowName],
+    () => flowList.search(options.subFlowName).sort(),
+    [flowList, options.subFlowName],
   )
 
   const customDefineList = useMemo(
-    () => defineList.search(nodeKind).sort(),
-    [defineList, nodeKind],
+    () => defineList.search(options.nodeKind).sort(),
+    [defineList, options.nodeKind],
   )
 
   const customNodeList = useMemo(
-    () => nodeList.search(nodeKind).sort(),
-    [nodeList, nodeKind],
+    () => nodeList.search(options.nodeKind).sort(),
+    [nodeList, options.nodeKind],
+  )
+
+  const customPropertyList = useMemo(
+    () =>
+      options.propertyName
+        ? propertyList.filter((property) =>
+            property.toLowerCase().includes(options.propertyName.toLowerCase()),
+          )
+        : propertyList,
+    [propertyList, options.propertyName],
   )
 
   useEffect(() => {
     let ignore = false
 
     let kind = null
-    if (nodeKind === '') {
+    if (options.nodeKind === '') {
       kind = 'ALL'
     }
-    if (defineList.has(nodeKind)) {
-      kind = nodeKind.toLowerCase()
+    if (defineList.has(options.nodeKind)) {
+      kind = options.nodeKind.toLowerCase()
     }
 
-    if (nodeList.has(nodeKind)) {
-      kind = nodeKind
+    if (nodeList.has(options.nodeKind)) {
+      kind = options.nodeKind
     }
 
     if (kind) {
       getNodePropertyByKind(kind).then(setPropertyList)
-    } else {
-      setPropertyList([])
     }
 
     return () => {
       ignore = true
     }
-  }, [defineList, nodeList, nodeKind])
+  }, [defineList, nodeList, options.nodeKind])
 
   return (
     <div className="mt-1 flex flex-col gap-1 pl-6 pr-2 text-xs">
       <>
         Subflow Name
         <NameAutocomplete
-          value={subFlowName}
+          value={options.subFlowName}
           selectOptions={customFlowList}
           onChange={(value) => setSubFlowName(value)}
         />
@@ -106,7 +128,7 @@ export default function SearchFilter() {
       <>
         Node Type
         <NodeTypeAutocomplete
-          value={nodeKind}
+          value={options.nodeKind}
           defineOptions={customDefineList}
           nodeOptions={customNodeList}
           onChange={(value) => setNodeKind(value)}
@@ -115,15 +137,15 @@ export default function SearchFilter() {
       <>
         Property Name
         <NameAutocomplete
-          value={propertyName}
-          selectOptions={propertyList}
+          value={options.propertyName}
+          selectOptions={customPropertyList}
           onChange={(value) => setPropertyName(value)}
         />
       </>
       <div className="flex items-center gap-3">
         <Checkbox
           id="matchWholeWord"
-          checked={useMatchWholeWord}
+          checked={options.useMatchWholeWord}
           onCheckedChange={toggleUseMatchWholeWord}
         />
         <Label htmlFor="matchWholeWord">Match Whole Word</Label>
@@ -131,7 +153,7 @@ export default function SearchFilter() {
       <div className="flex items-center gap-3">
         <Checkbox
           id="matchCase"
-          checked={useMatchCase}
+          checked={options.useMatchCase}
           onCheckedChange={toggleUseMatchCase}
         />
         <Label htmlFor="matchCase">Match Case</Label>

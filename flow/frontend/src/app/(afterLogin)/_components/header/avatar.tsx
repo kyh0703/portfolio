@@ -31,8 +31,8 @@ export default function Avatar() {
     <HoverCard openDelay={200} closeDelay={200}>
       <HoverCardTrigger>
         <Button size="icon" variant="ghost">
-          <UserIcon className="light-icon" width={32} height={32} />
-          <DarkUserIcon className="dark-icon" width={32} height={32} />
+          <UserIcon className="light-icon" size={32} />
+          <DarkUserIcon className="dark-icon" size={32} />
         </Button>
       </HoverCardTrigger>
       <HoverCardPortal>

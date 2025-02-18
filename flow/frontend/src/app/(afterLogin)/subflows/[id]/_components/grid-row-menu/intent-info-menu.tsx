@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/app/_components/button'
+import { MenuDotIcon } from '@/app/_components/icon'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,7 +9,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/ui/dropdown-menu'
-import { MenuDotIcon } from '@/app/_components/icon'
 import { ICellRendererParams } from 'ag-grid-community'
 
 export default function IntentInfoMenu(
@@ -22,7 +22,7 @@ export default function IntentInfoMenu(
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="link" size="icon">
-          <MenuDotIcon width={16} height={16} />
+          <MenuDotIcon size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">

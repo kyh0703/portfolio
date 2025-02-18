@@ -64,11 +64,7 @@ export function CustomEdge({
 
   const positions: any[] = [
     toPositionByInternalNode(sourceNode),
-    ...points.map((point) => ({
-      ...point,
-      width: DEFAULT_GHOST_NODE_WIDTH,
-      height: DEFAULT_GHOST_NODE_WIDTH,
-    })),
+    ...points,
     toPositionByInternalNode(targetNode),
   ]
 

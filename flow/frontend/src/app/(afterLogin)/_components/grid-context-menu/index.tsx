@@ -17,7 +17,6 @@ import {
   DropdownMenuTrigger,
 } from '@/ui/dropdown-menu'
 
-const icon = 12
 const menuItemStyle = 'text-xs flex gap-3'
 
 type GridContextMenuProps = {
@@ -42,32 +41,32 @@ export function GridContextMenu({ ...props }: GridContextMenuProps) {
             className={menuItemStyle}
             onClick={() => props.onItemClick?.('delete')}
           >
-            <DeleteIcon width={icon} height={icon} />
+            <DeleteIcon size={12} />
             Delete
             <ContextMenuShortcut>⌫</ContextMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            className={menuItemStyle}
+            className="flex gap-3 text-xs"
             onClick={() => props.onItemClick?.('cut')}
           >
-            <CutIcon width={icon} height={icon} />
+            <CutIcon size={12} />
             cut
             <ContextMenuShortcut>⌘ + X</ContextMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem
-            className={menuItemStyle}
+            className="flex gap-3 text-xs"
             onClick={() => props.onItemClick?.('copy')}
           >
-            <CopyIcon width={icon} height={icon} />
+            <CopyIcon size={12} />
             copy
             <ContextMenuShortcut>⌘ + C</ContextMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem
-            className={menuItemStyle}
+            className="flex gap-3 text-xs"
             onClick={() => props.onItemClick?.('paste')}
           >
-            <PasteIcon width={icon} height={icon} />
+            <PasteIcon size={12} />
             paste
             <ContextMenuShortcut>⌘ + V</ContextMenuShortcut>
           </DropdownMenuItem>

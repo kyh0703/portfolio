@@ -4,11 +4,13 @@ import { type PropsWithChildren } from 'react'
 import Header from './_components/header'
 import Main from './_components/main'
 import NavigationBar from './_components/navigation-bar'
+import Setup from './_components/setup'
 
 export default function Layout({ children }: PropsWithChildren) {
   return (
-    <YjsProvider>
-      <WebSocketProvider>
+    <YjsProvider baseUrl={process.env.YJS_BASE_URL}>
+      <WebSocketProvider baseUrl={process.env.WS_BASE_URL}>
+        <Setup />
         <div className="flex h-full w-full overflow-hidden">
           <NavigationBar />
           <div className="flex h-full w-full flex-col overflow-hidden">

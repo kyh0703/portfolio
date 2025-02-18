@@ -2,14 +2,16 @@
 
 import Label from '@/app/_components/label'
 import { RadioGroup, RadioGroupItem } from '@/app/_components/radio-group'
+import { useUserContext } from '@/store/context'
 import { useDefineStore } from '@/store/define'
 import type { DefineScope } from '@/types/define'
 import { useRouter } from 'next/navigation'
 import { useShallow } from 'zustand/react/shallow'
-import { commonItems, globalItems } from './items'
+import { defineItems } from './types'
 
 export default function DefineScopeButton() {
   const router = useRouter()
+  const { type: flowType } = useUserContext()
   const [scope, setScope, page, resetPage] = useDefineStore(
     useShallow((state) => [
       state.scope,
@@ -20,25 +22,25 @@ export default function DefineScopeButton() {
   )
 
   const handleChange = (value: string) => {
+    const defaultPage: Record<DefineScope, string> = {
+      common: 'ment',
+      global: 'var',
+    }
+
     const scope = value as DefineScope
     setScope(scope)
-    switch (scope) {
-      case 'common':
-        if (commonItems.includes(page)) {
-          router.push(`/defines/${scope}/${page}`)
-        } else {
-          router.push(`/defines/${scope}/ment`)
-          resetPage(scope)
-        }
-        break
-      case 'global':
-        if (globalItems.includes(page)) {
-          router.push(`/defines/${scope}/${page}`)
-        } else {
-          router.push(`/defines/${scope}/var`)
-          resetPage(scope)
-        }
-        break
+
+    const matchedItem = defineItems.find(
+      (item) => item.scope === scope && item.name.toLowerCase() === page,
+    )
+
+    const targetPage = matchedItem
+      ? matchedItem.name.toLocaleLowerCase()
+      : defaultPage[scope]
+
+    router.push(`/defines/${scope}/${targetPage}`)
+    if (!matchedItem) {
+      resetPage(scope)
     }
   }
 
@@ -48,12 +50,14 @@ export default function DefineScopeButton() {
       defaultValue={scope}
       onValueChange={handleChange}
     >
-      <div className="flex gap-3">
-        <RadioGroupItem id="common" value="common" />
-        <Label htmlFor="common" className="text-truncate">
-          Tenant Dependent
-        </Label>
-      </div>
+      {flowType === 'ivr' && (
+        <div className="flex gap-3">
+          <RadioGroupItem id="common" value="common" />
+          <Label htmlFor="common" className="text-truncate">
+            Tenant Dependent
+          </Label>
+        </div>
+      )}
       <div className="flex gap-3">
         <RadioGroupItem id="global" value="global" />
         <Label htmlFor="global" className="text-truncate">

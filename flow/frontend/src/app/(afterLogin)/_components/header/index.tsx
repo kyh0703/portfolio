@@ -1,11 +1,13 @@
 import { cn } from '@/utils/cn'
+import dynamic from 'next/dynamic'
 import Title from '../title'
 import Avatar from './avatar'
 import BuildButton from './build-button'
 import ExitButton from './exit-button'
-import ThemeToggle from './theme-toggle'
 import UploadButton from './upload-button'
 import WebsocketSubscriber from './websocket-subscriber'
+
+const ThemeToggle = dynamic(() => import('./theme-toggle'), { ssr: false })
 
 export default function Header() {
   return (
@@ -20,7 +22,7 @@ export default function Header() {
       )}
     >
       <Title />
-      <nav className="flex items-center gap-[20px]">
+      <nav className="flex items-center gap-5">
         <UploadButton />
         <BuildButton />
         <div className="flex items-center justify-end gap-[5px] p-0">

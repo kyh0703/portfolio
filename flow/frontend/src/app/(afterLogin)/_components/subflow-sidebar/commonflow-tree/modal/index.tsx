@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/app/_components/button'
+import { Checkbox } from '@/app/_components/checkbox'
 import {
   AddIcon,
   TriangleLeftIcon,
@@ -17,7 +18,7 @@ import {
 import { useYjs } from '@/contexts/yjs-context'
 import useYjsData from '@/hooks/use-yjs-data'
 import { SubFlow } from '@/models/subflow'
-import { FlowTreeData, SubFlowList } from '@/models/subflow-list'
+import { SubFlowList } from '@/models/subflow-list'
 import {
   flowKeys,
   useAddCommonFlow,
@@ -32,58 +33,66 @@ import { useFlowTabStore } from '@/store/flow-tab'
 import { ScrollArea } from '@/ui/scroll-area'
 import { cn } from '@/utils/cn'
 import logger from '@/utils/logger'
+import { getSubFlowPath } from '@/utils/route-path'
 import { useQueryClient, useSuspenseQueries } from '@tanstack/react-query'
+import { CircleAlert } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import {
   ChangeEventHandler,
   useCallback,
   useEffect,
-  useMemo,
   useReducer,
   useState,
 } from 'react'
+import { toast } from 'react-toastify'
 import FlowAddForm from './form'
 import CommonFlowAddPopover from './popover'
 
 export type CommonFlowAddFormType = {
   name: string
   version: string
+  oldFlowId?: number
 }
 
 export type InflowListType = {
   name: string
   id: number
   defaultVersion: string
-  options: { version: string; id: number }[]
+  options: SubFlowList[]
 }
 
 export default function CommonFlowEditModal({
   handleAddTree,
-  handleRemoveTree,
+  handleRemoveTreeByName,
   handleChangeTree,
 }: {
-  handleAddTree?: (id: number, name: string) => void
-  handleRemoveTree?: (name: string) => void
-  handleChangeTree?: (name: string, newId: number) => void
+  handleAddTree?: (flows: SubFlowList[]) => void
+  handleRemoveTreeByName?: (names: string[]) => void
+  handleChangeTree?: (data: SubFlowList) => void
 }) {
-  const { ydoc } = useYjs()
-  const { clearSubFlow } = useYjsData(ydoc)
-  const router = useRouter()
-  const [filterInflows, setFilterInflows] = useState<InflowListType[]>()
-  const [filterFlows, setFilterFlows] = useState<SubFlowList[]>()
+  const [filterInflows, setFilterInflows] = useState<InflowListType[]>([])
+  const [filterFlows, setFilterFlows] = useState<SubFlowList[]>([])
   const [isOpenCreateForm, toggleIsOpenCreateForm] = useReducer(
     (state) => !state,
     false,
   )
+  const [selectedInFlows, setSelectedInFlows] = useState<
+    {
+      id: number
+      name: string
+    }[]
+  >([])
+  const [selectedFlows, setSelectedFlows] = useState<SubFlowList[]>([])
 
-  const closeTab = useFlowTabStore((state) => state.closeTab)
-  const { id: flowId } = useUserContext()
+  const router = useRouter()
+  const { ydoc } = useYjs()
+  const { clearSubFlow } = useYjsData(ydoc)
+  const [isOpenTab, closeTab] = useFlowTabStore((state) => [
+    state.isOpenTab,
+    state.closeTab,
+  ])
+  const { id: flowId, mode: flowMode } = useUserContext()
   const queryClient = useQueryClient()
-  const [selectedFlow, setSelectedFlow] = useState<{
-    id: number
-    name: string
-    type: 'flow' | 'inflow'
-  }>()
 
   const { mutateAsync: addMutate } = useAddCommonFlow()
   const { mutateAsync: joinMutate } = useJoinCommonFlow()
@@ -100,11 +109,6 @@ export default function CommonFlowEditModal({
     },
   })
 
-  const isJoinFlow = useMemo(
-    () => inflows.some((inflow) => inflow.name === selectedFlow?.name),
-    [inflows, selectedFlow],
-  )
-
   const groupInflowsByName = useCallback(
     (inflows: SubFlow[]) => {
       const resultMap = new Map<string, InflowListType>()
@@ -118,10 +122,7 @@ export default function CommonFlowEditModal({
               name,
               id,
               defaultVersion: version,
-              options: matchingFlows.map((flow) => ({
-                version: flow.version,
-                id: flow.id,
-              })),
+              options: matchingFlows,
             })
           }
         }
@@ -132,29 +133,24 @@ export default function CommonFlowEditModal({
     [flows],
   )
 
-  const handleAddCommonFlowSubmit = async (data: CommonFlowAddFormType) => {
-    try {
-      await addMutate({
-        desc: '',
-        args: {
-          in: {
-            param: [],
-          },
-          out: { arg: [] },
+  const handleAddFlow = async (data: CommonFlowAddFormType) => {
+    await addMutate({
+      desc: '',
+      args: {
+        in: {
+          param: [],
         },
-        updateDate: new Date(),
-        ...data,
-      })
-      toggleIsOpenCreateForm()
-    } catch (error) {
-      logger.error('failed to add common flow', error)
-    }
+        out: { arg: [] },
+      },
+      updateDate: new Date(),
+      ...data,
+    })
+    toggleIsOpenCreateForm()
   }
 
-  const handleReplicateSubmit = (data: CommonFlowAddFormType) => {
-    if (!selectedFlow) return
+  const handleReplicate = (data: CommonFlowAddFormType) => {
     replicateMutation.mutate({
-      commonFlowId: selectedFlow.id,
+      commonFlowId: data.oldFlowId!,
       commonFlow: {
         desc: '',
         args: {
@@ -169,29 +165,54 @@ export default function CommonFlowEditModal({
     })
   }
 
-  const handleJoinClick = async () => {
+  const handleJoin = useCallback(async () => {
     try {
-      await joinMutate(selectedFlow!.id)
-      await handleAddTree?.(selectedFlow!.id, selectedFlow!.name)
+      for await (const flow of selectedFlows) {
+        await joinMutate(flow!.id)
+      }
+      await handleAddTree?.(selectedFlows)
+      setSelectedFlows([])
       queryClient.invalidateQueries({ queryKey: [flowKeys.commonFlows] })
     } catch (error) {
+      toast.warn('Common Flow Join에 실패했습니다.')
       logger.error('failed to join common flow', error)
     }
-  }
+  }, [handleAddTree, joinMutate, queryClient, selectedFlows])
 
-  const handleUnJoinClick = async () => {
+  const handleUnJoin = useCallback(async () => {
     try {
-      await unJoinMutate(selectedFlow!.id)
-      await handleRemoveTree?.(selectedFlow!.name)
+      for await (const flow of selectedInFlows) {
+        await unJoinMutate(flow!.id)
+      }
+      await handleRemoveTreeByName?.(selectedInFlows.map((flow) => flow.name))
       queryClient.invalidateQueries({ queryKey: [flowKeys.commonInFlows] })
       queryClient.invalidateQueries({ queryKey: [flowKeys.commonFlows] })
-      clearSubFlow('' + selectedFlow!.id)
-      const moveSubFlowId = closeTab(flowId, selectedFlow!.id)
-      router.push(`/subflows/${moveSubFlowId}`)
+
+      let moveSubFlowId
+      for (const flow of selectedInFlows) {
+        if (isOpenTab(flowId, flow.id)) {
+          moveSubFlowId = closeTab(flowId, flow!.id)
+        }
+        clearSubFlow(flowMode, '' + flow.id)
+      }
+      setSelectedInFlows([])
+      router.push(getSubFlowPath(moveSubFlowId))
     } catch (error) {
+      toast.warn('Common Flow Unjoin에 실패했습니다.')
       logger.error('failed to unjoin common flow', error)
     }
-  }
+  }, [
+    clearSubFlow,
+    closeTab,
+    flowId,
+    flowMode,
+    handleRemoveTreeByName,
+    isOpenTab,
+    queryClient,
+    router,
+    selectedInFlows,
+    unJoinMutate,
+  ])
 
   const handleSearchInflow: ChangeEventHandler<HTMLInputElement> = (e) => {
     const filterInflows = inflows.filter(({ name }) =>
@@ -211,54 +232,90 @@ export default function CommonFlowEditModal({
     setFilterFlows(filterCommonFlows)
   }
 
-  const handleChangeVersion = async ({
-    oldName,
-    oldVersion,
-    newVersion,
-  }: {
-    oldName: string
-    oldVersion: string
-    newVersion: string
-  }) => {
-    // 이미 조인되어있는 flow 찾기
-    const flow = filterInflows!.find((inflow) => inflow.name === oldName)!
-    const oldFlowId = flow.options.find(
-      (option) => option.version === oldVersion,
+  const handleChangeVersion = async (
+    newVersion: string,
+    flow: InflowListType,
+  ) => {
+    const joinedFlow = filterInflows!.find(
+      (inflow) => inflow.name === flow.name,
+    )!
+    const oldFlowId = joinedFlow.options.find(
+      (option) => option.version === flow.defaultVersion,
     )!.id
-    const newFlowId = flow.options.find(
-      (option) => option.version === newVersion,
-    )!.id
+    const newFlow = flow.options.find((option) => option.version === newVersion)
 
     try {
       await unJoinMutate(oldFlowId)
-      await joinMutate(newFlowId)
-      await handleChangeTree?.(oldName, newFlowId)
-      clearSubFlow('' + oldFlowId)
-      const moveSubFlowId = closeTab(flowId, oldFlowId)
-      router.push(`/subflows/${moveSubFlowId}`)
+      await joinMutate(newFlow!.id)
+      await handleChangeTree?.(newFlow!)
+
+      if (isOpenTab(flowId, oldFlowId)) {
+        const moveSubFlowId = closeTab(flowId, oldFlowId)
+        router.push(getSubFlowPath(moveSubFlowId))
+      }
+      clearSubFlow(flowMode, '' + oldFlowId)
     } catch (error) {
       logger.error('failed to change common flow version', error)
     }
   }
 
-  const filterFlowTree = (
-    items: FlowTreeData[],
-    flowId: string,
-  ): FlowTreeData[] => {
-    return items
-      .map((item) => {
-        if (item.type === 'file' && item.id === flowId) {
-          return null
-        } else if (item.children && item.children.length > 0) {
-          return {
-            ...item,
-            children: filterFlowTree(item.children, flowId),
-          }
-        }
-        return item
-      })
-      .filter((item): item is FlowTreeData => item !== null)
-  }
+  const activeInFlowStyle = useCallback(
+    (name: string): string =>
+      selectedInFlows?.some((flow) => flow.name === name)
+        ? 'rounded-sm bg-search font-bold'
+        : '',
+    [selectedInFlows],
+  )
+
+  const activeFlowStyle = useCallback(
+    (id: number): string =>
+      selectedFlows?.some((flow) => flow.id === id)
+        ? 'rounded-sm bg-search font-bold'
+        : '',
+    [selectedFlows],
+  )
+
+  const isAlreadyJoined = useCallback(
+    (id: number, name: string) =>
+      filterInflows.some((flow) => flow.name === name) ||
+      selectedFlows.some((flow) => flow.id !== id && flow.name === name),
+    [filterInflows, selectedFlows],
+  )
+
+  const handleCheckedChangeInFlow = useCallback(
+    (checked: boolean | string, flow: InflowListType) => {
+      const isAlreadyChecked = selectedInFlows?.some(
+        (selectedInFlow) => selectedInFlow.name === flow.name,
+      )
+      if (checked && !isAlreadyChecked) {
+        setSelectedInFlows((prev) => [
+          ...prev,
+          { id: flow.id, name: flow.name },
+        ])
+      } else if (!checked && isAlreadyChecked) {
+        setSelectedInFlows((prev) =>
+          prev.filter((selectedInFlow) => selectedInFlow.name !== flow.name),
+        )
+      }
+    },
+    [selectedInFlows],
+  )
+
+  const handleCheckedChangeFlow = useCallback(
+    (checked: boolean | string, flow: SubFlowList) => {
+      const isAlreadyChecked = selectedFlows?.some(
+        (selectedFlow) => selectedFlow.id === flow.id,
+      )
+      if (checked && !isAlreadyChecked) {
+        setSelectedFlows((prev) => [...prev, flow])
+      } else if (!checked && isAlreadyChecked) {
+        setSelectedFlows((prev) =>
+          prev.filter((selectedFlow) => selectedFlow.id !== flow.id),
+        )
+      }
+    },
+    [selectedFlows],
+  )
 
   useEffect(() => {
     if (inflows) {
@@ -279,49 +336,45 @@ export default function CommonFlowEditModal({
   }, [flows])
 
   return (
-    <div className="flex gap-5 sm:flex-col md:flex-row">
-      <div className="basis-1/2 space-y-4">
-        <div className="flex w-full flex-shrink-0 items-center justify-center border-solid">
+    <>
+      <div className="grid grid-cols-11">
+        <div className="col-span-5 flex flex-col space-y-4">
           <SearchBox onChange={handleSearchInflow} />
-        </div>
-        <ScrollArea className="h-72 rounded-md bg-grid-header py-2">
-          {filterInflows &&
-            filterInflows.map(({ name, id, defaultVersion, options }) => (
+          <ScrollArea className="h-72 grow gap-4 rounded-md bg-active p-2">
+            {filterInflows.map((flow) => (
               <div
-                key={name}
+                key={`in-flow-${flow.name}`}
                 className={cn(
-                  'flex cursor-pointer items-center justify-between space-y-2 px-4 text-sm',
+                  'grid h-10 grid-cols-12 px-2 text-sm',
+                  activeInFlowStyle(flow.name),
                 )}
-                onClick={() => setSelectedFlow({ id, name, type: 'inflow' })}
               >
-                <span
-                  className={cn(
-                    `grow basis-9/12 text-base`,
-                    selectedFlow?.type === 'inflow' &&
-                      selectedFlow.id === id &&
-                      'font-semibold',
-                  )}
-                >
-                  {name}
-                </span>
-                <div className="basis-3/12">
-                  <Select
-                    defaultValue={defaultVersion}
-                    onValueChange={(v) =>
-                      handleChangeVersion({
-                        oldName: name,
-                        oldVersion: defaultVersion,
-                        newVersion: v,
-                      })
+                <div className="col-span-9 flex items-center space-x-2">
+                  <Checkbox
+                    id={`in-flow-${flow.name}`}
+                    onCheckedChange={(checked) =>
+                      handleCheckedChangeInFlow(checked, flow)
                     }
+                  />
+                  <label
+                    htmlFor={`in-flow-${flow.name}`}
+                    className="text-truncate grow"
                   >
-                    <SelectTrigger className="h-10 focus:ring-0 focus:ring-offset-0">
+                    {flow.name}
+                  </label>
+                </div>
+                <div className="col-span-3 flex items-center justify-end">
+                  <Select
+                    defaultValue={flow.defaultVersion}
+                    onValueChange={(v) => handleChangeVersion(v, flow)}
+                  >
+                    <SelectTrigger className="h-7 focus:ring-0 focus:ring-offset-0">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {options.map(({ version, id }) => (
-                        <SelectItem key={`${name}-${id}`} value={version}>
-                          {version}
+                      {flow.options.map(({ version, id }) => (
+                        <SelectItem key={`${flow.name}-${id}`} value={version}>
+                          <span className="font-mono text-xs">{version}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -329,74 +382,90 @@ export default function CommonFlowEditModal({
                 </div>
               </div>
             ))}
-        </ScrollArea>
-      </div>
-      <div className="flex flex-col items-center justify-center gap-6">
-        <Button
-          className="h-5 w-5 rounded-md"
-          variant="outline"
-          size="icon"
-          disabled={
-            selectedFlow?.type === 'inflow' || !selectedFlow?.id || isJoinFlow
-          }
-          onClick={handleJoinClick}
-        >
-          <TriangleLeftIcon className="p-0" width={8} height={12} />
-        </Button>
-        <Button
-          className="h-5 w-5 rounded-md"
-          variant="outline"
-          size="icon"
-          disabled={selectedFlow?.type === 'flow' || !selectedFlow?.id}
-          onClick={handleUnJoinClick}
-        >
-          <TriangleRightIcon className="p-0" width={8} height={12} />
-        </Button>
-      </div>
-      <div className="basis-1/2 space-y-4">
-        <div className="flex w-full flex-shrink-0 items-center justify-center gap-2 border-solid">
-          <SearchBox onChange={handleSearchFlow} />
+          </ScrollArea>
+        </div>
+        <div className="col-span-1 flex flex-col items-center justify-center gap-6">
           <Button
-            className="w-10 p-0"
-            variant="ghost"
-            onClick={toggleIsOpenCreateForm}
+            className="h-5 w-5 rounded-md"
+            variant="outline"
+            size="icon"
+            disabled={selectedFlows?.length === 0}
+            onClick={handleJoin}
           >
-            <AddIcon width={20} height={20} />
+            <TriangleLeftIcon className="p-0" size={8} />
+          </Button>
+          <Button
+            className="h-5 w-5 rounded-md"
+            variant="outline"
+            size="icon"
+            disabled={selectedInFlows?.length === 0}
+            onClick={handleUnJoin}
+          >
+            <TriangleRightIcon className="p-0" size={8} />
           </Button>
         </div>
-        <div className="rounded-md bg-grid-header">
-          {isOpenCreateForm && (
-            <FlowAddForm
-              className="mt-2"
-              onSubmit={handleAddCommonFlowSubmit}
-            />
-          )}
-          <ScrollArea className="h-72 rounded-md">
-            {filterFlows &&
-              filterFlows.map(({ name, version, id }) => (
+        <div className="col-span-5 flex flex-col space-y-4">
+          <div className="flex w-full flex-shrink-0 items-center justify-center gap-2 border-solid">
+            <SearchBox onChange={handleSearchFlow} />
+            <Button
+              className="w-10 p-0"
+              variant="ghost"
+              onClick={toggleIsOpenCreateForm}
+            >
+              <AddIcon size={20} />
+            </Button>
+          </div>
+          <div className="grow space-y-3 rounded-md bg-active p-2">
+            {isOpenCreateForm && <FlowAddForm onSubmit={handleAddFlow} />}
+            <ScrollArea className="h-72 gap-4 rounded-md">
+              {filterFlows.map((flow) => (
                 <div
-                  key={id}
+                  key={flow.id}
                   className={cn(
-                    'flex items-center justify-between space-y-2 px-4 text-base',
-                    selectedFlow?.type === 'flow' &&
-                      selectedFlow?.id === id &&
-                      'font-semibold',
+                    'my-auto grid h-10 grid-cols-12 px-2',
+                    activeFlowStyle(flow.id),
                   )}
-                  onClick={() => setSelectedFlow({ id, name, type: 'flow' })}
                 >
-                  <span>{name}</span>
-                  <div className="flex basis-4/12 items-center justify-between gap-2">
-                    <span>{version}</span>
+                  <div className="col-span-9 flex items-center space-x-2">
+                    <Checkbox
+                      id={`flow-${flow.id}`}
+                      checked={selectedFlows.some(({ id }) => id === flow.id)}
+                      disabled={isAlreadyJoined(flow.id, flow.name)}
+                      onCheckedChange={(checked) =>
+                        handleCheckedChangeFlow(checked, flow)
+                      }
+                    />
+                    <label
+                      htmlFor={`flow-${flow.id}`}
+                      className="text-truncate flex grow justify-between"
+                    >
+                      <div className="shrink-0 grow text-sm">{flow.name}</div>
+                      <div className="my-auto font-mono text-xs">
+                        {flow.version}
+                      </div>
+                    </label>
+                  </div>
+                  <div className="col-span-3 flex items-center justify-end">
                     <CommonFlowAddPopover
-                      data={{ name, version }}
-                      onSubmit={handleReplicateSubmit}
+                      data={{
+                        name: flow.name,
+                        version: flow.version,
+                        oldFlowId: flow.id,
+                      }}
+                      onSubmit={handleReplicate}
                     />
                   </div>
                 </div>
               ))}
-          </ScrollArea>
+            </ScrollArea>
+          </div>
         </div>
       </div>
-    </div>
+      <h5 className="mt-4 flex items-center gap-2 text-sm text-gray-700">
+        <CircleAlert size={20} />
+        Common SubFlow 삭제/수정은 Management페이지의 Common SubFlow Editing에서
+        진행해주세요.
+      </h5>
+    </>
   )
 }

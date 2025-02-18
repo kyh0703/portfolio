@@ -108,6 +108,7 @@ const NodeTypeAutocomplete = ({
         hasSelectOptions={true}
         onChange={handleChange}
         onClick={handleClick}
+        onBlur={() => setIsListOpen(false)}
       />
       {isListOpen && (defineOptions.length > 0 || nodeOptions.length > 0) && (
         <Portal container={document.body} ref={portalRef}>
@@ -123,7 +124,10 @@ const NodeTypeAutocomplete = ({
               {defineOptions.length > 0 && (
                 <>
                   <CommandGroup heading="Define">
-                    <div style={{ maxHeight: height['autocomplete-list'] }}>
+                    <div
+                      className="overflow-y-auto"
+                      style={{ maxHeight: height['autocomplete-list'] }}
+                    >
                       {defineOptions.map((option) => (
                         <CommandItem
                           key={option}
@@ -144,7 +148,7 @@ const NodeTypeAutocomplete = ({
               {nodeOptions.length > 0 && (
                 <CommandGroup heading="Node">
                   <div
-                    className={`w-full overflow-y-auto`}
+                    className="overflow-y-auto"
                     style={{ maxHeight: height['autocomplete-list'] }}
                   >
                     {nodeOptions.map((option) => (

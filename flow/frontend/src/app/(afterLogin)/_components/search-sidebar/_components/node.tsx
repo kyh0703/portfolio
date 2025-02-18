@@ -1,5 +1,4 @@
 import { Button } from '@/app/_components/button'
-import CustomTooltip from '@/app/_components/tooltip'
 import type {
   DefineData,
   MenuData,
@@ -8,18 +7,23 @@ import type {
 } from '@/models/web-socket/search/types'
 import { useSearchStore } from '@/store/search'
 import { cn } from '@/utils/cn'
+import { getDefinePath, getMenuPath, getSubFlowPath } from '@/utils/route-path'
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  GlobeIcon,
+  MenuIcon,
+  NetworkIcon,
   ReplaceIcon,
   XIcon,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useMemo } from 'react'
+import { PropsWithChildren, useMemo } from 'react'
 import { NodeRendererProps } from 'react-arborist'
+import { createPortal } from 'react-dom'
+import { Tooltip } from 'react-tooltip'
 import { useShallow } from 'zustand/react/shallow'
 import HighlightText from './highlight-text'
-
 export default function Node<T extends SearchTreeData>({
   node,
   style,
@@ -31,16 +35,9 @@ export default function Node<T extends SearchTreeData>({
     [node.data.path, node.data.name],
   )
   const router = useRouter()
-  const [search, replace, useMatchCase, isOpenReplace, highlightText] =
-    useSearchStore(
-      useShallow((state) => [
-        state.search,
-        state.replace,
-        state.useMatchCase,
-        state.isOpenReplace,
-        state.highlightText,
-      ]),
-    )
+  const [options, highlightText] = useSearchStore(
+    useShallow((state) => [state.options, state.highlightText]),
+  )
 
   const handleMove = () => {
     switch (node.data.itemType) {
@@ -48,9 +45,7 @@ export default function Node<T extends SearchTreeData>({
         const { path, subFlowId, nodeName } = node.data as PropertyData
         const nodeId = nodeName
         const tabName = path.split('.')[0]
-        router.push(
-          `/subflows/${subFlowId}?focusNode=${nodeId}&focusTab=${tabName}`,
-        )
+        router.push(getSubFlowPath(subFlowId, nodeId, tabName))
         break
       case 'define':
         const { defineType, defineId, scope } = node.data as DefineData
@@ -61,20 +56,20 @@ export default function Node<T extends SearchTreeData>({
           case 'userfunc':
           case 'track':
           case 'service':
-            router.push(`/defines/${scope}/${defineType}`)
+            router.push(getDefinePath(scope, defineType))
             break
           case 'packet':
           case 'intent':
           case 'cdr':
           case 'string':
           case 'menustat':
-            router.push(`/defines/${scope}/${defineType}/${defineId}`)
+            router.push(getDefinePath(scope, defineType, defineId))
             break
         }
         break
       case 'menu':
         const { rootId } = node.data as MenuData
-        router.push(`/defines/global/menu/${rootId}`)
+        router.push(getMenuPath(rootId))
         break
     }
   }
@@ -88,10 +83,11 @@ export default function Node<T extends SearchTreeData>({
     <div
       className={cn(
         'group',
-        'flex items-center justify-between gap-1',
+        'flex h-full items-center justify-between gap-1',
         'pr-1',
         'overflow-hidden',
-        node.isSelected && 'bg-blue-500 text-white group-focus:bg-blue-600',
+        'text-icon hover:font-medium',
+        node.isSelected ? 'bg-[#2196F3] font-medium' : 'hover:bg-tree-hover',
       )}
       style={style}
       onClick={() => {
@@ -99,44 +95,61 @@ export default function Node<T extends SearchTreeData>({
         node.isLeaf && handleMove()
       }}
     >
-      <div className="my-1 flex items-center overflow-hidden text-ellipsis pl-3">
+      <div className="flex items-center space-x-1 overflow-hidden text-ellipsis pl-3">
         {node.isInternal && (
-          <Button className={cn('h-5 w-5')} variant="link" size="icon">
-            {node.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
-          </Button>
+          <>
+            <Button className={cn('h-5 w-5')} variant="link" size="icon">
+              {node.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
+            </Button>
+            {node.data.itemType === 'property' && <NetworkIcon size={15} />}
+            {node.data.itemType === 'define' && <GlobeIcon size={15} />}
+            {node.data.itemType === 'menu' && <MenuIcon size={15} />}
+          </>
         )}
         {node.isInternal ? (
-          node.data.name
+          <div className="ml-1">{node.data.name}</div>
         ) : (
-          <CustomTooltip
-            triggerChild={
-              <span className="grow overflow-hidden text-ellipsis text-nowrap">
-                {node.isLeaf && node.data.origin ? (
-                  <HighlightText
-                    text={node.data.name}
-                    search={highlightText}
-                    useMatchCase={useMatchCase}
-                    replace={isOpenReplace ? replace : undefined}
-                  />
-                ) : (
-                  node.data.name
-                )}
-              </span>
-            }
-            contentChild={tooltip}
-          />
+          <>
+            <span
+              data-tooltip-id={`search-node-${node.id}`}
+              className="grow overflow-hidden text-ellipsis text-nowrap"
+            >
+              {node.isLeaf && node.level > 0 ? (
+                <HighlightText
+                  text={node.data.name}
+                  search={highlightText}
+                  useMatchCase={options.useMatchCase}
+                  replace={options.isOpenReplace ? options.replace : undefined}
+                />
+              ) : (
+                node.data.name
+              )}
+            </span>
+            <BodyPortal>
+              <Tooltip
+                id={`search-node-${node.id}`}
+                place="right"
+                opacity={1}
+                className="max-w-64 bg-tooltip px-2 py-1.5"
+                content={tooltip}
+              />
+            </BodyPortal>
+          </>
         )}
       </div>
       <div className="flex items-center">
-        {isOpenReplace && replace && (
+        {options.isOpenReplace && options.replace && (
           <Button
             className="hidden h-5 w-5 p-1 group-hover:flex"
             variant="ghost"
             size="icon"
             onClick={(e) => {
               e.stopPropagation()
-              const regex = new RegExp(search, useMatchCase ? 'g' : 'gi')
-              node.submit(node.data.origin.replaceAll(regex, replace))
+              const regex = new RegExp(
+                options.search,
+                options.useMatchCase ? 'g' : 'gi',
+              )
+              node.submit(node.data.origin.replaceAll(regex, options.replace))
             }}
           >
             <ReplaceIcon />
@@ -153,4 +166,8 @@ export default function Node<T extends SearchTreeData>({
       </div>
     </div>
   )
+}
+
+function BodyPortal({ children }: PropsWithChildren) {
+  return createPortal(children, document.body)
 }

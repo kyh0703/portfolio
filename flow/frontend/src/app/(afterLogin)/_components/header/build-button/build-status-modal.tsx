@@ -1,6 +1,6 @@
 'use client'
 
-import { BuildProgress, StatusLog } from '@/models/build'
+import { useBuildStore } from '@/store/build'
 import {
   Card,
   CardContent,
@@ -9,10 +9,15 @@ import {
   CardTitle,
 } from '@/ui/card'
 import { Progress } from '@/ui/progress'
+import { useShallow } from 'zustand/react/shallow'
 
-type BuildStatusModalProps = { data: BuildProgress<StatusLog> }
-export default function BuildStatusModal({ data }: BuildStatusModalProps) {
-  const message = data.data.logs.message
+export default function BuildStatusModal() {
+  const status = useBuildStore(useShallow((state) => state.build.status))
+  if (!status) {
+    return null
+  }
+  const message = status.data.logs.message
+
   return (
     <div className="flex flex-col gap-2">
       <Card>

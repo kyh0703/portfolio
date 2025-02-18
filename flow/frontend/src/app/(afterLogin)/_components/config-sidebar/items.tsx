@@ -1,32 +1,43 @@
-import { ManagementType } from '@/models/manage'
+import { UserLevel } from '@/constants/authorization'
+import { useUserContext } from '@/store/context'
 import { useManagementStore } from '@/store/management'
 import { cn } from '@/utils'
 import Link from 'next/link'
 import { useShallow } from 'zustand/react/shallow'
 
-const configItems = [
-  { path: 'options', label: 'Options' },
-  { path: 'commonflow-edit', label: 'Common SubFlow Editing' },
-  { path: 'import-export', label: 'Import / Export' },
-]
+const configMap = {
+  options: 'Options',
+  'commonflow-edit': 'Common SubFlow Editing',
+  'import-export': 'Import/Export',
+} as const
+
+export type ConfigKeys = keyof typeof configMap
 
 export default function ConfigItems() {
+  const { user } = useUserContext()
   const [page, setPage] = useManagementStore(
     useShallow((state) => [state.page, state.setPage]),
+  )
+  const filterConfigItems = Object.entries(configMap).filter(
+    ([path, label]) => {
+      if (path === 'commonflow-edit') {
+        return user.userLevel === UserLevel.Admin
+      }
+      return true
+    },
   )
 
   return (
     <ul className="flex flex-col gap-3">
-      {configItems.map(({ path, label }) => (
+      {filterConfigItems.map(([path, label]) => (
         <Link key={path} href={`/managements/${path}`}>
           <li
             className={cn(
-              'cursor-pointer rounded p-2',
-              'hover:',
-              page == path && 'bg-main font-bold text-brown',
-              'text-truncate',
+              'text-truncate cursor-pointer rounded p-2',
+              'hover:bg-active hover:text-active-foreground',
+              page == path && 'bg-active font-bold text-active-foreground',
             )}
-            onClick={() => setPage(path as ManagementType)}
+            onClick={() => setPage(path as ConfigKeys)}
           >
             {label}
           </li>

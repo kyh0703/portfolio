@@ -16,7 +16,7 @@ export default function SubFlowSidebar() {
 
   return (
     <aside className="flex h-full w-full flex-col">
-      <div className="flex h-search w-full flex-shrink-0 items-center justify-center border-b border-solid px-4">
+      <div className="flex h-search w-full flex-shrink-0 items-center justify-center border-b border-solid px-5">
         <SearchBox onChange={(e) => setSearch(e.target.value)} />
       </div>
       <div className="flex h-full flex-col overflow-hidden">

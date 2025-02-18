@@ -114,6 +114,7 @@ export function ControlPoint({
   const handleContextMenu = useCallback(
     (event: React.MouseEvent) => {
       event.preventDefault()
+      event.stopPropagation()
       // delete point by right clicking
       if (active) {
         deletePoint()

@@ -52,6 +52,7 @@ const NameAutocomplete = (props: AutocompleteProps) => {
         hasSelectOptions={true}
         onChange={handleChange}
         onClick={handleClick}
+        onBlur={() => setIsListOpen(false)}
       />
       {isListOpen && (
         <AutocompleteList

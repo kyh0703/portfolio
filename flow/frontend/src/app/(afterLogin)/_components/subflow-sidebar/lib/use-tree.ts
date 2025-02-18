@@ -1,7 +1,6 @@
-import { generateDate } from '@/mocks/utils'
 import { FlowTreeData } from '@/models/subflow-list'
 import logger from '@/utils/logger'
-import { hasDuplicateFileName, hasDuplicateFolderName } from '@/utils/tree'
+import { hasDuplicateFolderName } from '@/utils/tree'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   CreateHandler,
@@ -38,7 +37,6 @@ export default function useTree<T extends FlowTreeData>(
     onBeforeDelete?: DeleteHandler<T>
     onBeforeRename?: CustomRenameHandler<T>
     onKeyDown?: (event: React.KeyboardEvent<HTMLDivElement>) => void
-    onValidateName?: (name: string) => boolean
   },
 ) {
   const [data, setData] = useState(initialData)
@@ -91,7 +89,7 @@ export default function useTree<T extends FlowTreeData>(
       name: '',
       type: type === 'internal' ? 'folder' : 'file',
       desc: '',
-      updateTime: generateDate(),
+      updateDate: new Date(),
       version: '1.0.0',
       isCreated: true,
     } as any
@@ -115,17 +113,7 @@ export default function useTree<T extends FlowTreeData>(
   }
 
   const onRename: RenameHandler<T> = async (args) => {
-    const { node, name, id } = args
-    const { data } = node
-
-    if (!name || (options?.onValidateName && !options.onValidateName(name))) {
-      dropNode(id)
-      return
-    }
-
-    if (data.name === name) return
-
-    if (data.isCreated) {
+    if (args.node.data.isCreated) {
       await handleCreationProcess(args)
     } else {
       await handleRenameProcess(args)
@@ -134,6 +122,11 @@ export default function useTree<T extends FlowTreeData>(
 
   const onDelete: DeleteHandler<T> = async (args) => {
     try {
+      const isCreatedNode = existCreatedNode(args)
+      if (isCreatedNode) {
+        return
+      }
+
       if (options?.onBeforeDelete) {
         await options.onBeforeDelete(args)
       }
@@ -152,6 +145,18 @@ export default function useTree<T extends FlowTreeData>(
       sortAndSetData()
     } catch (error) {
       logger.error(error)
+    }
+  }
+
+  const existCreatedNode = (args: { ids: string[]; nodes: NodeApi<T>[] }) => {
+    const isCreated = args.nodes.length === 1 && args.nodes[0].data.isCreated
+    if (isCreated) {
+      args.ids.forEach((id) => simpleTree.drop({ id }))
+      const sortedData = sortData(simpleTree.data)
+      setData(sortedData)
+      return true
+    } else {
+      return false
     }
   }
 
@@ -232,29 +237,22 @@ export default function useTree<T extends FlowTreeData>(
     const { type, databaseId } = node.data
 
     if (type === 'file' && options?.onBeforeCreate) {
-      try {
-        const response = await options.onBeforeCreate({
-          parentId: databaseId ?? null,
+      const response = await options.onBeforeCreate({
+        parentId: databaseId ?? null,
+        name,
+        node,
+      })
+      simpleTree.update({
+        id,
+        changes: {
           name,
-          node,
-        })
-        simpleTree.update({
-          id,
-          changes: {
-            name,
-            databaseId: +response!.id,
-            isCreated: false,
-          } as Partial<T>,
-        })
-      } catch (error) {
-        toast.warn('사용할수 없는 이름입니다.')
-        logger.error(error)
-        dropNode(id)
-        return
-      }
+          databaseId: +response!.id,
+          isCreated: false,
+        } as Partial<T>,
+      })
     } else if (type === 'folder') {
       if (hasDuplicateFolderName(simpleTree.data, name)) {
-        toast.warn(`Duplicate Folder Name = ${name}`)
+        toast.warn(`${name}은(는) 이미 사용중인 폴더명 입니다.`)
         dropNode(id)
         return
       }
@@ -277,13 +275,9 @@ export default function useTree<T extends FlowTreeData>(
     const { node, name, id } = args
     if (node.data.type === 'file') {
       options?.onBeforeRename && options.onBeforeRename(args)
-      if (hasDuplicateFileName(simpleTree.data, name)) {
-        toast.warn(`Duplicate File Name = ${name}`)
-        return
-      }
     } else if (node.data.type === 'folder') {
       if (hasDuplicateFolderName(simpleTree.data, name)) {
-        toast.warn(`Duplicate File Name = ${name}`)
+        toast.warn(`${name}은(는) 이미 사용중인 폴더명입니다.`)
         return
       }
     }
@@ -298,7 +292,8 @@ export default function useTree<T extends FlowTreeData>(
 
   const dropNode = (id: string) => {
     simpleTree.drop({ id })
-    sortAndSetData()
+    const sortedData = sortData(simpleTree.data)
+    setData(sortedData)
   }
 
   const sortAndSetData = () => {

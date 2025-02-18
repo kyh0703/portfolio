@@ -1,5 +1,10 @@
-import type { AppEdge, IsValidConnection } from '@xyflow/react'
-import type { Connection, EdgeBase } from '@xyflow/system'
+import type { FlowMode } from '@/models/flow'
+import type {
+  AppEdge,
+  Connection,
+  CustomNodeType,
+  IsValidConnection,
+} from '@xyflow/react'
 
 const validateSource = (source: string): boolean => {
   if (source.includes('GotoLabel')) {
@@ -39,15 +44,64 @@ export const isValidConnection: IsValidConnection<AppEdge> = (
   return true
 }
 
-export const hasPropertyNode = (nodeType: string): boolean => {
+export const hasPropertyNode = (
+  flowMode: FlowMode,
+  nodeType: CustomNodeType,
+): boolean => {
   switch (nodeType) {
     case 'Group':
     case 'Memo':
     case 'Ghost':
       return false
     default:
-      return true
+      break
   }
+
+  if (flowMode === 'beginner') {
+    switch (nodeType) {
+      case 'Play':
+      case 'GetDigit':
+      case 'WaitInbound':
+      case 'WaitOutbound':
+      case 'Disconnect':
+      case 'Record':
+      case 'Abort':
+      case 'Transfer':
+      case 'MakeCall':
+      case 'GetChannel':
+      case 'CtiCall':
+      case 'VoiceRecognize':
+      case 'OpenVR':
+      case 'CloseVR':
+      case 'RequestPage':
+      case 'GetPageData':
+      case 'RegistServer':
+      case 'UnregistServer':
+      case 'WaitWebInbound':
+      case 'DisconnectWeb':
+      case 'NLURequest':
+      case 'IntentCall':
+      case 'EntityCall':
+      case 'If':
+      case 'Select':
+      case 'Assign':
+      case 'MenuCall':
+      case 'MenuReturn':
+      case 'SubCall':
+      case 'Return':
+      case 'ChangeService':
+      case 'Sleep':
+      case 'Cdr':
+      case 'UserEnv':
+      case 'UserFuncCall':
+      case 'PacketJson':
+        return true
+      default:
+        return false
+    }
+  }
+
+  return true
 }
 
 export const hasParentNode = (nodeType: string): boolean => {

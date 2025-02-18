@@ -8,7 +8,7 @@ import { memo, useEffect } from 'react'
 
 function WebsocketSubscriber() {
   const { subscribe } = useWebSocket()
-  const { onReplaceProperty, onReplaceDefine, onReplaceMenu } = useReplace()
+  const { onReplaceNodeProperty, onReplaceDefine, onReplaceMenu } = useReplace()
 
   useEffect(() => {
     const unsubscribeReplaceProgress = subscribe(
@@ -26,7 +26,7 @@ function WebsocketSubscriber() {
       results: { properties, defines, menus },
     },
   }: Message<ReplaceProgress>) => {
-    properties.forEach(onReplaceProperty)
+    properties.forEach(onReplaceNodeProperty)
     defines.forEach(onReplaceDefine)
     menus.forEach(onReplaceMenu)
   }
