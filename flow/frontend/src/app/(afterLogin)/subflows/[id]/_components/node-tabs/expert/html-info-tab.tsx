@@ -21,8 +21,8 @@ import logger from '@/utils/logger'
 import { ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { ChangeEventHandler, useRef, useState } from 'react'
-import HtmlInfoModal from './html-info-modal'
 import { NodePropertyTabProps } from '../../node-properties/types'
+import HtmlInfoModal from './html-info-modal'
 import InputObjectModal from './input-object-modal'
 
 const colParameterDefs: ColDef<ParamList>[] = [
@@ -79,10 +79,10 @@ export default function HTMLInfoTab(props: NodePropertyTabProps) {
   const [modalType, setModalType] = useState<'parameter' | 'inputObject'>()
 
   // NOTE: 파일 선택 시 input value를 초기화하기 위해 사용, 같은 파일에 대해서는 onChange가 트리거 되지 않는다.
-  const [fileInputValue, setFileInputValue] = useState<string>()
+  const [fileInputValue, setFileInputValue] = useState('')
 
   // NOTE: 읽어온 파일 내용을 'Previous Browser' 버튼 클릭 시 새 창에 띄우기 위해 저장
-  const [fileContent, setFileContent] = useState<string>()
+  const [fileContent, setFileContent] = useState('')
 
   const { parseHtmlJsp, parseJson } = useParseDocument()
   const openModal = useModalStore((state) => state.openModal)

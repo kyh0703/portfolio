@@ -16,6 +16,7 @@ import { DefinePacket, type DefineMent } from '@/models/define'
 import { PacketCallInfo } from '@/models/property/packet'
 import { useQueryDefines } from '@/services/define'
 import { removeDuplicateDefines } from '@/utils/options'
+import { getDefinePath } from '@/utils/route-path'
 import { useSuspenseQueries } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
@@ -25,7 +26,7 @@ export default function PacketCallInfoTab(props: NodePropertyTabProps) {
   const { errors, getValues, setValue } = useNodePropertiesContext()
   const packetInfo = getValues(props.tabName) as PacketCallInfo | undefined
   const [options, _, onValueChange] = useAutocomplete({ ...props })
-  const [mentDesc, setMentDesc] = useState<string>()
+  const [mentDesc, setMentDesc] = useState('')
 
   const router = useRouter()
 
@@ -57,7 +58,7 @@ export default function PacketCallInfoTab(props: NodePropertyTabProps) {
       (packet) => packet.defineId === packetInfo?.packetId,
     )!
     if (packet) {
-      router.push(`/defines/${packet.scope}/packet/${packet.id}`)
+      router.push(getDefinePath(packet.scope, 'packet', packet.id))
     }
   }, [packets, router, packetInfo?.packetId])
 

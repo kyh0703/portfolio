@@ -16,6 +16,7 @@ import {
 } from '@/services/flow'
 import { Separator } from '@/ui/separator'
 import { removeMainOrEndFlows } from '@/utils/options'
+import { getSubFlowPath } from '@/utils/route-path'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
@@ -65,8 +66,8 @@ export default function VRActionTab(props: NodePropertyTabProps) {
   const [options, _, onValueChange] = useAutocomplete({ ...props })
   const { validateSubFlow } = useValidate()
 
-  const [prevSetParam, setPrevSetParam] = useState<boolean>(false)
-  const [nextSetParam, setNextSetParam] = useState<boolean>(false)
+  const [prevSetParam, setPrevSetParam] = useState(false)
+  const [nextSetParam, setNextSetParam] = useState(false)
 
   const { data: inflows } = useSuspenseQuery({
     ...useQueryAllInFlow(),
@@ -86,7 +87,7 @@ export default function VRActionTab(props: NodePropertyTabProps) {
       return
     }
     if (!setParams) {
-      router.push(`/subflows/${existingSubFlow.id}`)
+      router.push(getSubFlowPath(existingSubFlow.id))
       return
     }
     updateSubFlowMutation.mutate(
@@ -102,7 +103,7 @@ export default function VRActionTab(props: NodePropertyTabProps) {
       {
         onSuccess: (res) => {
           if (res) {
-            router.push(`/subflows/${existingSubFlow.id}`)
+            router.push(getSubFlowPath(existingSubFlow.id))
           }
         },
       },
@@ -141,7 +142,7 @@ export default function VRActionTab(props: NodePropertyTabProps) {
       {
         onSuccess: (res) => {
           if (res) {
-            router.push(`/subflows/${res.flowId}`)
+            router.push(getSubFlowPath(res.flowId))
           }
         },
       },

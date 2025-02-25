@@ -16,6 +16,7 @@ import { getInFlows } from '@/services/flow'
 import { getMenu, useQueryMenus } from '@/services/menu'
 import { useModalStore } from '@/store/modal'
 import { removeDuplicateMenus } from '@/utils'
+import { getMenuPath, getSubFlowPath } from '@/utils/route-path'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
@@ -115,7 +116,7 @@ export default function ExpandMenuInfoModal({
       return
     }
 
-    router.push(`/defines/global/menu/${menuInfo.property.rootId}`)
+    router.push(getMenuPath(menuInfo.property.rootId))
   }
 
   const handleOpenFlow = async () => {
@@ -144,7 +145,7 @@ export default function ExpandMenuInfoModal({
       return
     }
 
-    router.push(`/subflows/${subFlow.id}`)
+    router.push(getSubFlowPath(subFlow.id))
   }
 
   return (

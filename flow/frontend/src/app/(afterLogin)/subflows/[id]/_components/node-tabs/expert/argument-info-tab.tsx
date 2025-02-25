@@ -14,6 +14,7 @@ import { SubCallInfo } from '@/models/property/flow'
 import { getSubFlow, useQueryAllInFlow } from '@/services/flow'
 import { useModalStore } from '@/store/modal'
 import { removeMainOrEndFlows } from '@/utils/options'
+import { getSubFlowPath } from '@/utils/route-path'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
@@ -181,7 +182,7 @@ export default function ArgumentInfoTab(props: NodePropertyTabProps) {
   const handleOpenFlow = () => {
     const subFlow = inflows.find((flow) => flow.name === info?.subFlowName)
     if (subFlow) {
-      router.push(`/subflows/${subFlow.id}`)
+      router.push(getSubFlowPath(subFlow.id))
     }
   }
 

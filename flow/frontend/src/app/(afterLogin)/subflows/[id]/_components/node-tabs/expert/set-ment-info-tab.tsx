@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/_components/select'
-import { Separator } from '@/ui/separator'
 import {
   SELECT_CONDITION_OPTIONS,
   SET_MENT_OPTIONS,
@@ -23,6 +22,7 @@ import useAutocomplete from '@/hooks/use-autocomplete'
 import { DefineMent } from '@/models/define'
 import { MCMentInfo } from '@/models/property/flow'
 import { useQueryDefines } from '@/services/define'
+import { Separator } from '@/ui/separator'
 import { removeDuplicateDefines } from '@/utils/options'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
@@ -33,8 +33,8 @@ export default function SetMentInfoTab(props: NodePropertyTabProps) {
   const mentInfo = getValues(props.tabName) as MCMentInfo | undefined
   const [options, _, onValueChange] = useAutocomplete({ ...props })
 
-  const [mentDesc, setMentDesc] = useState<string>()
-  const [errorMentDesc, setErrorMentDesc] = useState<string>()
+  const [mentDesc, setMentDesc] = useState('')
+  const [errorMentDesc, setErrorMentDesc] = useState('')
 
   const { data: ments } = useSuspenseQuery({
     ...useQueryDefines<DefineMent>('ment'),

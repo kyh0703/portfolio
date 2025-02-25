@@ -12,7 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/app/_components/select'
-import { Separator } from '@/ui/separator'
 import {
   CHOICE_CALL_OPTIONS,
   END_KEY_OPTIONS,
@@ -24,6 +23,7 @@ import useAutocomplete from '@/hooks/use-autocomplete'
 import { DefineMent } from '@/models/define'
 import { RecordInfo } from '@/models/property/telephony'
 import { useQueryDefines } from '@/services/define'
+import { Separator } from '@/ui/separator'
 import { removeDuplicateDefines } from '@/utils/options'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
@@ -34,7 +34,7 @@ export default function RecordInfoTab(props: NodePropertyTabProps) {
   const info = getValues(props.tabName) as RecordInfo | undefined
   const [options, _, onValueChange] = useAutocomplete({ ...props })
 
-  const [mentDesc, setMentDesc] = useState<string>()
+  const [mentDesc, setMentDesc] = useState('')
 
   const { data: ments } = useSuspenseQuery({
     ...useQueryDefines<DefineMent>('ment'),

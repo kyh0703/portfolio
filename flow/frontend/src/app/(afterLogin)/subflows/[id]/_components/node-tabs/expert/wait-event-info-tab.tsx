@@ -18,7 +18,7 @@ export default function WaitEventInfoTab(props: NodePropertyTabProps) {
   const { errors, getValues, setValue } = useNodePropertiesContext()
   const info = getValues(props.tabName) as WaitEventInfo | undefined
   const [options, _, onValueChange] = useAutocomplete({ ...props })
-  const [mentDesc, setMentDesc] = useState<string>()
+  const [mentDesc, setMentDesc] = useState('')
 
   const { data: ments } = useSuspenseQuery({
     ...useQueryDefines<DefineMent>('ment'),

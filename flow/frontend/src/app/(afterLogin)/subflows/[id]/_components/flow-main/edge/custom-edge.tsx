@@ -1,4 +1,3 @@
-import { DEFAULT_GHOST_NODE_WIDTH } from '@/constants/xyflow'
 import { useEdges, useUndoRedo } from '@/hooks/xyflow'
 import { useUpdateEdge } from '@/services/subflow'
 import { colors } from '@/themes'
@@ -48,8 +47,7 @@ export function CustomEdge({
     update: null,
   })
 
-  const [shouldMutationTrigger, setShouldMutationTrigger] =
-    useState<boolean>(true)
+  const [shouldMutationTrigger, setShouldMutationTrigger] = useState(true)
   const updateEdgeMutation = useUpdateEdge()
   const { saveHistory } = useUndoRedo(subFlowId!)
 

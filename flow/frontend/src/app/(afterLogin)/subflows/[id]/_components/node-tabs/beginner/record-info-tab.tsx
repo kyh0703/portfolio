@@ -34,7 +34,7 @@ export default function BeginnerRecordInfoTab(props: NodePropertyTabProps) {
   const info = getValues(props.tabName) as RecordInfo | undefined
   const [options, _, onValueChange] = useAutocomplete({ ...props })
 
-  const [mentDesc, setMentDesc] = useState<string>()
+  const [mentDesc, setMentDesc] = useState('')
 
   const { data: ments } = useSuspenseQuery({
     ...useQueryDefines<DefineMent>('ment'),

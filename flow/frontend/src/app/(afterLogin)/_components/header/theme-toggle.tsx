@@ -1,9 +1,9 @@
 'use client'
 
-import { MoonIcon, SunIcon } from '@/app/_components/icon'
 import { useTheme } from 'next-themes'
 import { useEffect, useState, type MouseEventHandler } from 'react'
 import { Button } from '../../../_components/button'
+import { MoonIcon, SunIcon } from 'lucide-react'
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme()
@@ -23,8 +23,8 @@ export default function ThemeToggle() {
 
   return (
     <Button variant="ghost" size="icon" onClick={handleClick}>
-      <MoonIcon className="light-icon" />
-      <SunIcon className="dark-icon" />
+      <MoonIcon className="light-icon" size={20} />
+      <SunIcon className="dark-icon" size={20} />
     </Button>
   )
 }

@@ -70,7 +70,7 @@ export default function BeginnerMentInfoModal({
     useShallow((state) => [state.data as ModalData, state.closeModal]),
   )
   const [options, _, onValueChange] = useAutocomplete({ ...tabProps })
-  const [mentDesc, setMentDesc] = useState<string>('')
+  const [mentDesc, setMentDesc] = useState('')
 
   const { data: ments } = useSuspenseQuery({
     ...useQueryDefines<DefineMent>('ment'),

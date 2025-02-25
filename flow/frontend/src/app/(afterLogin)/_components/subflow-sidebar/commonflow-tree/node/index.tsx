@@ -6,8 +6,9 @@ import {
   ContextMenuTrigger,
 } from '@/ui/context-menu'
 import { cn } from '@/utils/cn'
+import { getSubFlowPath } from '@/utils/route-path'
 import { useRouter } from 'next/navigation'
-import { memo, useRef } from 'react'
+import { memo, useState } from 'react'
 import { NodeApi, NodeRendererProps } from 'react-arborist'
 import { TreeProps } from 'react-arborist/dist/module/types/tree-props'
 import CustomContextMenuItem from '../../_components/custom-context-menu-item'
@@ -29,14 +30,14 @@ function Node({
 }: SearchListItemProps) {
   const { type } = node.data
   const router = useRouter()
-  const isOpenContextMenu = useRef<boolean>(false)
+  const [isOpen, setIsOpen] = useState(false)
   const openModal = useModalStore((state) => state.openModal)
 
   const handleMoveSubFlow = () => {
     if (type === 'folder' || node.isEditing) {
       return
     }
-    router.push(`/subflows/${node.id}`)
+    router.push(getSubFlowPath(Number(node.id)))
   }
 
   const handleOpenPropertiesModal = () => {
@@ -49,16 +50,13 @@ function Node({
   const handleOpenFolder = () => type === 'folder' && node.toggle()
 
   return (
-    <ContextMenu
-      modal={isOpenContextMenu.current}
-      onOpenChange={(open) => (isOpenContextMenu.current = open)}
-    >
+    <ContextMenu modal={isOpen}>
       <ContextMenuTrigger disabled={type === 'file'}>
         <div
           ref={dragHandle}
           style={style}
           className={cn(
-            'relative mx-2 rounded-md text-icon group-hover:font-medium',
+            'relative mx-2 rounded-md text-sm text-icon group-hover:font-medium',
             node.isSelected
               ? 'bg-[#2196F3] font-medium'
               : 'group-hover:bg-tree-hover',
@@ -78,7 +76,7 @@ function Node({
           </div>
         </div>
       </ContextMenuTrigger>
-      <ContextMenuContent>
+      <ContextMenuContent onClick={() => setIsOpen(false)}>
         <CustomContextMenuItem
           onClick={() => tree.create({ parentId: node.id, type: 'internal' })}
         >

@@ -5,6 +5,7 @@ import { RadioGroup, RadioGroupItem } from '@/app/_components/radio-group'
 import { useUserContext } from '@/store/context'
 import { useDefineStore } from '@/store/define'
 import type { DefineScope } from '@/types/define'
+import { getDefinePath } from '@/utils/route-path'
 import { useRouter } from 'next/navigation'
 import { useShallow } from 'zustand/react/shallow'
 import { defineItems } from './types'
@@ -34,11 +35,11 @@ export default function DefineScopeButton() {
       (item) => item.scope === scope && item.name.toLowerCase() === page,
     )
 
-    const targetPage = matchedItem
+    const type = matchedItem
       ? matchedItem.name.toLocaleLowerCase()
       : defaultPage[scope]
 
-    router.push(`/defines/${scope}/${targetPage}`)
+    router.push(getDefinePath(scope, type))
     if (!matchedItem) {
       resetPage(scope)
     }

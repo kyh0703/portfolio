@@ -92,7 +92,7 @@ export default function FlowTabs() {
   const handleTabClick = (index: number) => {
     const subFlow = currentTab.subFlows[index]
     if (subFlow) {
-      router.push(`/subflows/${subFlow.id}`)
+      router.push(getSubFlowPath(subFlow.id))
     }
   }
 
@@ -182,7 +182,7 @@ export default function FlowTabs() {
                     'bg-accent text-accent-foreground',
                 )}
                 onClick={() => {
-                  router.push(`/subflows/${subFlow.id}`)
+                  router.push(getSubFlowPath(subFlow.id))
                 }}
               >
                 <span className="overflow-hidden text-ellipsis text-nowrap">

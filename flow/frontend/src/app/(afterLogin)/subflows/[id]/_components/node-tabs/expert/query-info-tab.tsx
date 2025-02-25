@@ -27,8 +27,8 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { useEffect, useRef, useState } from 'react'
-import ArgumentInfoModal from './argument-info-modal'
 import { NodePropertyTabProps } from '../../node-properties/types'
+import ArgumentInfoModal from './argument-info-modal'
 
 const colArgumentDataDefs: ColDef<string>[] = [
   {
@@ -66,7 +66,7 @@ export default function QueryInfoTab(props: NodePropertyTabProps) {
   const [options, _, onValueChange] = useAutocomplete({ ...props })
   const openModal = useModalStore((state) => state.openModal)
 
-  const [mentDesc, setMentDesc] = useState<string>()
+  const [mentDesc, setMentDesc] = useState('')
   const [modalType, setModalType] = useState<'argumentData' | 'resultColumn'>()
 
   const gridArgumentDataRef = useRef<AgGridReact<string>>(null)

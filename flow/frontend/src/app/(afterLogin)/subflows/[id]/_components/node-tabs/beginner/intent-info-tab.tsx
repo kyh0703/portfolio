@@ -20,14 +20,15 @@ import { getInFlows } from '@/services/flow'
 import { getMenus } from '@/services/menu'
 import { useUserContext } from '@/store/context'
 import { useModalStore } from '@/store/modal'
+import { getDefinePath, getMenuPath, getSubFlowPath } from '@/utils/route-path'
 import { ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useRef } from 'react'
 import { toast } from 'react-toastify'
 import IntentInfoMenu from '../../grid-row-menu/intent-info-menu'
-import IntentInfoModal from './intent-info-modal'
 import { NodePropertyTabProps } from '../../node-properties/types'
+import IntentInfoModal from './intent-info-modal'
 
 export default function BeginnerIntentInfoTab(props: NodePropertyTabProps) {
   const colDefs: ColDef<IntentList>[] = [
@@ -140,7 +141,7 @@ export default function BeginnerIntentInfoTab(props: NodePropertyTabProps) {
       return
     }
 
-    router.push(`/defines/global/intent/${intent.id}`)
+    router.push(getDefinePath('global', 'intent', intent.id))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -157,7 +158,7 @@ export default function BeginnerIntentInfoTab(props: NodePropertyTabProps) {
       return
     }
 
-    router.push(`/defines/global/menu/${menu.id}`)
+    router.push(getMenuPath(menu.id))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -174,7 +175,7 @@ export default function BeginnerIntentInfoTab(props: NodePropertyTabProps) {
       return
     }
 
-    router.push(`/subflows/${flow.id}`)
+    router.push(getSubFlowPath(flow.id))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

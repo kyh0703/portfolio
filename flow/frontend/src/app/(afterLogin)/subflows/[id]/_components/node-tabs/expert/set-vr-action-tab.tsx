@@ -5,13 +5,13 @@ import { Checkbox } from '@/app/_components/checkbox'
 import { Input } from '@/app/_components/input'
 import Label from '@/app/_components/label'
 import PlayButton from '@/app/_components/play-button'
-import { Separator } from '@/ui/separator'
 import { SCORE_OPTIONS_100 } from '@/constants/options'
 import { useNodePropertiesContext } from '@/contexts/node-properties-context'
 import useAutocomplete from '@/hooks/use-autocomplete'
 import { DefineMent } from '@/models/define'
 import { VrAction } from '@/models/property/flow'
 import { useQueryDefines } from '@/services/define'
+import { Separator } from '@/ui/separator'
 import { removeDuplicateDefines } from '@/utils/options'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
@@ -22,7 +22,7 @@ export default function SetVRActionTab(props: NodePropertyTabProps) {
   const vrAction = getValues(props.tabName) as VrAction | undefined
   const [options, _, onValueChange] = useAutocomplete({ ...props })
 
-  const [mentDesc, setMentDesc] = useState<string>()
+  const [mentDesc, setMentDesc] = useState('')
 
   const { data: ments } = useSuspenseQuery({
     ...useQueryDefines<DefineMent>('ment'),

@@ -59,7 +59,7 @@ export default function ComponentSidebar() {
       <div className="flex h-search w-full flex-shrink-0 items-center justify-center border-b border-solid px-5">
         <SearchBox onChange={handleChange} />
       </div>
-      <section className="flex-grow overflow-auto font-poppins text-sm">
+      <section className="flex-grow overflow-auto font-poppins">
         {filteredComponents.map(({ title, components }) => (
           <div key={title}>
             <Folder title={title}>
@@ -72,7 +72,7 @@ export default function ComponentSidebar() {
                     onDragStart={(e) => handleDragStart(e, component.nodeType)}
                   >
                     <component.icon cursor="grab" size={32} />
-                    <p className="text-center text-xs">{component.title}</p>
+                    <p className="text-center text-sm">{component.title}</p>
                   </div>
                 ))}
               </div>

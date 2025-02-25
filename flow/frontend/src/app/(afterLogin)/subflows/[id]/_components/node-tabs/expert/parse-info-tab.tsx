@@ -12,6 +12,7 @@ import { DefineString } from '@/models/define'
 import { StringParserInfo } from '@/models/property/flow'
 import { useQueryDefines } from '@/services/define'
 import { removeDuplicateDefines } from '@/utils/options'
+import { getDefinePath } from '@/utils/route-path'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -24,7 +25,7 @@ export default function ParseInfoTab(props: NodePropertyTabProps) {
 
   const router = useRouter()
 
-  const [StringDesc, setStringDesc] = useState<string>()
+  const [StringDesc, setStringDesc] = useState('')
 
   const { data: strings } = useSuspenseQuery({
     ...useQueryDefines<DefineString>('string'),
@@ -42,7 +43,7 @@ export default function ParseInfoTab(props: NodePropertyTabProps) {
     const string = strings.find(
       (string) => string.defineId === parserInfo?.formatId,
     )!
-    router.push(`/defines/global/string/${string.id}`)
+    router.push(getDefinePath('global', 'string', string.id))
   }
 
   return (

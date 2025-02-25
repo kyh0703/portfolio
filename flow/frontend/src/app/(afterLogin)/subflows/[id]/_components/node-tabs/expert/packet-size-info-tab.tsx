@@ -8,6 +8,7 @@ import { DefinePacket } from '@/models/define'
 import { PacketSizeInfo } from '@/models/property/packet'
 import { useQueryDefines } from '@/services/define'
 import { removeDuplicateDefines } from '@/utils/options'
+import { getDefinePath } from '@/utils/route-path'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { NodePropertyTabProps } from '../../node-properties/types'
@@ -28,7 +29,7 @@ export default function PacketSizeInfoTab(props: NodePropertyTabProps) {
     const packet = packets.find(
       (packet) => packet.defineId === packetInfo?.packetId,
     )!
-    router.push(`/defines/${packet.scope}/packet/${packet.id}`)
+    router.push(getDefinePath(packet.scope, 'packet', packet.id))
   }
 
   return (

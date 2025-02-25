@@ -23,8 +23,8 @@ import { ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'react-toastify'
-import RouteInfoModal from './route-info-modal'
 import { NodePropertyTabProps } from '../../node-properties/types'
+import RouteInfoModal from './route-info-modal'
 
 const colDefs: ColDef<RouteList>[] = [
   {
@@ -75,7 +75,7 @@ export default function RouteInfoTab(props: NodePropertyTabProps) {
   const routeInfo = getValues(props.tabName) as RouteInfo | undefined
   const [options, _, onValueChange] = useAutocomplete({ ...props })
   const openModal = useModalStore((state) => state.openModal)
-  const [mentDesc, setMentDesc] = useState<string>()
+  const [mentDesc, setMentDesc] = useState('')
 
   const gridRef = useRef<AgGridReact<RouteList>>(null)
   const gridOptions = useGridOption<RouteList>()

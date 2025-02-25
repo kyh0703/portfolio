@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@/app/_components/button'
-import { DarkUserIcon, UserIcon } from '@/app/_components/icon'
 import { useUserContext } from '@/store/context'
 import {
   HoverCard,
@@ -9,6 +8,7 @@ import {
   HoverCardPortal,
   HoverCardTrigger,
 } from '@/ui/hover-card'
+import { UserRoundIcon } from 'lucide-react'
 
 export default function Avatar() {
   const { user } = useUserContext()
@@ -25,18 +25,22 @@ export default function Avatar() {
     }
     return 'bg-red-500'
   }
+
   const levelColor = getLevelColor(+user.userLevel)
 
   return (
     <HoverCard openDelay={200} closeDelay={200}>
       <HoverCardTrigger>
         <Button size="icon" variant="ghost">
-          <UserIcon className="light-icon" size={32} />
-          <DarkUserIcon className="dark-icon" size={32} />
+          <UserRoundIcon
+            size={24}
+            className="text-white hover:text-icon dark:hover:text-white"
+            cursor="pointer"
+          />
         </Button>
       </HoverCardTrigger>
       <HoverCardPortal>
-        <HoverCardContent className="w-32">
+        <HoverCardContent className="w-32" side="right">
           <div className="space-y-2">
             <h4 className="text-sm font-semibold">{user.userName}</h4>
             <div className="flex items-center space-x-2">

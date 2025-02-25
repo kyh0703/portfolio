@@ -41,6 +41,7 @@ import PropertiesModal from '../_components/properties-modal'
 import useTree from '../lib/use-tree'
 import Action from './action'
 import Node from './node'
+
 export default function SubFlowTree({ search }: { search: string }) {
   const { ref, width, height } = useResizeObserver()
   const treeHeight = height
@@ -176,7 +177,7 @@ export default function SubFlowTree({ search }: { search: string }) {
             selectedNodes[0].data.type === 'file' &&
             !selectedNodes[0].isEditing
           ) {
-            router.push(`/subflows/${selectedNodes[0].data.databaseId}`)
+            router.push(getSubFlowPath(selectedNodes[0].data.databaseId))
           }
           break
         case 'x':

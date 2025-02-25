@@ -12,6 +12,7 @@ import { getInFlows } from '@/services/flow'
 import { getMenu, useQueryMenus } from '@/services/menu'
 import logger from '@/utils/logger'
 import { removeDuplicateMenus } from '@/utils/options'
+import { getMenuPath, getSubFlowPath } from '@/utils/route-path'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
@@ -57,7 +58,7 @@ export default function BeginnerMenuInfoTab(props: NodePropertyTabProps) {
         toast.warn('Menu 정보를 찾을 수 없습니다.')
         return
       }
-      router.push(`/defines/global/menu/${menuDetails.property.rootId}`)
+      router.push(getMenuPath(menuDetails.property.rootId))
     } catch (error) {
       logger.error('Menu 정보를 찾을 수 없습니다.', error)
     }
@@ -91,7 +92,7 @@ export default function BeginnerMenuInfoTab(props: NodePropertyTabProps) {
         return
       }
 
-      router.push(`/subflows/${targetSubFlow.id}`)
+      router.push(getSubFlowPath(targetSubFlow.id))
     } catch (error) {
       logger.error('Menu 정보를 찾을 수 없습니다.', error)
     }

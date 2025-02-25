@@ -35,7 +35,7 @@ export default function DigitInfoTab(props: NodePropertyTabProps) {
   const digit = getValues('digit') as DigitInfo | undefined
   const vars = getValues('vars') as VisualARSInfo | undefined
   const [options, _, onValueChange] = useAutocomplete({ ...props })
-  const [mentDesc, setMentDesc] = useState<string>()
+  const [mentDesc, setMentDesc] = useState('')
 
   const { data: ments } = useSuspenseQuery({
     ...useQueryDefines<DefineMent>('ment'),

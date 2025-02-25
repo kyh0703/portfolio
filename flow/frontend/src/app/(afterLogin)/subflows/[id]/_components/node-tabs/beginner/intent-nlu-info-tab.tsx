@@ -24,6 +24,7 @@ import { EntityCallInfo } from '@/models/property/ai'
 import { useQueryDefines } from '@/services/define'
 import { Separator } from '@/ui/separator'
 import { removeDuplicateDefines } from '@/utils/options'
+import { getDefinePath } from '@/utils/route-path'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -54,7 +55,7 @@ export default function BeginnerIntentNluInfoTab(props: NodePropertyTabProps) {
       (intent) => intent.defineId === entityInfo?.intentId,
     )
     if (intent) {
-      router.push('/defines/global/intent/' + intent.id)
+      router.push(getDefinePath('global', 'intent', intent.id))
     }
   }
 

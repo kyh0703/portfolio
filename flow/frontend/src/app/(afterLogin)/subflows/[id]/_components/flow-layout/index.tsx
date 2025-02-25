@@ -7,8 +7,9 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from '@/ui/resiable'
+} from '@/ui/resizable'
 import { Separator } from '@/ui/separator'
+import { getSubFlowPath } from '@/utils/route-path'
 import { useSuspenseQueries } from '@tanstack/react-query'
 import { ReactFlowProvider } from '@xyflow/react'
 import { useRouter } from 'next/navigation'
@@ -51,7 +52,7 @@ export default function FlowLayout({
     commonFlows.find((item) => item.id === subFlowId)
   if (!subFlow) {
     toast.error(`SubFlow with id ${subFlowId} not found`)
-    router.push(`/subflows`)
+    router.push(getSubFlowPath())
     return null
   }
 

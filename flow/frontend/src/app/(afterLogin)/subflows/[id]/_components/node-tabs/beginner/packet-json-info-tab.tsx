@@ -19,7 +19,7 @@ export default function BeginnerPacketJsonInfoTab(props: NodePropertyTabProps) {
   const { errors, getValues, setValue } = useNodePropertiesContext()
   const packetInfo = getValues(props.tabName) as PacketJsonInfo | undefined
   const [options, _, onValueChange] = useAutocomplete({ ...props })
-  const [mentDesc, setMentDesc] = useState<string>()
+  const [mentDesc, setMentDesc] = useState('')
 
   const { data: ments } = useSuspenseQuery({
     ...useQueryDefines<DefineMent>('ment'),

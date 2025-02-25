@@ -21,6 +21,7 @@ import { getMenu, getMenus } from '@/services/menu'
 import { useModalStore } from '@/store/modal'
 import { Separator } from '@/ui/separator'
 import { removeDuplicateDefines } from '@/utils/options'
+import { getMenuPath, getSubFlowPath } from '@/utils/route-path'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { ColDef, RowDoubleClickedEvent } from 'ag-grid-community'
 import { AgGridReact } from 'ag-grid-react'
@@ -155,7 +156,7 @@ export default function ExpandMenuInfoTab(props: NodePropertyTabProps) {
       return
     }
 
-    router.push(`/defines/global/menu/${selectedMenu.id}`)
+    router.push(getMenuPath(selectedMenu.id))
   }
 
   const openFlowPage = async (menuId: string) => {
@@ -184,7 +185,7 @@ export default function ExpandMenuInfoTab(props: NodePropertyTabProps) {
       toast.warn('SubFlow 정보를 찾을 수 없습니다.')
       return
     }
-    router.push(`/subflows/${subFlow.id}`)
+    router.push(getSubFlowPath(subFlow.id))
   }
 
   const handleRowDoubleClicked = (event: RowDoubleClickedEvent<BranchList>) => {

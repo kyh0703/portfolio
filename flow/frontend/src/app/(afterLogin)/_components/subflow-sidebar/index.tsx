@@ -5,7 +5,7 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from '@/ui/resiable'
+} from '@/ui/resizable'
 import { cn } from '@/utils/cn'
 import { useState } from 'react'
 import CommonFlowTree from './commonflow-tree'

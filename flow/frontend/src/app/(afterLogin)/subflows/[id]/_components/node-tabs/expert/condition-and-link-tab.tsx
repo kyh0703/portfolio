@@ -37,8 +37,8 @@ import {
   type KeyboardEventHandler,
 } from 'react'
 import { toast } from 'react-toastify'
-import ConditionAndLinkModal from './condition-and-link-modal'
 import { NodePropertyTabProps } from '../../node-properties/types'
+import ConditionAndLinkModal from './condition-and-link-modal'
 
 const colDefs: ColDef<Link>[] = [
   {
@@ -64,7 +64,7 @@ export default function ConditionAndLinkTab(props: NodePropertyTabProps) {
   const [options, _, onValueChange] = useAutocomplete({ ...props })
 
   const gridRef = useRef<AgGridReact<Link>>(null)
-  const animatedEdgeRef = useRef<string>('')
+  const animatedEdgeRef = useRef('')
   const selectedRowRef = useRef<Link>()
 
   const { setEdges, deleteElements } = useReactFlow<AppNode, AppEdge>()

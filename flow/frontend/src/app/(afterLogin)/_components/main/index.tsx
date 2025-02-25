@@ -6,7 +6,7 @@ import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from '@/ui/resiable'
+} from '@/ui/resizable'
 import {
   Suspense,
   useCallback,
@@ -78,7 +78,7 @@ export default function Main({ children }: PropsWithChildren) {
                       defaultSize={20}
                       maxSize={50}
                       collapsedSize={0}
-                      collapsible={true}
+                      collapsible
                     >
                       <Footer />
                     </ResizablePanel>

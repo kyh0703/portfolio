@@ -20,7 +20,7 @@ const NameAutocomplete = (props: AutocompleteProps) => {
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null)
   const inputButtonRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
-  const [isListOpen, setIsListOpen] = useState<boolean>(false)
+  const [isListOpen, setIsListOpen] = useState(false)
 
   useAutocompleteEvent(isListOpen, inputButtonRef, listRef, setIsListOpen)
 

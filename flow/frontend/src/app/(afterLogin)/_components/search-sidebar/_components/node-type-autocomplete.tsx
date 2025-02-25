@@ -44,7 +44,7 @@ const NodeTypeAutocomplete = ({
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
   const inputButtonRef = useRef<HTMLDivElement>(null)
   const portalRef = useRef<HTMLDivElement>(null)
-  const [isListOpen, setIsListOpen] = useState<boolean>(false)
+  const [isListOpen, setIsListOpen] = useState(false)
   const [dimensions, setDimensions] = useState({ top: 0, left: 0, width: 0 })
 
   const handleChange = useCallback(
