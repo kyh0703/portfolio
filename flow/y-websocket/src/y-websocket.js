@@ -12,7 +12,7 @@ import * as decoding from 'lib0/decoding'
 import * as syncProtocol from 'y-protocols/sync'
 import * as authProtocol from 'y-protocols/auth'
 import * as awarenessProtocol from 'y-protocols/awareness'
-import { ObservableV2 } from 'lib0/observable'
+import { Observable } from 'lib0/observable'
 import * as math from 'lib0/math'
 import * as url from 'lib0/url'
 import * as env from 'lib0/environment'
@@ -130,11 +130,9 @@ const readMessage = (provider, buf, emitSynced) => {
  *
  * @param {WebsocketProvider} provider
  * @param {WebSocket} ws
- * @param {CloseEvent | null} event
  */
-const closeWebsocketConnection = (provider, ws, event) => {
+const closeWebsocketConnection = (provider, ws) => {
   if (ws === provider.ws) {
-    provider.emit('connection-close', [event, provider])
     provider.ws = null
     ws.close()
     provider.wsconnecting = false
@@ -191,7 +189,8 @@ const setupWS = (provider) => {
       provider.emit('connection-error', [event, provider])
     }
     websocket.onclose = (event) => {
-      closeWebsocketConnection(provider, websocket, event)
+      provider.emit('connection-close', [event, provider])
+      closeWebsocketConnection(provider, websocket)
     }
     websocket.onopen = () => {
       provider.wsLastMessageReceived = time.getUnixTime()
@@ -250,9 +249,9 @@ const broadcastMessage = (provider, buf) => {
  *   const doc = new Y.Doc()
  *   const provider = new WebsocketProvider('http://localhost:1234', 'my-document-name', doc)
  *
- * @extends {ObservableV2<{ 'connection-close': (event: CloseEvent | null,  provider: WebsocketProvider) => any, 'status': (event: { status: 'connected' | 'disconnected' | 'connecting' }) => any, 'connection-error': (event: Event, provider: WebsocketProvider) => any, 'sync': (state: boolean) => any }>}
+ * @extends {Observable<string>}
  */
-export class WebsocketProvider extends ObservableV2 {
+export class WebsocketProvider extends Observable {
   /**
    * @param {string} serverUrl
    * @param {string} roomname
@@ -278,7 +277,7 @@ export class WebsocketProvider extends ObservableV2 {
     disableBc = false
   } = {}) {
     super()
-    // ensure that serverUrl does not end with /
+    // ensure that url is always ends with /
     while (serverUrl[serverUrl.length - 1] === '/') {
       serverUrl = serverUrl.slice(0, serverUrl.length - 1)
     }
@@ -392,7 +391,7 @@ export class WebsocketProvider extends ObservableV2 {
       ) {
         // no message received in a long time - not even your own awareness
         // updates (which are updated every 15 seconds)
-        closeWebsocketConnection(this, /** @type {WebSocket} */ (this.ws), null)
+        closeWebsocketConnection(this, /** @type {WebSocket} */ (this.ws))
       }
     }, messageReconnectTimeout / 10))
     if (connect) {
@@ -416,7 +415,6 @@ export class WebsocketProvider extends ObservableV2 {
   set synced (state) {
     if (this._synced !== state) {
       this._synced = state
-      // @ts-ignore
       this.emit('synced', [state])
       this.emit('sync', [state])
     }
@@ -500,7 +498,7 @@ export class WebsocketProvider extends ObservableV2 {
     this.shouldConnect = false
     this.disconnectBc()
     if (this.ws !== null) {
-      closeWebsocketConnection(this, this.ws, null)
+      closeWebsocketConnection(this, this.ws)
     }
   }
 
