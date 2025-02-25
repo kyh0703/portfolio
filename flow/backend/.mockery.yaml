@@ -1,6 +1,0 @@
-with-expecter: true
-mockname: "{{.InterfaceName}}"
-filename: "{{.InterfaceNameSnake}}.go"
-dir: "test/mock/{{.PackageName}}"
-outpkg: "{{.PackageName}}"
-packages:
