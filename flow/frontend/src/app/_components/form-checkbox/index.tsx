@@ -1,5 +1,6 @@
 'use client'
 
+import { Checkbox } from '@/ui/checkbox'
 import type { CheckboxProps } from '@radix-ui/react-checkbox'
 import {
   useForm,
@@ -7,7 +8,6 @@ import {
   type FieldPath,
   type FieldValues,
 } from 'react-hook-form'
-import { Checkbox } from '../checkbox'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '../form'
 
 export type FormCheckboxProps<T extends FieldValues> = {

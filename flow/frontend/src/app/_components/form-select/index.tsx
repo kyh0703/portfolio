@@ -1,5 +1,6 @@
 'use client'
 
+import { Select, SelectContent, SelectTrigger, SelectValue } from '@/ui/select'
 import type { SelectProps } from '@radix-ui/react-select'
 import type { PropsWithChildren } from 'react'
 import {
@@ -9,7 +10,6 @@ import {
   type FieldValues,
 } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem } from '../form'
-import { Select, SelectContent, SelectTrigger, SelectValue } from '../select'
 
 export type FormSelectProps<T extends FieldValues> = {
   control: Control<T>

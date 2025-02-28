@@ -1,8 +1,8 @@
 'use client'
 
 import { InputSearchIcon } from '@/app/_components/icon'
+import { Input } from '@/ui/input'
 import { cn } from '@/utils/cn'
-import { Input } from '../input'
 
 type SearchBoxProps = {
   placeHolder?: string

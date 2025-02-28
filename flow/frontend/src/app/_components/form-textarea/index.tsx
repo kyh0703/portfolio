@@ -1,5 +1,6 @@
 'use client'
 
+import { Textarea } from '@/ui/textarea'
 import {
   useForm,
   type Control,
@@ -7,7 +8,6 @@ import {
   type FieldValues,
 } from 'react-hook-form'
 import { Form, FormControl, FormField } from '../form'
-import { Textarea } from '../textarea'
 
 export type FormInputProps<T extends FieldValues> = {
   control: Control<T>

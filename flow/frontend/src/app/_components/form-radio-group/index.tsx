@@ -1,5 +1,7 @@
 'use client'
 
+import { RadioGroup } from '@/ui/radio-group'
+import type { RadioGroupProps } from '@radix-ui/react-radio-group'
 import type { PropsWithChildren } from 'react'
 import {
   useForm,
@@ -8,8 +10,6 @@ import {
   type FieldValues,
 } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem } from '../form'
-import { RadioGroup } from '../radio-group'
-import type { RadioGroupProps } from '@radix-ui/react-radio-group'
 
 export type FormRadioGroupProps<T extends FieldValues> = {
   control: Control<T>
