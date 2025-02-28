@@ -70,6 +70,34 @@ RETURNING *;
 DELETE FROM tokens
 WHERE id = ?;
 
+-- name: CreateProject :one
+INSERT INTO projects (
+  name,
+  description
+) VALUES (
+  ?, ?
+)
+RETURNING *;
+
+-- name: GetProject :one
+SELECT * FROM projects
+WHERE id = ? LIMIT 1;
+
+-- name: ListProjects :many
+SELECT * FROM projects
+ORDER BY name;
+
+-- name: UpdateProject :exec
+UPDATE projects SET
+name = ?,
+description = ?
+WHERE id = ?
+RETURNING *;
+
+-- name: DeleteProject :exec
+DELETE FROM projects
+WHERE id = ?;
+
 -- name: CreateFlow :one
 INSERT INTO flows (
   name,
@@ -85,6 +113,7 @@ WHERE id = ? LIMIT 1;
 
 -- name: ListFlows :many
 SELECT * FROM flows
+WHERE project_id = ?
 ORDER BY name;
 
 -- name: UpdateFlow :exec
@@ -98,48 +127,19 @@ RETURNING *;
 DELETE FROM flows
 WHERE id = ?;
 
--- name: CreateSubFlow :one
-INSERT INTO sub_flows (
-  name,
-  description
-) VALUES (
-  ?, ?
-)
-RETURNING *;
-
--- name: GetSubFlow :one
-SELECT * FROM sub_flows
-WHERE id = ? LIMIT 1;
-
--- name: ListSubFlows :many
-SELECT * FROM sub_flows
-WHERE flow_id = ?
-ORDER BY name;
-
--- name: UpdateSubFlow :exec
-UPDATE sub_flows SET
-name = ?,
-description = ?
-WHERE id = ?
-RETURNING *;
-
--- name: DeleteSubFlow :exec
-DELETE FROM sub_flows
-WHERE id = ?;
-
 -- name: GetNode :one
 SELECT * FROM nodes
 WHERE id = ? LIMIT 1;
 
 -- name: ListNodes :many
 SELECT * FROM nodes
-WHERE sub_flow_id = ?
+WHERE flow_id = ?
 ORDER BY create_time;
 
 -- name: CreateNode :one
 INSERT INTO nodes (
   id,
-  sub_flow_id,
+  flow_id,
   type,
   parent,
   position,
@@ -176,13 +176,13 @@ WHERE id = ? LIMIT 1;
 
 -- name: ListEdges :many
 SELECT * FROM edges
-WHERE sub_flow_id = ?
+WHERE flow_id = ?
 ORDER BY create_time;
 
 -- name: CreateEdge :one
 INSERT INTO edges (
   id,
-  sub_flow_id,
+  flow_id,
   source,
   target,
   type,

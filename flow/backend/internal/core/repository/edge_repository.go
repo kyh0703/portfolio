@@ -28,12 +28,12 @@ func (e *edgeRepository) CreateOne(ctx context.Context, param entity.Edge) (*ent
 	}
 
 	edge, err := e.edgeRecorder.CreateOne(ctx, model.CreateEdgeParams{
-		ID:        recorder.ID,
-		SubFlowID: recorder.SubFlowID,
-		Source:    recorder.Source,
-		Target:    recorder.Target,
-		Hidden:    recorder.Hidden,
-		Points:    recorder.Points,
+		ID:     recorder.ID,
+		FlowID: recorder.FlowID,
+		Source: recorder.Source,
+		Target: recorder.Target,
+		Hidden: recorder.Hidden,
+		Points: recorder.Points,
 	})
 	if err != nil {
 		return nil, err

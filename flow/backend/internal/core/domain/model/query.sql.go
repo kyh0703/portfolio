@@ -13,7 +13,7 @@ import (
 const createEdge = `-- name: CreateEdge :one
 INSERT INTO edges (
   id,
-  sub_flow_id,
+  flow_id,
   source,
   target,
   type,
@@ -24,12 +24,12 @@ INSERT INTO edges (
 ) VALUES (
   ?, ?, ?, ?, ?, ?, ?, ?, ?
 )
-RETURNING id, sub_flow_id, source, target, type, label, hidden, marker_end, points, update_at, create_at
+RETURNING id, flow_id, source, target, type, label, hidden, marker_end, points, update_at, create_at
 `
 
 type CreateEdgeParams struct {
 	ID        string         `json:"id"`
-	SubFlowID int64          `json:"subFlowId"`
+	FlowID    int64          `json:"flowId"`
 	Source    string         `json:"source"`
 	Target    string         `json:"target"`
 	Type      string         `json:"type"`
@@ -42,7 +42,7 @@ type CreateEdgeParams struct {
 func (q *Queries) CreateEdge(ctx context.Context, arg CreateEdgeParams) (Edge, error) {
 	row := q.db.QueryRowContext(ctx, createEdge,
 		arg.ID,
-		arg.SubFlowID,
+		arg.FlowID,
 		arg.Source,
 		arg.Target,
 		arg.Type,
@@ -54,7 +54,7 @@ func (q *Queries) CreateEdge(ctx context.Context, arg CreateEdgeParams) (Edge, e
 	var i Edge
 	err := row.Scan(
 		&i.ID,
-		&i.SubFlowID,
+		&i.FlowID,
 		&i.Source,
 		&i.Target,
 		&i.Type,
@@ -75,7 +75,7 @@ INSERT INTO flows (
 ) VALUES (
   ?, ?
 )
-RETURNING id, name, description, update_at, create_at
+RETURNING id, project_id, name, description, update_at, create_at
 `
 
 type CreateFlowParams struct {
@@ -88,6 +88,7 @@ func (q *Queries) CreateFlow(ctx context.Context, arg CreateFlowParams) (Flow, e
 	var i Flow
 	err := row.Scan(
 		&i.ID,
+		&i.ProjectID,
 		&i.Name,
 		&i.Description,
 		&i.UpdateAt,
@@ -99,7 +100,7 @@ func (q *Queries) CreateFlow(ctx context.Context, arg CreateFlowParams) (Flow, e
 const createNode = `-- name: CreateNode :one
 INSERT INTO nodes (
   id,
-  sub_flow_id,
+  flow_id,
   type,
   parent,
   position,
@@ -111,12 +112,12 @@ INSERT INTO nodes (
 ) VALUES (
   ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 )
-RETURNING id, sub_flow_id, type, parent, position, styles, width, height, hidden, description, update_at, create_at
+RETURNING id, flow_id, type, parent, position, styles, width, height, hidden, description, update_at, create_at
 `
 
 type CreateNodeParams struct {
 	ID          string         `json:"id"`
-	SubFlowID   int64          `json:"subFlowId"`
+	FlowID      int64          `json:"flowId"`
 	Type        string         `json:"type"`
 	Parent      sql.NullString `json:"parent"`
 	Position    sql.NullString `json:"position"`
@@ -130,7 +131,7 @@ type CreateNodeParams struct {
 func (q *Queries) CreateNode(ctx context.Context, arg CreateNodeParams) (Node, error) {
 	row := q.db.QueryRowContext(ctx, createNode,
 		arg.ID,
-		arg.SubFlowID,
+		arg.FlowID,
 		arg.Type,
 		arg.Parent,
 		arg.Position,
@@ -143,7 +144,7 @@ func (q *Queries) CreateNode(ctx context.Context, arg CreateNodeParams) (Node, e
 	var i Node
 	err := row.Scan(
 		&i.ID,
-		&i.SubFlowID,
+		&i.FlowID,
 		&i.Type,
 		&i.Parent,
 		&i.Position,
@@ -158,27 +159,26 @@ func (q *Queries) CreateNode(ctx context.Context, arg CreateNodeParams) (Node, e
 	return i, err
 }
 
-const createSubFlow = `-- name: CreateSubFlow :one
-INSERT INTO sub_flows (
+const createProject = `-- name: CreateProject :one
+INSERT INTO projects (
   name,
   description
 ) VALUES (
   ?, ?
 )
-RETURNING id, flow_id, name, description, update_at, create_at
+RETURNING id, name, description, update_at, create_at
 `
 
-type CreateSubFlowParams struct {
+type CreateProjectParams struct {
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
 }
 
-func (q *Queries) CreateSubFlow(ctx context.Context, arg CreateSubFlowParams) (SubFlow, error) {
-	row := q.db.QueryRowContext(ctx, createSubFlow, arg.Name, arg.Description)
-	var i SubFlow
+func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (Project, error) {
+	row := q.db.QueryRowContext(ctx, createProject, arg.Name, arg.Description)
+	var i Project
 	err := row.Scan(
 		&i.ID,
-		&i.FlowID,
 		&i.Name,
 		&i.Description,
 		&i.UpdateAt,
@@ -289,13 +289,13 @@ func (q *Queries) DeleteNode(ctx context.Context, id string) error {
 	return err
 }
 
-const deleteSubFlow = `-- name: DeleteSubFlow :exec
-DELETE FROM sub_flows
+const deleteProject = `-- name: DeleteProject :exec
+DELETE FROM projects
 WHERE id = ?
 `
 
-func (q *Queries) DeleteSubFlow(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteSubFlow, id)
+func (q *Queries) DeleteProject(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, deleteProject, id)
 	return err
 }
 
@@ -320,7 +320,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getEdge = `-- name: GetEdge :one
-SELECT id, sub_flow_id, source, target, type, label, hidden, marker_end, points, update_at, create_at FROM edges
+SELECT id, flow_id, source, target, type, label, hidden, marker_end, points, update_at, create_at FROM edges
 WHERE id = ? LIMIT 1
 `
 
@@ -329,7 +329,7 @@ func (q *Queries) GetEdge(ctx context.Context, id string) (Edge, error) {
 	var i Edge
 	err := row.Scan(
 		&i.ID,
-		&i.SubFlowID,
+		&i.FlowID,
 		&i.Source,
 		&i.Target,
 		&i.Type,
@@ -344,7 +344,7 @@ func (q *Queries) GetEdge(ctx context.Context, id string) (Edge, error) {
 }
 
 const getFlow = `-- name: GetFlow :one
-SELECT id, name, description, update_at, create_at FROM flows
+SELECT id, project_id, name, description, update_at, create_at FROM flows
 WHERE id = ? LIMIT 1
 `
 
@@ -353,6 +353,7 @@ func (q *Queries) GetFlow(ctx context.Context, id int64) (Flow, error) {
 	var i Flow
 	err := row.Scan(
 		&i.ID,
+		&i.ProjectID,
 		&i.Name,
 		&i.Description,
 		&i.UpdateAt,
@@ -362,7 +363,7 @@ func (q *Queries) GetFlow(ctx context.Context, id int64) (Flow, error) {
 }
 
 const getNode = `-- name: GetNode :one
-SELECT id, sub_flow_id, type, parent, position, styles, width, height, hidden, description, update_at, create_at FROM nodes
+SELECT id, flow_id, type, parent, position, styles, width, height, hidden, description, update_at, create_at FROM nodes
 WHERE id = ? LIMIT 1
 `
 
@@ -371,7 +372,7 @@ func (q *Queries) GetNode(ctx context.Context, id string) (Node, error) {
 	var i Node
 	err := row.Scan(
 		&i.ID,
-		&i.SubFlowID,
+		&i.FlowID,
 		&i.Type,
 		&i.Parent,
 		&i.Position,
@@ -386,17 +387,16 @@ func (q *Queries) GetNode(ctx context.Context, id string) (Node, error) {
 	return i, err
 }
 
-const getSubFlow = `-- name: GetSubFlow :one
-SELECT id, flow_id, name, description, update_at, create_at FROM sub_flows
+const getProject = `-- name: GetProject :one
+SELECT id, name, description, update_at, create_at FROM projects
 WHERE id = ? LIMIT 1
 `
 
-func (q *Queries) GetSubFlow(ctx context.Context, id int64) (SubFlow, error) {
-	row := q.db.QueryRowContext(ctx, getSubFlow, id)
-	var i SubFlow
+func (q *Queries) GetProject(ctx context.Context, id int64) (Project, error) {
+	row := q.db.QueryRowContext(ctx, getProject, id)
+	var i Project
 	err := row.Scan(
 		&i.ID,
-		&i.FlowID,
 		&i.Name,
 		&i.Description,
 		&i.UpdateAt,
@@ -482,13 +482,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const listEdges = `-- name: ListEdges :many
-SELECT id, sub_flow_id, source, target, type, label, hidden, marker_end, points, update_at, create_at FROM edges
-WHERE sub_flow_id = ?
+SELECT id, flow_id, source, target, type, label, hidden, marker_end, points, update_at, create_at FROM edges
+WHERE flow_id = ?
 ORDER BY create_time
 `
 
-func (q *Queries) ListEdges(ctx context.Context, subFlowID int64) ([]Edge, error) {
-	rows, err := q.db.QueryContext(ctx, listEdges, subFlowID)
+func (q *Queries) ListEdges(ctx context.Context, flowID int64) ([]Edge, error) {
+	rows, err := q.db.QueryContext(ctx, listEdges, flowID)
 	if err != nil {
 		return nil, err
 	}
@@ -498,7 +498,7 @@ func (q *Queries) ListEdges(ctx context.Context, subFlowID int64) ([]Edge, error
 		var i Edge
 		if err := rows.Scan(
 			&i.ID,
-			&i.SubFlowID,
+			&i.FlowID,
 			&i.Source,
 			&i.Target,
 			&i.Type,
@@ -523,12 +523,13 @@ func (q *Queries) ListEdges(ctx context.Context, subFlowID int64) ([]Edge, error
 }
 
 const listFlows = `-- name: ListFlows :many
-SELECT id, name, description, update_at, create_at FROM flows
+SELECT id, project_id, name, description, update_at, create_at FROM flows
+WHERE project_id = ?
 ORDER BY name
 `
 
-func (q *Queries) ListFlows(ctx context.Context) ([]Flow, error) {
-	rows, err := q.db.QueryContext(ctx, listFlows)
+func (q *Queries) ListFlows(ctx context.Context, projectID int64) ([]Flow, error) {
+	rows, err := q.db.QueryContext(ctx, listFlows, projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -538,6 +539,7 @@ func (q *Queries) ListFlows(ctx context.Context) ([]Flow, error) {
 		var i Flow
 		if err := rows.Scan(
 			&i.ID,
+			&i.ProjectID,
 			&i.Name,
 			&i.Description,
 			&i.UpdateAt,
@@ -557,13 +559,13 @@ func (q *Queries) ListFlows(ctx context.Context) ([]Flow, error) {
 }
 
 const listNodes = `-- name: ListNodes :many
-SELECT id, sub_flow_id, type, parent, position, styles, width, height, hidden, description, update_at, create_at FROM nodes
-WHERE sub_flow_id = ?
+SELECT id, flow_id, type, parent, position, styles, width, height, hidden, description, update_at, create_at FROM nodes
+WHERE flow_id = ?
 ORDER BY create_time
 `
 
-func (q *Queries) ListNodes(ctx context.Context, subFlowID int64) ([]Node, error) {
-	rows, err := q.db.QueryContext(ctx, listNodes, subFlowID)
+func (q *Queries) ListNodes(ctx context.Context, flowID int64) ([]Node, error) {
+	rows, err := q.db.QueryContext(ctx, listNodes, flowID)
 	if err != nil {
 		return nil, err
 	}
@@ -573,7 +575,7 @@ func (q *Queries) ListNodes(ctx context.Context, subFlowID int64) ([]Node, error
 		var i Node
 		if err := rows.Scan(
 			&i.ID,
-			&i.SubFlowID,
+			&i.FlowID,
 			&i.Type,
 			&i.Parent,
 			&i.Position,
@@ -598,24 +600,22 @@ func (q *Queries) ListNodes(ctx context.Context, subFlowID int64) ([]Node, error
 	return items, nil
 }
 
-const listSubFlows = `-- name: ListSubFlows :many
-SELECT id, flow_id, name, description, update_at, create_at FROM sub_flows
-WHERE flow_id = ?
+const listProjects = `-- name: ListProjects :many
+SELECT id, name, description, update_at, create_at FROM projects
 ORDER BY name
 `
 
-func (q *Queries) ListSubFlows(ctx context.Context, flowID int64) ([]SubFlow, error) {
-	rows, err := q.db.QueryContext(ctx, listSubFlows, flowID)
+func (q *Queries) ListProjects(ctx context.Context) ([]Project, error) {
+	rows, err := q.db.QueryContext(ctx, listProjects)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SubFlow
+	var items []Project
 	for rows.Next() {
-		var i SubFlow
+		var i Project
 		if err := rows.Scan(
 			&i.ID,
-			&i.FlowID,
 			&i.Name,
 			&i.Description,
 			&i.UpdateAt,
@@ -714,7 +714,7 @@ hidden = ?,
 marker_end = ?,
 points = ?
 WHERE id = ?
-RETURNING id, sub_flow_id, source, target, type, label, hidden, marker_end, points, update_at, create_at
+RETURNING id, flow_id, source, target, type, label, hidden, marker_end, points, update_at, create_at
 `
 
 type UpdateEdgeParams struct {
@@ -747,7 +747,7 @@ UPDATE flows SET
 name = ?,
 description = ?
 WHERE id = ?
-RETURNING id, name, description, update_at, create_at
+RETURNING id, project_id, name, description, update_at, create_at
 `
 
 type UpdateFlowParams struct {
@@ -772,7 +772,7 @@ height = ?,
 hidden = ?,
 description = ?
 WHERE id = ?
-RETURNING id, sub_flow_id, type, parent, position, styles, width, height, hidden, description, update_at, create_at
+RETURNING id, flow_id, type, parent, position, styles, width, height, hidden, description, update_at, create_at
 `
 
 type UpdateNodeParams struct {
@@ -802,22 +802,22 @@ func (q *Queries) UpdateNode(ctx context.Context, arg UpdateNodeParams) error {
 	return err
 }
 
-const updateSubFlow = `-- name: UpdateSubFlow :exec
-UPDATE sub_flows SET
+const updateProject = `-- name: UpdateProject :exec
+UPDATE projects SET
 name = ?,
 description = ?
 WHERE id = ?
-RETURNING id, flow_id, name, description, update_at, create_at
+RETURNING id, name, description, update_at, create_at
 `
 
-type UpdateSubFlowParams struct {
+type UpdateProjectParams struct {
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
 	ID          int64          `json:"id"`
 }
 
-func (q *Queries) UpdateSubFlow(ctx context.Context, arg UpdateSubFlowParams) error {
-	_, err := q.db.ExecContext(ctx, updateSubFlow, arg.Name, arg.Description, arg.ID)
+func (q *Queries) UpdateProject(ctx context.Context, arg UpdateProjectParams) error {
+	_, err := q.db.ExecContext(ctx, updateProject, arg.Name, arg.Description, arg.ID)
 	return err
 }
 

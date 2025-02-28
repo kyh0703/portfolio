@@ -11,7 +11,7 @@ type flowRepository struct {
 	queries *model.Queries
 }
 
-func NewFlowRepository(
+func NewSubFlowRepository(
 	queries *model.Queries,
 ) repository.FlowRepository {
 	return &flowRepository{
@@ -27,8 +27,8 @@ func (f *flowRepository) FindOne(ctx context.Context, id int64) (model.Flow, err
 	return f.queries.GetFlow(ctx, id)
 }
 
-func (f *flowRepository) GetList(ctx context.Context) ([]model.Flow, error) {
-	return f.queries.ListFlows(ctx)
+func (f *flowRepository) GetList(ctx context.Context, flowID int64) ([]model.Flow, error) {
+	return f.queries.ListFlows(ctx, flowID)
 }
 
 func (f *flowRepository) UpdateOne(ctx context.Context, arg model.UpdateFlowParams) error {

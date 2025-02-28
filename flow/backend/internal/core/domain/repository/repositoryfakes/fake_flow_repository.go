@@ -50,10 +50,11 @@ type FakeFlowRepository struct {
 		result1 model.Flow
 		result2 error
 	}
-	GetListStub        func(context.Context) ([]model.Flow, error)
+	GetListStub        func(context.Context, int64) ([]model.Flow, error)
 	getListMutex       sync.RWMutex
 	getListArgsForCall []struct {
 		arg1 context.Context
+		arg2 int64
 	}
 	getListReturns struct {
 		result1 []model.Flow
@@ -271,18 +272,19 @@ func (fake *FakeFlowRepository) FindOneReturnsOnCall(i int, result1 model.Flow, 
 	}{result1, result2}
 }
 
-func (fake *FakeFlowRepository) GetList(arg1 context.Context) ([]model.Flow, error) {
+func (fake *FakeFlowRepository) GetList(arg1 context.Context, arg2 int64) ([]model.Flow, error) {
 	fake.getListMutex.Lock()
 	ret, specificReturn := fake.getListReturnsOnCall[len(fake.getListArgsForCall)]
 	fake.getListArgsForCall = append(fake.getListArgsForCall, struct {
 		arg1 context.Context
-	}{arg1})
+		arg2 int64
+	}{arg1, arg2})
 	stub := fake.GetListStub
 	fakeReturns := fake.getListReturns
-	fake.recordInvocation("GetList", []interface{}{arg1})
+	fake.recordInvocation("GetList", []interface{}{arg1, arg2})
 	fake.getListMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -296,17 +298,17 @@ func (fake *FakeFlowRepository) GetListCallCount() int {
 	return len(fake.getListArgsForCall)
 }
 
-func (fake *FakeFlowRepository) GetListCalls(stub func(context.Context) ([]model.Flow, error)) {
+func (fake *FakeFlowRepository) GetListCalls(stub func(context.Context, int64) ([]model.Flow, error)) {
 	fake.getListMutex.Lock()
 	defer fake.getListMutex.Unlock()
 	fake.GetListStub = stub
 }
 
-func (fake *FakeFlowRepository) GetListArgsForCall(i int) context.Context {
+func (fake *FakeFlowRepository) GetListArgsForCall(i int) (context.Context, int64) {
 	fake.getListMutex.RLock()
 	defer fake.getListMutex.RUnlock()
 	argsForCall := fake.getListArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeFlowRepository) GetListReturns(result1 []model.Flow, result2 error) {

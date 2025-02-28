@@ -10,7 +10,7 @@ import (
 
 type Edge struct {
 	ID        string         `json:"id"`
-	SubFlowID int64          `json:"subFlowId"`
+	FlowID    int64          `json:"flowId"`
 	Source    string         `json:"source"`
 	Target    string         `json:"target"`
 	Type      string         `json:"type"`
@@ -24,6 +24,7 @@ type Edge struct {
 
 type Flow struct {
 	ID          int64          `json:"id"`
+	ProjectID   int64          `json:"projectId"`
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
 	UpdateAt    sql.NullString `json:"updateAt"`
@@ -32,7 +33,7 @@ type Flow struct {
 
 type Node struct {
 	ID          string         `json:"id"`
-	SubFlowID   int64          `json:"subFlowId"`
+	FlowID      int64          `json:"flowId"`
 	Type        string         `json:"type"`
 	Parent      sql.NullString `json:"parent"`
 	Position    sql.NullString `json:"position"`
@@ -45,9 +46,8 @@ type Node struct {
 	CreateAt    sql.NullString `json:"createAt"`
 }
 
-type SubFlow struct {
+type Project struct {
 	ID          int64          `json:"id"`
-	FlowID      int64          `json:"flowId"`
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
 	UpdateAt    sql.NullString `json:"updateAt"`

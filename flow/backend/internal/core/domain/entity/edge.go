@@ -13,7 +13,7 @@ type Point struct{}
 
 type Edge struct {
 	ID        string
-	SubFlowID int64
+	FlowID    int64
 	Source    string
 	Target    string
 	Hidden    bool
@@ -24,7 +24,7 @@ type Edge struct {
 func (e *Edge) ToModel() (*model.Edge, error) {
 	var model model.Edge
 	model.ID = e.ID
-	model.SubFlowID = e.SubFlowID
+	model.FlowID = e.FlowID
 	model.Source = e.Source
 	model.Target = e.Target
 

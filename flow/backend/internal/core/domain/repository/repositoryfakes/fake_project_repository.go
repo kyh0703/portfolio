@@ -9,19 +9,19 @@ import (
 	"github.com/kyh0703/flow/internal/core/domain/repository"
 )
 
-type FakeSubFlowRepository struct {
-	CreateOneStub        func(context.Context, model.CreateSubFlowParams) (model.SubFlow, error)
+type FakeProjectRepository struct {
+	CreateOneStub        func(context.Context, model.CreateProjectParams) (model.Project, error)
 	createOneMutex       sync.RWMutex
 	createOneArgsForCall []struct {
 		arg1 context.Context
-		arg2 model.CreateSubFlowParams
+		arg2 model.CreateProjectParams
 	}
 	createOneReturns struct {
-		result1 model.SubFlow
+		result1 model.Project
 		result2 error
 	}
 	createOneReturnsOnCall map[int]struct {
-		result1 model.SubFlow
+		result1 model.Project
 		result2 error
 	}
 	DeleteOneStub        func(context.Context, int64) error
@@ -36,39 +36,38 @@ type FakeSubFlowRepository struct {
 	deleteOneReturnsOnCall map[int]struct {
 		result1 error
 	}
-	FindOneStub        func(context.Context, int64) (model.SubFlow, error)
+	FindOneStub        func(context.Context, int64) (model.Project, error)
 	findOneMutex       sync.RWMutex
 	findOneArgsForCall []struct {
 		arg1 context.Context
 		arg2 int64
 	}
 	findOneReturns struct {
-		result1 model.SubFlow
+		result1 model.Project
 		result2 error
 	}
 	findOneReturnsOnCall map[int]struct {
-		result1 model.SubFlow
+		result1 model.Project
 		result2 error
 	}
-	GetListStub        func(context.Context, int64) ([]model.SubFlow, error)
+	GetListStub        func(context.Context) ([]model.Project, error)
 	getListMutex       sync.RWMutex
 	getListArgsForCall []struct {
 		arg1 context.Context
-		arg2 int64
 	}
 	getListReturns struct {
-		result1 []model.SubFlow
+		result1 []model.Project
 		result2 error
 	}
 	getListReturnsOnCall map[int]struct {
-		result1 []model.SubFlow
+		result1 []model.Project
 		result2 error
 	}
-	UpdateOneStub        func(context.Context, model.UpdateSubFlowParams) error
+	UpdateOneStub        func(context.Context, model.UpdateProjectParams) error
 	updateOneMutex       sync.RWMutex
 	updateOneArgsForCall []struct {
 		arg1 context.Context
-		arg2 model.UpdateSubFlowParams
+		arg2 model.UpdateProjectParams
 	}
 	updateOneReturns struct {
 		result1 error
@@ -80,12 +79,12 @@ type FakeSubFlowRepository struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeSubFlowRepository) CreateOne(arg1 context.Context, arg2 model.CreateSubFlowParams) (model.SubFlow, error) {
+func (fake *FakeProjectRepository) CreateOne(arg1 context.Context, arg2 model.CreateProjectParams) (model.Project, error) {
 	fake.createOneMutex.Lock()
 	ret, specificReturn := fake.createOneReturnsOnCall[len(fake.createOneArgsForCall)]
 	fake.createOneArgsForCall = append(fake.createOneArgsForCall, struct {
 		arg1 context.Context
-		arg2 model.CreateSubFlowParams
+		arg2 model.CreateProjectParams
 	}{arg1, arg2})
 	stub := fake.CreateOneStub
 	fakeReturns := fake.createOneReturns
@@ -100,52 +99,52 @@ func (fake *FakeSubFlowRepository) CreateOne(arg1 context.Context, arg2 model.Cr
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeSubFlowRepository) CreateOneCallCount() int {
+func (fake *FakeProjectRepository) CreateOneCallCount() int {
 	fake.createOneMutex.RLock()
 	defer fake.createOneMutex.RUnlock()
 	return len(fake.createOneArgsForCall)
 }
 
-func (fake *FakeSubFlowRepository) CreateOneCalls(stub func(context.Context, model.CreateSubFlowParams) (model.SubFlow, error)) {
+func (fake *FakeProjectRepository) CreateOneCalls(stub func(context.Context, model.CreateProjectParams) (model.Project, error)) {
 	fake.createOneMutex.Lock()
 	defer fake.createOneMutex.Unlock()
 	fake.CreateOneStub = stub
 }
 
-func (fake *FakeSubFlowRepository) CreateOneArgsForCall(i int) (context.Context, model.CreateSubFlowParams) {
+func (fake *FakeProjectRepository) CreateOneArgsForCall(i int) (context.Context, model.CreateProjectParams) {
 	fake.createOneMutex.RLock()
 	defer fake.createOneMutex.RUnlock()
 	argsForCall := fake.createOneArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeSubFlowRepository) CreateOneReturns(result1 model.SubFlow, result2 error) {
+func (fake *FakeProjectRepository) CreateOneReturns(result1 model.Project, result2 error) {
 	fake.createOneMutex.Lock()
 	defer fake.createOneMutex.Unlock()
 	fake.CreateOneStub = nil
 	fake.createOneReturns = struct {
-		result1 model.SubFlow
+		result1 model.Project
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeSubFlowRepository) CreateOneReturnsOnCall(i int, result1 model.SubFlow, result2 error) {
+func (fake *FakeProjectRepository) CreateOneReturnsOnCall(i int, result1 model.Project, result2 error) {
 	fake.createOneMutex.Lock()
 	defer fake.createOneMutex.Unlock()
 	fake.CreateOneStub = nil
 	if fake.createOneReturnsOnCall == nil {
 		fake.createOneReturnsOnCall = make(map[int]struct {
-			result1 model.SubFlow
+			result1 model.Project
 			result2 error
 		})
 	}
 	fake.createOneReturnsOnCall[i] = struct {
-		result1 model.SubFlow
+		result1 model.Project
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeSubFlowRepository) DeleteOne(arg1 context.Context, arg2 int64) error {
+func (fake *FakeProjectRepository) DeleteOne(arg1 context.Context, arg2 int64) error {
 	fake.deleteOneMutex.Lock()
 	ret, specificReturn := fake.deleteOneReturnsOnCall[len(fake.deleteOneArgsForCall)]
 	fake.deleteOneArgsForCall = append(fake.deleteOneArgsForCall, struct {
@@ -165,26 +164,26 @@ func (fake *FakeSubFlowRepository) DeleteOne(arg1 context.Context, arg2 int64) e
 	return fakeReturns.result1
 }
 
-func (fake *FakeSubFlowRepository) DeleteOneCallCount() int {
+func (fake *FakeProjectRepository) DeleteOneCallCount() int {
 	fake.deleteOneMutex.RLock()
 	defer fake.deleteOneMutex.RUnlock()
 	return len(fake.deleteOneArgsForCall)
 }
 
-func (fake *FakeSubFlowRepository) DeleteOneCalls(stub func(context.Context, int64) error) {
+func (fake *FakeProjectRepository) DeleteOneCalls(stub func(context.Context, int64) error) {
 	fake.deleteOneMutex.Lock()
 	defer fake.deleteOneMutex.Unlock()
 	fake.DeleteOneStub = stub
 }
 
-func (fake *FakeSubFlowRepository) DeleteOneArgsForCall(i int) (context.Context, int64) {
+func (fake *FakeProjectRepository) DeleteOneArgsForCall(i int) (context.Context, int64) {
 	fake.deleteOneMutex.RLock()
 	defer fake.deleteOneMutex.RUnlock()
 	argsForCall := fake.deleteOneArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeSubFlowRepository) DeleteOneReturns(result1 error) {
+func (fake *FakeProjectRepository) DeleteOneReturns(result1 error) {
 	fake.deleteOneMutex.Lock()
 	defer fake.deleteOneMutex.Unlock()
 	fake.DeleteOneStub = nil
@@ -193,7 +192,7 @@ func (fake *FakeSubFlowRepository) DeleteOneReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeSubFlowRepository) DeleteOneReturnsOnCall(i int, result1 error) {
+func (fake *FakeProjectRepository) DeleteOneReturnsOnCall(i int, result1 error) {
 	fake.deleteOneMutex.Lock()
 	defer fake.deleteOneMutex.Unlock()
 	fake.DeleteOneStub = nil
@@ -207,7 +206,7 @@ func (fake *FakeSubFlowRepository) DeleteOneReturnsOnCall(i int, result1 error) 
 	}{result1}
 }
 
-func (fake *FakeSubFlowRepository) FindOne(arg1 context.Context, arg2 int64) (model.SubFlow, error) {
+func (fake *FakeProjectRepository) FindOne(arg1 context.Context, arg2 int64) (model.Project, error) {
 	fake.findOneMutex.Lock()
 	ret, specificReturn := fake.findOneReturnsOnCall[len(fake.findOneArgsForCall)]
 	fake.findOneArgsForCall = append(fake.findOneArgsForCall, struct {
@@ -227,64 +226,63 @@ func (fake *FakeSubFlowRepository) FindOne(arg1 context.Context, arg2 int64) (mo
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeSubFlowRepository) FindOneCallCount() int {
+func (fake *FakeProjectRepository) FindOneCallCount() int {
 	fake.findOneMutex.RLock()
 	defer fake.findOneMutex.RUnlock()
 	return len(fake.findOneArgsForCall)
 }
 
-func (fake *FakeSubFlowRepository) FindOneCalls(stub func(context.Context, int64) (model.SubFlow, error)) {
+func (fake *FakeProjectRepository) FindOneCalls(stub func(context.Context, int64) (model.Project, error)) {
 	fake.findOneMutex.Lock()
 	defer fake.findOneMutex.Unlock()
 	fake.FindOneStub = stub
 }
 
-func (fake *FakeSubFlowRepository) FindOneArgsForCall(i int) (context.Context, int64) {
+func (fake *FakeProjectRepository) FindOneArgsForCall(i int) (context.Context, int64) {
 	fake.findOneMutex.RLock()
 	defer fake.findOneMutex.RUnlock()
 	argsForCall := fake.findOneArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeSubFlowRepository) FindOneReturns(result1 model.SubFlow, result2 error) {
+func (fake *FakeProjectRepository) FindOneReturns(result1 model.Project, result2 error) {
 	fake.findOneMutex.Lock()
 	defer fake.findOneMutex.Unlock()
 	fake.FindOneStub = nil
 	fake.findOneReturns = struct {
-		result1 model.SubFlow
+		result1 model.Project
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeSubFlowRepository) FindOneReturnsOnCall(i int, result1 model.SubFlow, result2 error) {
+func (fake *FakeProjectRepository) FindOneReturnsOnCall(i int, result1 model.Project, result2 error) {
 	fake.findOneMutex.Lock()
 	defer fake.findOneMutex.Unlock()
 	fake.FindOneStub = nil
 	if fake.findOneReturnsOnCall == nil {
 		fake.findOneReturnsOnCall = make(map[int]struct {
-			result1 model.SubFlow
+			result1 model.Project
 			result2 error
 		})
 	}
 	fake.findOneReturnsOnCall[i] = struct {
-		result1 model.SubFlow
+		result1 model.Project
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeSubFlowRepository) GetList(arg1 context.Context, arg2 int64) ([]model.SubFlow, error) {
+func (fake *FakeProjectRepository) GetList(arg1 context.Context) ([]model.Project, error) {
 	fake.getListMutex.Lock()
 	ret, specificReturn := fake.getListReturnsOnCall[len(fake.getListArgsForCall)]
 	fake.getListArgsForCall = append(fake.getListArgsForCall, struct {
 		arg1 context.Context
-		arg2 int64
-	}{arg1, arg2})
+	}{arg1})
 	stub := fake.GetListStub
 	fakeReturns := fake.getListReturns
-	fake.recordInvocation("GetList", []interface{}{arg1, arg2})
+	fake.recordInvocation("GetList", []interface{}{arg1})
 	fake.getListMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2)
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -292,57 +290,57 @@ func (fake *FakeSubFlowRepository) GetList(arg1 context.Context, arg2 int64) ([]
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *FakeSubFlowRepository) GetListCallCount() int {
+func (fake *FakeProjectRepository) GetListCallCount() int {
 	fake.getListMutex.RLock()
 	defer fake.getListMutex.RUnlock()
 	return len(fake.getListArgsForCall)
 }
 
-func (fake *FakeSubFlowRepository) GetListCalls(stub func(context.Context, int64) ([]model.SubFlow, error)) {
+func (fake *FakeProjectRepository) GetListCalls(stub func(context.Context) ([]model.Project, error)) {
 	fake.getListMutex.Lock()
 	defer fake.getListMutex.Unlock()
 	fake.GetListStub = stub
 }
 
-func (fake *FakeSubFlowRepository) GetListArgsForCall(i int) (context.Context, int64) {
+func (fake *FakeProjectRepository) GetListArgsForCall(i int) context.Context {
 	fake.getListMutex.RLock()
 	defer fake.getListMutex.RUnlock()
 	argsForCall := fake.getListArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
-func (fake *FakeSubFlowRepository) GetListReturns(result1 []model.SubFlow, result2 error) {
+func (fake *FakeProjectRepository) GetListReturns(result1 []model.Project, result2 error) {
 	fake.getListMutex.Lock()
 	defer fake.getListMutex.Unlock()
 	fake.GetListStub = nil
 	fake.getListReturns = struct {
-		result1 []model.SubFlow
+		result1 []model.Project
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeSubFlowRepository) GetListReturnsOnCall(i int, result1 []model.SubFlow, result2 error) {
+func (fake *FakeProjectRepository) GetListReturnsOnCall(i int, result1 []model.Project, result2 error) {
 	fake.getListMutex.Lock()
 	defer fake.getListMutex.Unlock()
 	fake.GetListStub = nil
 	if fake.getListReturnsOnCall == nil {
 		fake.getListReturnsOnCall = make(map[int]struct {
-			result1 []model.SubFlow
+			result1 []model.Project
 			result2 error
 		})
 	}
 	fake.getListReturnsOnCall[i] = struct {
-		result1 []model.SubFlow
+		result1 []model.Project
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeSubFlowRepository) UpdateOne(arg1 context.Context, arg2 model.UpdateSubFlowParams) error {
+func (fake *FakeProjectRepository) UpdateOne(arg1 context.Context, arg2 model.UpdateProjectParams) error {
 	fake.updateOneMutex.Lock()
 	ret, specificReturn := fake.updateOneReturnsOnCall[len(fake.updateOneArgsForCall)]
 	fake.updateOneArgsForCall = append(fake.updateOneArgsForCall, struct {
 		arg1 context.Context
-		arg2 model.UpdateSubFlowParams
+		arg2 model.UpdateProjectParams
 	}{arg1, arg2})
 	stub := fake.UpdateOneStub
 	fakeReturns := fake.updateOneReturns
@@ -357,26 +355,26 @@ func (fake *FakeSubFlowRepository) UpdateOne(arg1 context.Context, arg2 model.Up
 	return fakeReturns.result1
 }
 
-func (fake *FakeSubFlowRepository) UpdateOneCallCount() int {
+func (fake *FakeProjectRepository) UpdateOneCallCount() int {
 	fake.updateOneMutex.RLock()
 	defer fake.updateOneMutex.RUnlock()
 	return len(fake.updateOneArgsForCall)
 }
 
-func (fake *FakeSubFlowRepository) UpdateOneCalls(stub func(context.Context, model.UpdateSubFlowParams) error) {
+func (fake *FakeProjectRepository) UpdateOneCalls(stub func(context.Context, model.UpdateProjectParams) error) {
 	fake.updateOneMutex.Lock()
 	defer fake.updateOneMutex.Unlock()
 	fake.UpdateOneStub = stub
 }
 
-func (fake *FakeSubFlowRepository) UpdateOneArgsForCall(i int) (context.Context, model.UpdateSubFlowParams) {
+func (fake *FakeProjectRepository) UpdateOneArgsForCall(i int) (context.Context, model.UpdateProjectParams) {
 	fake.updateOneMutex.RLock()
 	defer fake.updateOneMutex.RUnlock()
 	argsForCall := fake.updateOneArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeSubFlowRepository) UpdateOneReturns(result1 error) {
+func (fake *FakeProjectRepository) UpdateOneReturns(result1 error) {
 	fake.updateOneMutex.Lock()
 	defer fake.updateOneMutex.Unlock()
 	fake.UpdateOneStub = nil
@@ -385,7 +383,7 @@ func (fake *FakeSubFlowRepository) UpdateOneReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeSubFlowRepository) UpdateOneReturnsOnCall(i int, result1 error) {
+func (fake *FakeProjectRepository) UpdateOneReturnsOnCall(i int, result1 error) {
 	fake.updateOneMutex.Lock()
 	defer fake.updateOneMutex.Unlock()
 	fake.UpdateOneStub = nil
@@ -399,7 +397,7 @@ func (fake *FakeSubFlowRepository) UpdateOneReturnsOnCall(i int, result1 error) 
 	}{result1}
 }
 
-func (fake *FakeSubFlowRepository) Invocations() map[string][][]interface{} {
+func (fake *FakeProjectRepository) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.createOneMutex.RLock()
@@ -419,7 +417,7 @@ func (fake *FakeSubFlowRepository) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *FakeSubFlowRepository) recordInvocation(key string, args []interface{}) {
+func (fake *FakeProjectRepository) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -431,4 +429,4 @@ func (fake *FakeSubFlowRepository) recordInvocation(key string, args []interface
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ repository.SubFlowRepository = new(FakeSubFlowRepository)
+var _ repository.ProjectRepository = new(FakeProjectRepository)
