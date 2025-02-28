@@ -1,4 +1,3 @@
-import type { FlowMode } from '@/models/flow'
 import type {
   AppEdge,
   Connection,
@@ -45,7 +44,6 @@ export const isValidConnection: IsValidConnection<AppEdge> = (
 }
 
 export const hasPropertyNode = (
-  flowMode: FlowMode,
   nodeType: CustomNodeType,
 ): boolean => {
   switch (nodeType) {
@@ -54,54 +52,8 @@ export const hasPropertyNode = (
     case 'Ghost':
       return false
     default:
-      break
+      return true
   }
-
-  if (flowMode === 'beginner') {
-    switch (nodeType) {
-      case 'Play':
-      case 'GetDigit':
-      case 'WaitInbound':
-      case 'WaitOutbound':
-      case 'Disconnect':
-      case 'Record':
-      case 'Abort':
-      case 'Transfer':
-      case 'MakeCall':
-      case 'GetChannel':
-      case 'CtiCall':
-      case 'VoiceRecognize':
-      case 'OpenVR':
-      case 'CloseVR':
-      case 'RequestPage':
-      case 'GetPageData':
-      case 'RegistServer':
-      case 'UnregistServer':
-      case 'WaitWebInbound':
-      case 'DisconnectWeb':
-      case 'NLURequest':
-      case 'IntentCall':
-      case 'EntityCall':
-      case 'If':
-      case 'Select':
-      case 'Assign':
-      case 'MenuCall':
-      case 'MenuReturn':
-      case 'SubCall':
-      case 'Return':
-      case 'ChangeService':
-      case 'Sleep':
-      case 'Cdr':
-      case 'UserEnv':
-      case 'UserFuncCall':
-      case 'PacketJson':
-        return true
-      default:
-        return false
-    }
-  }
-
-  return true
 }
 
 export const hasParentNode = (nodeType: string): boolean => {

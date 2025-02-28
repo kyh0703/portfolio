@@ -1,8 +1,8 @@
 import {
   edgeMenuComponents,
   type EdgeMenuComponentKey,
-} from '@/app/(afterLogin)/subflows/[id]/_components/flow-main/edge/menu/types'
-import { isValidConnection } from '@/app/(afterLogin)/subflows/[id]/_components/flow-main/tools'
+} from '@/app/(afterLogin)/sub-flows/[id]/_components/flow-main/edge/menu/types'
+import { isValidConnection } from '@/app/(afterLogin)/sub-flows/[id]/_components/flow-main/tools'
 import {
   useAddEdge,
   useRemoveEdge,

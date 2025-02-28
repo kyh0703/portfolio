@@ -1,4 +1,4 @@
-import { hasPropertyNode } from '@/app/(afterLogin)/subflows/[id]/_components/flow-main/tools'
+import { hasPropertyNode } from '@/app/(afterLogin)/sub-flows/[id]/_components/flow-main/tools'
 import { useYjs } from '@/contexts/yjs-context'
 import {
   getClipboard,
