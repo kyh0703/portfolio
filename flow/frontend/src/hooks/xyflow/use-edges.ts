@@ -1,14 +1,14 @@
 import {
   edgeMenuComponents,
   type EdgeMenuComponentKey,
-} from '@/app/(afterLogin)/sub-flows/[id]/_components/flow-main/edge/menu/types'
-import { isValidConnection } from '@/app/(afterLogin)/sub-flows/[id]/_components/flow-main/tools'
+} from '@/app/(afterLogin)/flow/[id]/_components/flow-main/edge/menu/types'
+import { isValidConnection } from '@/app/(afterLogin)/flow/[id]/_components/flow-main/tools'
 import {
   useAddEdge,
   useRemoveEdge,
   useRemoveEdges,
   useUpdateEdge,
-} from '@/services/subflow'
+} from '@/services/flow'
 import { colors } from '@/themes'
 import {
   MarkerType,

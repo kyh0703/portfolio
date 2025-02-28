@@ -1,5 +1,5 @@
 import { useYjs } from '@/contexts/yjs-context'
-import { useRemoveEdges, useRemoveNodes } from '@/services/subflow'
+import { useRemoveEdges, useRemoveNodes } from '@/services/flow'
 import logger from '@/utils/logger'
 import {
   getConnectedEdges,

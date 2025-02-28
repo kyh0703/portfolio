@@ -1,7 +1,6 @@
 'use client'
 
-import { Button } from '@/app/_components/button'
-import { useUserContext } from '@/store/context'
+import { Button } from '@/ui/button'
 import {
   HoverCard,
   HoverCardContent,
@@ -11,7 +10,6 @@ import {
 import { UserRoundIcon } from 'lucide-react'
 
 export default function Avatar() {
-  const { user } = useUserContext()
 
   const getLevelColor = (level: number) => {
     if (level < 10) {
@@ -26,7 +24,7 @@ export default function Avatar() {
     return 'bg-red-500'
   }
 
-  const levelColor = getLevelColor(+user.userLevel)
+  // const levelColor = getLevelColor(+user.userLevel)
 
   return (
     <HoverCard openDelay={200} closeDelay={200}>
@@ -42,12 +40,12 @@ export default function Avatar() {
       <HoverCardPortal>
         <HoverCardContent className="w-32" side="right">
           <div className="space-y-2">
-            <h4 className="text-sm font-semibold">{user.userName}</h4>
+            {/* <h4 className="text-sm font-semibold">{user.userName}</h4> */}
             <div className="flex items-center space-x-2">
               <div
-                className={`h-2 w-2 rounded-full ${levelColor.split(' ')[0]}`}
+                // className={`h-2 w-2 rounded-full ${levelColor.split(' ')[0]}`}
               ></div>
-              <p className="text-sm">Level {user.userLevel}</p>
+              {/* <p className="text-sm">Level {user.userLevel}</p> */}
             </div>
           </div>
         </HoverCardContent>

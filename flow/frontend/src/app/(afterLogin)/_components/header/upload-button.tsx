@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@/app/_components/button'
-import { uploadSwat } from '@/services/flow'
+import { uploadSwat } from '@/services/project'
 import logger from '@/utils/logger'
 import { CloudUpload } from 'lucide-react'
 import { toast } from 'react-toastify'

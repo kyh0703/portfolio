@@ -2,12 +2,7 @@ import { createJSONStorage } from 'zustand/middleware'
 import { createPersistStore } from './store'
 
 export type NavigationItem =
-  | 'list'
   | 'component'
-  | 'defines'
-  | 'outline'
-  | 'search'
-  | 'configs'
 
 type LeftSidebar = {
   open: boolean
@@ -19,7 +14,7 @@ type Footer = {
   trigger: boolean
 }
 
-export type FooterTab = 'build' | 'compile'
+export type FooterTab = 'log'
 
 interface LayoutState {
   nav: NavigationItem
@@ -30,12 +25,12 @@ interface LayoutState {
   toggleLeftSidebar(): void
   setLeftSidebarWidth(width: number): void
   triggerFooter: (action: 'up' | 'down') => void
-  setFooterTab: (tab: 'build' | 'compile') => void
+  setFooterTab: (tab: FooterTab) => void
 }
 
 export const useLayoutStore = createPersistStore<LayoutState>(
   (set) => ({
-    nav: 'list',
+    nav: 'component',
     footer: {
       action: 'down',
       trigger: false,
@@ -44,7 +39,7 @@ export const useLayoutStore = createPersistStore<LayoutState>(
       open: true,
       width: 0,
     },
-    footerTab: 'build',
+    footerTab: 'log',
     setNav(nav) {
       set({ nav })
     },

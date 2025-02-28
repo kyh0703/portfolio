@@ -2,17 +2,14 @@
 
 import Folder from '@/app/_components/folder'
 import SearchBox from '@/app/_components/search-bar'
-import { useUserContext } from '@/store/context'
 import { useFlowTabStore } from '@/store/flow-tab'
 import { useLayoutStore } from '@/store/layout'
 import { Separator } from '@/ui/separator'
 import React, { useEffect, useMemo, useState, type DragEvent } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { filterComponent } from './filter'
 import { components } from './types'
 
 export default function ComponentSidebar() {
-  const { id: flowId, type: flowType } = useUserContext()
   const currentTab = useFlowTabStore(useShallow((state) => state.tabs[flowId]))
   const setNav = useLayoutStore((state) => state.setNav)
   const [searchFiled, setSearchField] = useState('')
@@ -27,15 +24,11 @@ export default function ComponentSidebar() {
         title,
         components: componentItems.filter(
           (component) =>
-            component.title.toLowerCase().includes(searchFiled) &&
-            filterComponent(component, {
-              subFlowName: subFlow?.name,
-              flowType,
-            }),
+            component.title.toLowerCase().includes(searchFiled)
         ),
       }))
       .filter((item) => item.components.length > 0)
-  }, [flowType, searchFiled, subFlow?.name])
+  }, [ searchFiled, subFlow?.name])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchField(e.target.value.toLowerCase())

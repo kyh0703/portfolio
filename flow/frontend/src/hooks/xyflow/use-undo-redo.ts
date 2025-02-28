@@ -1,5 +1,5 @@
 import { useYjs } from '@/contexts/yjs-context'
-import { getRedo, getUndo, useAddHistory } from '@/services/subflow'
+import { getRedo, getUndo, useAddHistory } from '@/services/flow'
 import {
   sortNode,
   toAppEdge,

@@ -15,7 +15,7 @@ export function StatusBar() {
         </Link>
       </div>
       <div className="flex items-center space-x-2">
-        <span>Copyright (C) Bridgetec.corp, All Rights Reserved.</span>
+        <span>Copyright (C) portfolio, All Rights Reserved.</span>
       </div>
     </div>
   )

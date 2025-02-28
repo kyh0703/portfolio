@@ -23,7 +23,7 @@ type Group = {
 
 export interface Node {
   id: number
-  subFlowId: number
+  flowId: number
   nodeId: string
   kind: CustomNodeType
   label: string

@@ -1,4 +1,4 @@
-import { hasPropertyNode } from '@/app/(afterLogin)/sub-flows/[id]/_components/flow-main/tools'
+import { hasPropertyNode } from '@/app/(afterLogin)/flow/[id]/_components/flow-main/tools'
 import { useYjs } from '@/contexts/yjs-context'
 import {
   getClipboard,
@@ -7,9 +7,8 @@ import {
   useRemoveEdges,
   useRemoveNodes,
   useUpdateNodeProperty,
-} from '@/services/subflow'
-import { useAddClipboard } from '@/services/subflow/mutations/use-add-clipboard'
-import { useUserContext } from '@/store/context'
+} from '@/services/flow'
+import { useAddClipboard } from '@/services/flow/mutations/use-add-clipboard'
 import { toAppEdge, toAppNode } from '@/utils'
 import logger from '@/utils/logger'
 import {
@@ -31,7 +30,6 @@ export function useCopyPaste(subFlowId: number) {
 
   const { ydoc } = useYjs()
   const { sharedNodePropertiesMap } = useYjsData(ydoc)
-  const { localIp, mode: flowMode } = useUserContext()
   const { getNodeMaxCount, issueEdgeId } = useId()
   const { getNodes, setNodes, setEdges, screenToFlowPosition, deleteElements } =
     useReactFlow<AppNode, AppEdge>()

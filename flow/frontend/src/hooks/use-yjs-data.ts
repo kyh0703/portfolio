@@ -1,4 +1,4 @@
-import { hasPropertyNode } from '@/app/(afterLogin)/sub-flows/[id]/_components/flow-main/tools'
+import { hasPropertyNode } from '@/app/(afterLogin)/flow/[id]/_components/flow-main/tools'
 import type { FieldValues } from '@/contexts/node-properties-context'
 import type { Cursor } from '@/types/collaboration'
 import type { AppEdge, AppNode } from '@xyflow/react'

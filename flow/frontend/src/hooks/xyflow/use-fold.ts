@@ -8,7 +8,7 @@ import {
   useRemoveEdges,
   useUpdateEdges,
   useUpdateNodes,
-} from '@/services/subflow'
+} from '@/services/flow'
 import logger from '@/utils/logger'
 import {
   useReactFlow,

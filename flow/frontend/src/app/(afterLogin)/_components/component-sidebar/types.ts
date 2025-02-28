@@ -68,7 +68,7 @@ import {
   WaitWebInboundIcon,
   type IconButtonProps,
 } from '@/app/_components/icon'
-import type { FlowType } from '@/models/flow'
+import type { FlowType } from '@/models/project'
 import type { CustomNodeType } from '@xyflow/react'
 
 export type ComponentItem = {

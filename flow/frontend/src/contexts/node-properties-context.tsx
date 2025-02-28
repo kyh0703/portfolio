@@ -1,7 +1,7 @@
 'use client'
 
 import useYjsData from '@/hooks/use-yjs-data'
-import { useQueryNodeProperty, useUpdateNodeProperty } from '@/services/subflow'
+import { useQueryNodeProperty, useUpdateNodeProperty } from '@/services/flow'
 import logger from '@/utils/logger'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import {

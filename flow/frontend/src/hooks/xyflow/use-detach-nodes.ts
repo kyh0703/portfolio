@@ -1,5 +1,5 @@
 import { useYjs } from '@/contexts/yjs-context'
-import { useRemoveNode, useUpdateNodes } from '@/services/subflow'
+import { useRemoveNode, useUpdateNodes } from '@/services/flow'
 import { sortNode } from '@/utils'
 import logger from '@/utils/logger'
 import { useReactFlow, type AppEdge, type AppNode } from '@xyflow/react'

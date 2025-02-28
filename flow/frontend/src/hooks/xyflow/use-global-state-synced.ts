@@ -1,5 +1,5 @@
 import { useYjs } from '@/contexts/yjs-context'
-import { useQueryUndoRedoCount } from '@/services/subflow/queries/use-query-undo-redo-count'
+import { useQueryUndoRedoCount } from '@/services/flow/queries/use-query-undo-redo-count'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import useYjsData from '../use-yjs-data'
