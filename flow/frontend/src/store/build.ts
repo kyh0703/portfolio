@@ -9,6 +9,7 @@ import { createStore } from './store'
 interface BuildState {
   build: {
     isBuilding: boolean
+    isStopping: boolean
     messages: (BuildProgress<MessageLog> | BuildResult)[]
     status: BuildProgress<StatusLog> | null
   }
@@ -17,6 +18,7 @@ interface BuildState {
     messages: (BuildProgress<MessageLog> | BuildResult)[]
   }
   startBuild: (resetMessage: boolean) => void
+  startBuildStop: () => void
   resetBuildMessage: () => void
   appendBuildMessages: (message: BuildProgress<MessageLog>) => void
   doneBuild: (result: BuildResult) => void
@@ -31,6 +33,7 @@ export const useBuildStore = createStore<BuildState>(
   (set) => ({
     build: {
       isBuilding: false,
+      isStopping: false,
       messages: [],
       status: null,
     },
@@ -46,6 +49,10 @@ export const useBuildStore = createStore<BuildState>(
           messages: resetMessage ? [] : state.build.messages,
         },
       })),
+    startBuildStop: () =>
+      set((state) => {
+        state.build.isStopping = true
+      }),
     resetBuildMessage: () =>
       set((state) => {
         state.build.messages = []
@@ -59,6 +66,7 @@ export const useBuildStore = createStore<BuildState>(
         state.build = {
           ...state.build,
           isBuilding: false,
+          isStopping: false,
           messages: [...state.build.messages, result],
         }
       }),

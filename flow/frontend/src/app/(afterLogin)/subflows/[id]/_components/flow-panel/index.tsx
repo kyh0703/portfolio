@@ -3,7 +3,6 @@
 import { useOptionsStateSynced } from '@/hooks/use-options-state-synced'
 import type { SubFlowList } from '@/models/subflow-list'
 import {
-  useAddSnapshot,
   useQueryEdges,
   useQueryNodes,
 } from '@/services/subflow'
@@ -26,7 +25,6 @@ export default function FlowPanel({ subFlow, focusNode }: FlowPanelProps) {
     state.isOpenTab,
     state.openTab,
   ])
-  const addSnapshotMutation = useAddSnapshot()
 
   const { nodes, edges } = useSuspenseQueries({
     queries: [useQueryNodes(subFlow.id), useQueryEdges(subFlow.id)],
@@ -36,13 +34,6 @@ export default function FlowPanel({ subFlow, focusNode }: FlowPanelProps) {
     }),
   })
 
-  useEffect(() => {
-    if (!isOpenTab(flowId, subFlow.id) && options?.snapShot.use) {
-      addSnapshotMutation.mutate(subFlow.id)
-    }
-    openTab(flowId, subFlow)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <div className="relative h-full">

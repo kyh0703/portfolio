@@ -40,6 +40,7 @@ export function useFold(subFlowId: number) {
       const childNodeIds = childNodes.map((node) => node.id)
       const targetNodeIds = getAllTargetNodes(childNodes)
 
+      console.log('childNodeIds', childNodeIds)
       const updateNodes: AppNode[] = []
       const nextNodes = Array.from(nodeLookup.values()).map((node) => {
         if (node.id === parentNode.id) {
@@ -59,6 +60,15 @@ export function useFold(subFlowId: number) {
           }
           updateNodes.push(parent)
           return parent
+        }
+
+        if (childNodeIds.includes(node.id)) {
+          const updateNode: AppNode = {
+            ...node,
+            hidden: true,
+          }
+          updateNodes.push(updateNode)
+          return updateNode
         }
 
         if (targetNodeIds.includes(node.id)) {
@@ -85,14 +95,6 @@ export function useFold(subFlowId: number) {
           return moveNode
         }
 
-        if (childNodeIds.includes(node.id)) {
-          const updateNode: AppNode = {
-            ...node,
-            hidden: true,
-          }
-          updateNodes.push(updateNode)
-          return updateNode
-        }
         return node
       })
 
@@ -226,6 +228,27 @@ export function useFold(subFlowId: number) {
           return parentNode
         }
 
+        if (otherNodeIds.includes(node.id)) {
+          const otherNode: AppNode = {
+            ...node,
+            position: {
+              x: parentNode.position.x + width + CHILD_PADDING,
+              y: parentNode.position.y + height + CHILD_PADDING,
+            },
+          }
+          updateNodes.push(otherNode)
+          return otherNode
+        }
+
+        if (childNodeIds.includes(node.id)) {
+          const updateNode: AppNode = {
+            ...node,
+            hidden: false,
+          }
+          updateNodes.push(updateNode)
+          return updateNode
+        }
+
         if (targetNodeIds.includes(node.id)) {
           const dx = width - DEFAULT_GROUP_NODE_FOLD_WIDTH
           const dy = height - DEFAULT_GROUP_NODE_FOLD_HEIGHT
@@ -249,27 +272,6 @@ export function useFold(subFlowId: number) {
           }
           updateNodes.push(moveNode)
           return moveNode
-        }
-
-        if (otherNodeIds.includes(node.id)) {
-          const otherNode: AppNode = {
-            ...node,
-            position: {
-              x: parentNode.position.x + width + CHILD_PADDING,
-              y: parentNode.position.y + height + CHILD_PADDING,
-            },
-          }
-          updateNodes.push(otherNode)
-          return otherNode
-        }
-
-        if (childNodeIds.includes(node.id)) {
-          const updateNode: AppNode = {
-            ...node,
-            hidden: false,
-          }
-          updateNodes.push(updateNode)
-          return updateNode
         }
 
         return node

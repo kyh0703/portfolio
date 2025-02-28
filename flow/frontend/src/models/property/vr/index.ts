@@ -1,5 +1,0 @@
-export * from './close-vr'
-export * from './open-vr'
-export * from './request-vr'
-export * from './response-vr'
-export * from './voice-recognize'

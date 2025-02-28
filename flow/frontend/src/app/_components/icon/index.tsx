@@ -4,20 +4,8 @@
 import FileMenu from '../../../../public/defines/file-menu.svg'
 import FileSub from '../../../../public/defines/file-sub.svg'
 
-// header
-import DarkExit from '../../../../public/header/dark/exit.svg'
-import DarkUser from '../../../../public/header/dark/user.svg'
-import Exit from '../../../../public/header/exit.svg'
-import User from '../../../../public/header/user.svg'
-
 // sidebar
 import BottomClose from '../../../../public/sidebar/bottom-close.svg'
-import Components from '../../../../public/sidebar/components.svg'
-import Configs from '../../../../public/sidebar/configs.svg'
-import Defines from '../../../../public/sidebar/defines.svg'
-import Flows from '../../../../public/sidebar/flows.svg'
-import Helper from '../../../../public/sidebar/helper.svg'
-import Search from '../../../../public/sidebar/search.svg'
 
 // icon
 // dark
@@ -44,13 +32,12 @@ import DarkUndo from '../../../../public/icons/dark/undo.svg'
 import Delete from '../../../../public/icons/delete.svg'
 import Drag from '../../../../public/icons/drag.svg'
 import Error from '../../../../public/icons/error.svg'
-import Fold from '../../../../public/icons/fold.svg'
 import Grab from '../../../../public/icons/grab.svg'
 import HamburgerMenu from '../../../../public/icons/hamburger-menu.svg'
 import Invisible from '../../../../public/icons/invisible.svg'
 import Link from '../../../../public/icons/link.svg'
-import Logo from '../../../../public/icons/logo.svg'
 import Loading from '../../../../public/icons/loading.svg'
+import Logo from '../../../../public/icons/logo.svg'
 import MenuDot from '../../../../public/icons/menu-dot.svg'
 import Menu from '../../../../public/icons/menu.svg'
 import Moon from '../../../../public/icons/moon.svg'
@@ -73,13 +60,13 @@ import TopArrow from '../../../../public/icons/top-arrow.svg'
 import TriangleLeft from '../../../../public/icons/triangle-left.svg'
 import TriangleRight from '../../../../public/icons/triangle-right.svg'
 import Undo from '../../../../public/icons/undo.svg'
-import Unfold from '../../../../public/icons/unfold.svg'
 import Visible from '../../../../public/icons/visible.svg'
 import X from '../../../../public/icons/x.svg'
 
 export type IconButtonProps = {
   width?: number
   height?: number
+  size?: number
   className?: string
   color?: string
   backgroundColor?: string
@@ -93,8 +80,9 @@ function withIconStyle(
 ): React.ComponentType<IconButtonProps> {
   const IconWithStyle = ({
     className,
-    width = 24,
-    height = 24,
+    size = 24,
+    width,
+    height,
     cursor,
     disabled,
     onClick,
@@ -107,9 +95,9 @@ function withIconStyle(
     return (
       <div
         style={{
-          width: `${width}px`,
-          height: `${height}px`,
-          fontSize: `${(width + height) / 2}px`,
+          width: `${width ? width : size}px`,
+          height: `${height ? height : size}px`,
+          fontSize: `${width && height ? (width + height) / 2 : size}px`,
           backgroundColor: backgroundColor,
           color: color,
           cursor: disabled ? 'none' : cur,
@@ -182,31 +170,13 @@ export const PointerIcon = withIconStyle(Pointer)
 export const AddIcon = withIconStyle(Add)
 export const MenuIcon = withIconStyle(Menu)
 export const MenuDotIcon = withIconStyle(MenuDot)
-export const FormatColorTextIcon = withIconStyle(MenuDot)
-export const FormatColorFillIcon = withIconStyle(MenuDot)
-export const FormatColorShapesIcon = withIconStyle(MenuDot)
-export const PushPinIcon = withIconStyle(MenuDot)
 export const DragIcon = withIconStyle(Drag)
 export const RefreshIcon = withIconStyle(Refresh)
 export const RenameIcon = withIconStyle(Rename)
 export const SunIcon = withIconStyle(Sun)
 export const MoonIcon = withIconStyle(Moon)
-export const FoldIcon = withIconStyle(Fold)
-export const UnfoldIcon = withIconStyle(Unfold)
-
-// header
-export const DarkUserIcon = withIconStyle(DarkUser)
-export const DarkExitIcon = withIconStyle(DarkExit)
-export const UserIcon = withIconStyle(User)
-export const ExitIcon = withIconStyle(Exit)
 
 // sidebar
-export const FlowsIcon = withIconStyle(Flows)
-export const ComponentsIcon = withIconStyle(Components)
-export const DefinesIcon = withIconStyle(Defines)
-export const ConfigsIcon = withIconStyle(Configs)
-export const SearchIcon = withIconStyle(Search)
-export const HelperIcon = withIconStyle(Helper)
 export const BottomCloseIcon = withIconStyle(BottomClose)
 
 export * from './commands'

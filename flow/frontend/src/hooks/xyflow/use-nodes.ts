@@ -1,4 +1,3 @@
-import { hasParentNode } from '@/app/(afterLogin)/subflows/[id]/_components/flow-main/tools'
 import {
   DEFAULT_COMMAND_NODE_HEIGHT,
   DEFAULT_COMMAND_NODE_WIDTH,
@@ -9,7 +8,6 @@ import {
   DEFAULT_MEMO_NODE_HEIGHT,
   DEFAULT_MEMO_NODE_WIDTH,
 } from '@/constants/xyflow'
-import { getNodePositionInsideParent } from '@/utils/xyflow/dynamic-grouping'
 import {
   useReactFlow,
   type AppEdge,
@@ -29,7 +27,7 @@ export function useNodes() {
 
   const nodeFactory = useCallback(
     (subFlowId: number, position: XYPosition, type: CustomNodeType) => {
-      let newNode: AppNode = {
+      const newNode: AppNode = {
         id: issueNodeId(type),
         type,
         position,
@@ -57,6 +55,7 @@ export function useNodes() {
           newNode.zIndex = -1
           newNode.width = DEFAULT_MEMO_NODE_WIDTH
           newNode.height = DEFAULT_MEMO_NODE_HEIGHT
+          newNode.dragHandle = '.drag-handle__custom'
           break
         case 'Ghost':
           newNode.width = DEFAULT_GHOST_NODE_WIDTH
@@ -167,7 +166,7 @@ export function useNodes() {
         return allSources
       }
 
-      let sourceNodeIds: string[] = []
+      const sourceNodeIds: string[] = []
       for (const node of sourceNodes) {
         const nodes = findAllSourceNodes(node.id)
         sourceNodeIds.push(...nodes)
@@ -202,7 +201,7 @@ export function useNodes() {
         return allTargets
       }
 
-      let targetNodeIds: string[] = []
+      const targetNodeIds: string[] = []
       for (const node of targetNodes) {
         const nodes = findAllTargetNodes(node.id)
         targetNodeIds.push(...nodes)
@@ -263,6 +262,22 @@ export function useNodes() {
             ? {
                 ...node,
                 data: { ...node.data, label },
+              }
+            : node,
+        ),
+      )
+    },
+    [setNodes],
+  )
+
+  const setBookmark = useCallback(
+    (id: string, bookmark: string) => {
+      setNodes((nodes) =>
+        nodes.map((node) =>
+          node.id === id
+            ? {
+                ...node,
+                data: { ...node.data, bookmark },
               }
             : node,
         ),
@@ -342,6 +357,7 @@ export function useNodes() {
     getSelectedNodes,
     getGhostNodesBySource,
     setLabel,
+    setBookmark,
     setDescription,
     setNodeStyle,
     focusingNode,

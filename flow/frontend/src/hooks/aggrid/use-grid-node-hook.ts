@@ -149,7 +149,7 @@ export default function useGridNodeHook<T>(
       if (!api) {
         return
       }
-      const rowCount = ref.current.api.getDisplayedRowCount()
+      const rowCount = api.getDisplayedRowCount()
       const txResult = api.applyTransaction({
         add: [newRow],
         addIndex: addIndex ?? rowCount,
@@ -165,9 +165,12 @@ export default function useGridNodeHook<T>(
       if (!api) {
         return
       }
-      return api.setGridOption('rowData', rowData)
+      const txResult = api.applyTransaction({
+        add: rowData,
+      })
+      syncStateByTx(txResult)
     },
-    [ref],
+    [ref, syncStateByTx],
   )
 
   const updateRowByRowIndex = useCallback(

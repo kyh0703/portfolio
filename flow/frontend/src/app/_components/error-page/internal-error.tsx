@@ -4,20 +4,20 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { Button } from '../button'
 import { RefreshIcon } from '../icon'
-import InternalServerIllustration from '../../../../public/images/illustrations/internal-server-error.png'
+// import InternalServerIllustration from '/images/illustrations/unauthorized-error.png'
 
 export default function InternalServerError({ message }: { message?: string }) {
   const router = useRouter()
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center">
-      <Image
+      {/* <Image
         src={InternalServerIllustration}
         width={287}
         height={197}
         alt="internal-server-error"
         priority
-      />
+      /> */}
       <h1 className="mt-14 text-center font-poppins text-3xl font-semibold text-gray-550">
         Return Home(to SWAT)
         <br />
@@ -34,7 +34,7 @@ export default function InternalServerError({ message }: { message?: string }) {
         variant="outline"
         onClick={router.back}
       >
-        <RefreshIcon width={20} height={20} />
+        <RefreshIcon size={20} />
         <h4 className="text-base">Refresh</h4>
       </Button>
     </div>

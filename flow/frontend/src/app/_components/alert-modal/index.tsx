@@ -9,7 +9,7 @@ import { Button } from '../button'
 export default function AlertModal() {
   const id = useModalId()
   const [data, closeModal] = useModalStore(
-    useShallow((state) => [state.data, state.closeModal]),
+    useShallow((state) => [state.data as string, state.closeModal]),
   )
 
   return (

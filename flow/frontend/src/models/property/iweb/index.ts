@@ -1,6 +1,0 @@
-export * from './disconnect-web'
-export * from './get-page-data'
-export * from './regist-server'
-export * from './request-page'
-export * from './unregist-server'
-export * from './wait-web-inbound'

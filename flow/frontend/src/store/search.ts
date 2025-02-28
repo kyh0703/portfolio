@@ -3,14 +3,16 @@ import { createStore } from './store'
 
 interface SearchState {
   data: SearchTreeData[]
-  search: string
-  replace: string
-  isOpenReplace: boolean
-  useMatchWholeWord: boolean
-  useMatchCase: boolean
-  subFlowName: string
-  nodeKind: string
-  propertyName: string
+  options: {
+    search: string
+    replace: string
+    isOpenReplace: boolean
+    useMatchWholeWord: boolean
+    useMatchCase: boolean
+    subFlowName: string
+    nodeKind: string
+    propertyName: string
+  }
   highlightText: string
   setData: (value: SearchTreeData[]) => void
   setSearch: (value: string) => void
@@ -28,43 +30,63 @@ interface SearchState {
 export const useSearchStore = createStore<SearchState>(
   (set) => ({
     data: [],
-    search: '',
-    replace: '',
-    isOpenReplace: false,
-    useMatchWholeWord: false,
-    useMatchCase: false,
-    subFlowName: '',
-    nodeKind: '',
-    propertyName: '',
+    options: {
+      search: '',
+      replace: '',
+      isOpenReplace: false,
+      useMatchWholeWord: false,
+      useMatchCase: false,
+      subFlowName: '',
+      nodeKind: '',
+      propertyName: '',
+    },
     highlightText: '',
     setData: (value) => set({ data: value }),
-    setSearch: (value) => set({ search: value }),
-    setReplace: (value) => set({ replace: value }),
+    setSearch: (value) =>
+      set((state) => {
+        state.options.search = value
+      }),
+    setReplace: (value) =>
+      set((state) => {
+        state.options.replace = value
+      }),
     toggleIsOpenReplace: () =>
-      set((state) => ({
-        isOpenReplace: !state.isOpenReplace,
-      })),
+      set((state) => {
+        state.options.isOpenReplace = !state.options.isOpenReplace
+      }),
     toggleUseMatchWholeWord: () =>
-      set((state) => ({
-        useMatchWholeWord: !state.useMatchWholeWord,
-      })),
+      set((state) => {
+        state.options.useMatchWholeWord = !state.options.useMatchWholeWord
+      }),
     toggleUseMatchCase: () =>
-      set((state) => ({
-        useMatchCase: !state.useMatchCase,
-      })),
-    setSubFlowName: (value) => set({ subFlowName: value }),
-    setNodeKind: (value) => set({ nodeKind: value }),
-    setPropertyName: (value) => set({ propertyName: value }),
+      set((state) => {
+        state.options.useMatchCase = !state.options.useMatchCase
+      }),
+    setSubFlowName: (value) =>
+      set((state) => {
+        state.options.subFlowName = value
+      }),
+    setNodeKind: (value) =>
+      set((state) => {
+        state.options.nodeKind = value
+      }),
+    setPropertyName: (value) =>
+      set((state) => {
+        state.options.propertyName = value
+      }),
     resetAll: () =>
       set({
         data: [],
-        search: '',
-        replace: '',
-        useMatchWholeWord: false,
-        useMatchCase: false,
-        subFlowName: '',
-        nodeKind: '',
-        propertyName: '',
+        options: {
+          search: '',
+          replace: '',
+          isOpenReplace: false,
+          useMatchWholeWord: false,
+          useMatchCase: false,
+          subFlowName: '',
+          nodeKind: '',
+          propertyName: '',
+        },
       }),
     setHighlightText: (value) => set({ highlightText: value }),
   }),

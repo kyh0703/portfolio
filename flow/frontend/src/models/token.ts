@@ -1,3 +1,5 @@
+import type { FlowMode, FlowType } from "./flow"
+
 export interface Token {
   tenantId: string
   serviceId: string
@@ -5,7 +7,9 @@ export interface Token {
   id: number
   name: string
   desc: string
-  type: string
+  type: FlowType
+
+  mode: FlowMode
   user: {
     userName: string
     userLevel: string

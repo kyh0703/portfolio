@@ -1,3 +1,4 @@
+import { REQUEST_DELAY_TIME } from '@/constants/delay'
 import { getAutocomplete } from '@/services/subflow'
 import type { CustomNodeType } from '@xyflow/react'
 import debounce from 'lodash-es/debounce'
@@ -33,7 +34,7 @@ export default function useAutocomplete({
       )
       const options = new Set(response)
       setOptions(Array.from(options))
-    }, 200)
+    }, REQUEST_DELAY_TIME)
     debounceFn()
   }
 

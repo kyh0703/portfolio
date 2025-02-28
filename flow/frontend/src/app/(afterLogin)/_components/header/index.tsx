@@ -1,13 +1,10 @@
 import { cn } from '@/utils/cn'
-import dynamic from 'next/dynamic'
 import Title from '../title'
-import BuildButton from './build-button'
-import UploadButton from './upload-button'
-import WebsocketSubscriber from './websocket-subscriber'
 import BookmarkButton from './bookmark-button'
 import BotButton from './bot-button'
-
-const ThemeToggle = dynamic(() => import('./theme-toggle'), { ssr: false })
+import BuildButton from './build-button'
+import ThemeToggle from './theme-toggle'
+import UploadButton from './upload-button'
 
 export default function Header() {
   return (
@@ -41,7 +38,6 @@ export default function Header() {
         <BuildButton />
         <UploadButton />
       </nav>
-      <WebsocketSubscriber />
     </header>
   )
 }

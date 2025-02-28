@@ -97,16 +97,16 @@ export function useEdges() {
       return '#C7253E'
     }
     if (condition === 'timeout') {
-      return '#758694'
+      return '#9B5FFF'
     }
 
     switch (type) {
       case 'If':
-        return condition === 'true' ? 'blue' : 'red'
+        return condition === 'true' ? '#4DA6FF' : '#FF4D4D'
       case 'Select':
         return '#F95959'
       case 'GetDigit':
-        return '#03346E'
+        return '#1E5AFF'
       case 'IntentCall':
         if (condition && !['next', 'nomatch'].includes(condition)) {
           return '#1EA046'
@@ -186,6 +186,7 @@ export function useEdges() {
         },
         markerEnd: setMarkerEnd(type, condition),
         zIndex: 10,
+        reconnectable: false,
       }
 
       switch (type) {

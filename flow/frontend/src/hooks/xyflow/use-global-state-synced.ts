@@ -19,6 +19,14 @@ export function useGlobalStateSynced(subFlowId: number) {
   const { data } = useSuspenseQuery(useQueryUndoRedoCount(subFlowId))
 
   useEffect(() => {
+    const observer = () => {
+      const newData = sharedHistoryMap.get(id)
+      setUndoRedo({
+        undoCount: newData?.undoCount ?? 0,
+        redoCount: newData?.redoCount ?? 0,
+      })
+    }
+
     const yDocData = sharedHistoryMap.get(id)
     if (yDocData) {
       setUndoRedo(yDocData)
@@ -30,14 +38,6 @@ export function useGlobalStateSynced(subFlowId: number) {
       sharedHistoryMap.set(id, {
         undoCount: data.undocnt,
         redoCount: data.redocnt,
-      })
-    }
-
-    const observer = () => {
-      const newData = sharedHistoryMap.get(id)
-      setUndoRedo({
-        undoCount: newData?.undoCount ?? 0,
-        redoCount: newData?.redoCount ?? 0,
       })
     }
 

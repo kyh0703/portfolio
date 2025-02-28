@@ -18,11 +18,7 @@ export default function Folder({ title, children }: FolderProps) {
     <div className="flex w-full flex-col items-center justify-center p-5">
       <div className="flex w-full justify-between" onClick={handleClick}>
         <span className="text-base font-semibold">{title}</span>
-        {selected ? (
-          <TopArrowIcon width={12} height={12} />
-        ) : (
-          <BottomArrowIcon width={12} height={12} />
-        )}
+        {selected ? <TopArrowIcon size={12} /> : <BottomArrowIcon size={12} />}
       </div>
       {selected && <div className="mt-5 w-full">{children}</div>}
     </div>

@@ -7,7 +7,7 @@ import {
   LegacyRef,
   MouseEventHandler,
   forwardRef,
-  memo
+  memo,
 } from 'react'
 import { Button } from '../button'
 import { Input } from '../input'
@@ -24,6 +24,7 @@ type AutocompleteProps = {
   hasSelectOptions?: boolean
   onChange?: ChangeEventHandler
   onClick?: MouseEventHandler
+  onBlur?: () => void
 }
 
 const AutocompleteInput = forwardRef<
@@ -42,6 +43,7 @@ const AutocompleteInput = forwardRef<
       hasSelectOptions,
       onChange,
       onClick,
+      onBlur,
     },
     ref,
   ) => {
@@ -56,6 +58,7 @@ const AutocompleteInput = forwardRef<
             rows={rows}
             readOnly={readOnly}
             onChange={onChange}
+            onBlur={onBlur}
           />
         ) : (
           <Input
@@ -66,6 +69,7 @@ const AutocompleteInput = forwardRef<
             placeholder={placeholder}
             readOnly={readOnly}
             onChange={onChange}
+            onBlur={onBlur}
           />
         )}
         {hasSelectOptions && !disabled && (

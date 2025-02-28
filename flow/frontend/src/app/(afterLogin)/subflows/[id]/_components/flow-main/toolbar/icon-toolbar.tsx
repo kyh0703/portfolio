@@ -1,11 +1,8 @@
 'use client'
 
-import ConfirmModal from '@/app/_components/confirm-modal'
 import {
-  CompileIcon,
   CopyIcon,
   CutIcon,
-  DarkCompileIcon,
   DarkCopyIcon,
   DarkCutIcon,
   DarkDeleteIcon,
@@ -15,7 +12,6 @@ import {
   DarkPointerIcon,
   DarkRedoIcon,
   DarkSelectAllIcon,
-  DarkSnapshotIcon,
   DarkUndoIcon,
   DeleteIcon,
   GrabIcon,
@@ -24,28 +20,20 @@ import {
   PointerIcon,
   RedoIcon,
   SelectAllIcon,
-  SnapshotIcon,
-  UndoIcon,
+  UndoIcon
 } from '@/app/_components/icon'
-import { Modal } from '@/app/_components/modal'
 import { useWebSocket } from '@/contexts/websocket-context'
 import { useOptionsStateSynced } from '@/hooks/use-options-state-synced'
 import { useCopyPaste, useRemove, useSelect, useUndoRedo } from '@/hooks/xyflow'
-import { useUpdateSnapshot } from '@/services/subflow'
-import { useQuerySnapshot } from '@/services/subflow/queries/use-query-snapshot'
 import { useBuildStore } from '@/store/build'
 import { useLayoutStore } from '@/store/layout'
 import { useModalStore } from '@/store/modal'
 import { useSubFlowStore } from '@/store/sub-flow'
-import logger from '@/utils/logger'
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { useTheme } from 'next-themes'
 import { useRef } from 'react'
 import { Tooltip } from 'react-tooltip'
 import { useShallow } from 'zustand/react/shallow'
 import CompileHandler from './compile-handler'
-import SnapshotDropdown from './snapshot-dropdown'
-import { BookmarkIcon } from 'lucide-react'
 
 export function IconToolbar({ subFlowId }: { subFlowId: number }) {
   const { resolvedTheme } = useTheme()
@@ -67,29 +55,6 @@ export function IconToolbar({ subFlowId }: { subFlowId: number }) {
   const { canCopy, copy, cut, canPaste, paste } = useCopyPaste(subFlowId)
   const { isSelected, selectAll } = useSelect()
   const { removeSelectedNode } = useRemove(subFlowId)
-  const { data: snapshots } = useSuspenseQuery(useQuerySnapshot(subFlowId))
-  const updateSnapshotMutation = useUpdateSnapshot()
-
-  const executeSnapshot = () =>
-    updateSnapshotMutation.mutate({
-      flowId: subFlowId,
-      name: tempSnapshotName.current,
-    })
-
-  const executeCompile = () => {
-    triggerFooter('up')
-    setFooterTab('compile')
-    try {
-      send('buildRequest', {
-        buildType: 'compile',
-        ifeVer: '1.0.0',
-        subFlowId,
-      })
-      startCompile()
-    } catch (e) {
-      logger.error(e)
-    }
-  }
 
   const openSnapshotModal = (name: string) => {
     tempSnapshotName.current = name
@@ -98,12 +63,6 @@ export function IconToolbar({ subFlowId }: { subFlowId: number }) {
 
   return (
     <div className="flex items-start gap-4 rounded border border-solid border-gray-350 bg-white p-2 dark:border-[#636669] dark:bg-[#383C40]">
-      <Modal id="confirm-modal">
-        <ConfirmModal
-          content="정말 복원하시겠습니까"
-          onConfirm={executeSnapshot}
-        />
-      </Modal>
       {resolvedTheme === 'light' ? (
         <>
           <UndoIcon
@@ -147,11 +106,6 @@ export function IconToolbar({ subFlowId }: { subFlowId: number }) {
             data-tooltip-content="select"
             onClick={selectAll}
           />
-          <CompileIcon
-            data-tooltip-id="compile"
-            data-tooltip-content="compile"
-            onClick={executeCompile}
-          />
           {editMode === 'grab' ? (
             <GrabIcon
               data-tooltip-id="edit"
@@ -167,17 +121,6 @@ export function IconToolbar({ subFlowId }: { subFlowId: number }) {
               onClick={() => setEditMode('grab')}
             />
           )}
-          <SnapshotDropdown
-            snapshots={snapshots}
-            disabled={!options?.snapShot.use}
-            onClick={openSnapshotModal}
-          >
-            <SnapshotIcon
-              data-tooltip-id="snapshot"
-              data-tooltip-content="snapshot"
-              disabled={!options?.snapShot.use}
-            />
-          </SnapshotDropdown>
         </>
       ) : (
         <>
@@ -222,11 +165,6 @@ export function IconToolbar({ subFlowId }: { subFlowId: number }) {
             data-tooltip-content="select"
             onClick={selectAll}
           />
-          <DarkCompileIcon
-            data-tooltip-id="compile"
-            data-tooltip-content="compile"
-            onClick={executeCompile}
-          />
           {editMode === 'grab' ? (
             <DarkGrabIcon
               data-tooltip-id="edit"
@@ -242,17 +180,6 @@ export function IconToolbar({ subFlowId }: { subFlowId: number }) {
               onClick={() => setEditMode('grab')}
             />
           )}
-          <SnapshotDropdown
-            snapshots={snapshots}
-            disabled={!options?.snapShot.use}
-            onClick={openSnapshotModal}
-          >
-            <DarkSnapshotIcon
-              data-tooltip-id="snapshot"
-              data-tooltip-content="snapshot"
-              disabled={!options?.snapShot.use}
-            />
-          </SnapshotDropdown>
         </>
       )}
       <Tooltip opacity={1} id="undo" />

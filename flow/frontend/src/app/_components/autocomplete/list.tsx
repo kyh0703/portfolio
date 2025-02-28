@@ -9,7 +9,6 @@ import {
   memo,
   useCallback,
   useEffect,
-  useMemo,
   useState,
 } from 'react'
 import { RemoveScroll } from 'react-remove-scroll'

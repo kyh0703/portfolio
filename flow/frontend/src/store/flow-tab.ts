@@ -1,4 +1,3 @@
-import { SubFlowList } from '@/models/subflow-list'
 import { createPersistStore } from './store'
 
 type SubFlow = {
@@ -13,11 +12,18 @@ type FlowTab = {
 
 interface FlowTabState {
   tabs: Record<number, FlowTab>
-  initializeTab: (flowId: number, subFlows: SubFlowList[]) => number
   moveTab: (flowId: number, srcIndex: number, destIndex: number) => void
-  isOpenTab: (flowId: number, subFlow: SubFlow) => boolean
+  isOpenTab: (flowId: number, subFlowId: number) => boolean
   openTab: (flowId: number, subFlow: SubFlow) => void
-  closeTab: (flowId: number, subFlowId: number) => number
+  closeTab: (flowId: number, subFlowId: number) => number | undefined
+  closeOthersTab: (
+    flowId: number,
+    subFlowId: number,
+  ) => {
+    subFlowId?: number
+    closedSubFlowIds: number[]
+  }
+  closeAllTab: (flowId: number) => number[]
   setCurrentTabIndex: (flowId: number, index: number) => void
   setFlowName: (flowId: number, subFlow: SubFlow) => void
 }
@@ -25,19 +31,6 @@ interface FlowTabState {
 export const useFlowTabStore = createPersistStore<FlowTabState>(
   (set, get) => ({
     tabs: {},
-    initializeTab(flowId: number, subFlowList: SubFlowList[]): number {
-      const main = subFlowList.find((flow) => flow.name === 'main')
-      if (!main) {
-        throw new Error('Main flow not found')
-      }
-      set((state) => {
-        state.tabs[flowId] = {
-          index: 0,
-          subFlows: [main],
-        }
-      })
-      return main.id
-    },
     moveTab(flowId: number, srcIndex: number, destIndex: number) {
       set((state) => {
         const tab = state.tabs[flowId]
@@ -51,13 +44,13 @@ export const useFlowTabStore = createPersistStore<FlowTabState>(
         state.tabs[flowId] = { ...tab, subFlows }
       })
     },
-    isOpenTab(flowId: number, subFlow: SubFlow) {
-      const tab = get().tabs[flowId] || { Index: 0, subFlows: [] }
-      return tab.subFlows.some((s) => s.id === subFlow.id)
+    isOpenTab(flowId: number, subFlowId: number) {
+      const tab = get().tabs[flowId] || { index: 0, subFlows: [] }
+      return tab.subFlows.some((s) => s.id === subFlowId)
     },
     openTab(flowId: number, subFlow: SubFlow) {
       set((state) => {
-        const tab = state.tabs[flowId] || { Index: 0, subFlows: [] }
+        const tab = state.tabs[flowId] || { index: 0, subFlows: [] }
         const existingTab = tab.subFlows.find((s) => s.id === subFlow.id)
         if (!existingTab) {
           tab.subFlows = [...tab.subFlows, subFlow]
@@ -68,7 +61,7 @@ export const useFlowTabStore = createPersistStore<FlowTabState>(
         state.tabs[flowId] = { ...tab }
       })
     },
-    closeTab(flowId: number, subFlowId: number): number {
+    closeTab(flowId: number, subFlowId: number): number | undefined {
       set((state) => {
         const tab = state.tabs[flowId]
         if (!tab) {
@@ -77,16 +70,64 @@ export const useFlowTabStore = createPersistStore<FlowTabState>(
         tab.subFlows = tab.subFlows.filter(
           (subFlow) => subFlow.id !== subFlowId,
         )
-        if (tab.subFlows.length > 0) {
-          tab.index = Math.max(0, tab.index - 1)
+        if (tab.subFlows.length === 0) {
+          state.tabs[flowId] = { index: 0, subFlows: [] }
         } else {
-          tab.index = 0
+          tab.index = Math.max(0, tab.index - 1)
+          state.tabs[flowId] = { ...tab }
         }
-        state.tabs[flowId] = { ...tab }
       })
 
       const currentTab = get().tabs[flowId]
-      return currentTab.subFlows[currentTab.index].id
+      return currentTab
+        ? currentTab.subFlows[currentTab.index]?.id ?? undefined
+        : undefined
+    },
+    closeOthersTab(flowId: number, subFlowId: number) {
+      let removedIds: number[] = []
+
+      set((state) => {
+        const tab = state.tabs[flowId]
+        if (!tab) {
+          return
+        }
+
+        const subFlows = tab.subFlows.filter(
+          (subFlow) => subFlow.id === subFlowId,
+        )
+
+        removedIds = tab.subFlows
+          .filter((subFlow) => subFlow.id !== subFlowId)
+          .map((subFlow) => subFlow.id)
+
+        if (subFlows.length === 0) {
+          state.tabs[flowId] = { index: 0, subFlows: [] }
+        } else {
+          tab.subFlows = subFlows
+          tab.index = 0
+          state.tabs[flowId] = { ...tab }
+        }
+      })
+
+      const currentTab = get().tabs[flowId]
+      return {
+        subFlowId: currentTab?.subFlows[currentTab.index]?.id ?? undefined,
+        closedSubFlowIds: removedIds,
+      }
+    },
+    closeAllTab(flowId: number) {
+      let removedIds: number[] = []
+
+      set((state) => {
+        const tab = state.tabs[flowId]
+        if (!tab) {
+          return
+        }
+        removedIds = tab.subFlows.map((subFlow) => subFlow.id)
+        state.tabs[flowId] = { index: 0, subFlows: [] }
+      })
+
+      return removedIds
     },
     setCurrentTabIndex(flowId: number, index: number) {
       set((state) => {
@@ -115,11 +156,3 @@ export const useFlowTabStore = createPersistStore<FlowTabState>(
     name: 'flowTabStore',
   },
 )
-
-export function useCurrentTab(flowId: number) {
-  const tab = useFlowTabStore((state) => state.tabs[flowId])
-  if (!tab) {
-    throw new Error(`Tab with flowId ${flowId} not found`)
-  }
-  return tab
-}

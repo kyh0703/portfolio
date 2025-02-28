@@ -18,7 +18,6 @@ import { useShallow } from 'zustand/react/shallow'
 import BlockingOverlay from '../blocking-overlay'
 import FlowPanel from '../flow-panel'
 import FlowTabs from '../flow-tabs'
-import NodeProperty from '../node-properties'
 
 type FlowLayoutProps = {
   subFlowId: number
@@ -80,7 +79,6 @@ export default function FlowLayout({
           defaultSize={30}
           hidden={!selectedNode}
         >
-          <NodeProperty subFlowId={subFlowId} focusTab={focusTab} />
         </ResizablePanel>
       </ResizablePanelGroup>
     </ReactFlowProvider>

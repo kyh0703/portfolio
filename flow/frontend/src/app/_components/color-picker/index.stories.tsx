@@ -1,7 +1,6 @@
 import logger from '@/utils/logger'
 import type { Meta, StoryObj } from '@storybook/react'
 import ColorPickerIcon from '.'
-// import { RadioIcon } from '@/app/_components/icon'
 
 const meta: Meta<typeof ColorPickerIcon> = {
   component: ColorPickerIcon,

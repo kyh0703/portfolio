@@ -5,9 +5,9 @@ export type NavigationItem =
   | 'list'
   | 'component'
   | 'defines'
-  | 'configs'
+  | 'outline'
   | 'search'
-// | 'help'
+  | 'configs'
 
 type LeftSidebar = {
   open: boolean

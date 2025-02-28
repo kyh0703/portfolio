@@ -6,7 +6,7 @@ export default function PlayButton(
 ) {
   return (
     <Button variant="secondary3" {...props}>
-      <PlayOnIcon width={11}></PlayOnIcon>
+      <PlayOnIcon size={11}></PlayOnIcon>
       <span className="ml-[5px]">Play</span>
     </Button>
   )

@@ -1,11 +1,10 @@
-import { useReactFlow, type AppEdge, type AppNode } from '@xyflow/react'
+import { useStore } from '@xyflow/react'
 
 export function useNodeDimensions(id: string) {
-  const { getNode } = useReactFlow<AppNode, AppEdge>()
-  const node = getNode(id)
+  const node = useStore((state) => state.nodeLookup.get(id))
 
   return {
-    width: node?.width || 0,
-    height: node?.height || 0,
+    width: node?.measured?.width || 0,
+    height: node?.measured?.height || 0,
   }
 }

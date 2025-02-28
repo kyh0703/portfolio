@@ -1,21 +1,10 @@
+import type { Token } from '@/models/token'
 import { createJSONStorage } from 'zustand/middleware'
 import { createPersistStore } from './store'
 
 type Context = {
-  tenantId: string
-  serviceId: string
-  version: string
-  id: number
-  name: string
-  desc: string
-  type: string
-  user: {
-    userName: string
-    userLevel: string
-  }
-  url: string
   localIp: string
-}
+} & Token
 
 interface ContextState {
   ctx: Context | null

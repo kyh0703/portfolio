@@ -15,7 +15,9 @@ const buttonVariants = cva(
         secondary2:
           'bg-[#299CDB] text-[#FFF] hover:bg-[#1D6E9A] focus:bg-[#154E6E] disabled:bg-[#9DA2A5]',
         secondary3:
-          'bg-transparent text-brown dark:text-[#FFF] hover:bg-[#FAFAFA] focus:bg-[#F2F2F2] disabled:bg-[#CDE4DA] border border-gray-350',
+          'bg-transparent text-brown dark:text-[#FFF] hover:bg-[#FAFAFA] dark:hover:bg-gray-700 focus:bg-[#F2F2F2] dark:focus:bg-gray-600 disabled:bg-[#CDE4DA] border border-gray-350',
+        tertiary:
+          'bg-[#6B8E23] text-[#FFF] hover:bg-[#556B2F] focus:bg-[#3E4E25] disabled:bg-[#A3B18A]',
         error:
           'bg-error text-error-foreground hover:bg-[#CC563D] focus:bg-[#A84733] disabled:bg-[#9E9E9E]',
         destructive:
@@ -30,7 +32,7 @@ const buttonVariants = cva(
         sm: 'h-8 w-16 rounded-md px-3',
         lg: 'h-10 w-24 rounded-md px-8',
         full: 'w-full h-9 px-4 py-2',
-        icon: 'h-10 w-10 rounded-full',
+        icon: 'h-8 w-8 rounded-full',
       },
     },
     defaultVariants: {

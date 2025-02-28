@@ -104,7 +104,7 @@ const CommandItem = React.forwardRef<
     ref={ref}
     className={cn(
       `h-[${height['autocomplete-item']}]`,
-      'relative flex cursor-pointer select-none items-center rounded-none px-2 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground',
+      'aria-selected:bg-context-focus aria-selected:text-context-focus-text relative flex cursor-pointer select-none items-center rounded-none px-2 text-sm outline-none aria-selected:font-medium',
       className,
     )}
     {...props}

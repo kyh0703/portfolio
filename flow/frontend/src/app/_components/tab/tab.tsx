@@ -3,7 +3,6 @@
 import { cn } from '@/utils'
 import React from 'react'
 import TabLabel from './tab-label'
-import { twJoin } from 'tailwind-merge'
 
 export interface TabProps {
   children?: React.ReactNode
@@ -104,9 +103,9 @@ export const Tab = React.forwardRef<HTMLButtonElement, TabProps>(
             <TabLabel
               label={label!}
               align={align}
-              className={twJoin(
+              className={cn(
                 selected ? 'text-blue-850' : undefined,
-                disabled && 'text-gray-400',
+                disabled && 'text-gray-400 dark:text-[#808080]',
               )}
             />
           </>
@@ -115,9 +114,9 @@ export const Tab = React.forwardRef<HTMLButtonElement, TabProps>(
             <TabLabel
               label={label!}
               align={align}
-              className={twJoin(
+              className={cn(
                 selected ? 'text-blue-850' : undefined,
-                disabled && 'text-gray-400',
+                disabled && 'text-gray-400 dark:text-[#808080]',
               )}
             />
             {icon}

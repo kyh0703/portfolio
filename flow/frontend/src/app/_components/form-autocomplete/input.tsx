@@ -21,9 +21,10 @@ type FormAutocompleteProps = {
   readOnly?: boolean
   autoFocus?: boolean
   hasSelectOptions?: boolean
+  onRenderChange: (text: string, onChange: (...event: any) => void) => void
   onClick?: MouseEventHandler
   onChange?: (text: string, onChange: (...event: any) => void) => void
-  onRenderChange: (text: string, onChange: (...event: any) => void) => void
+  onBlur?: () => void
 }
 
 const FormAutocompleteInput = forwardRef<
@@ -40,9 +41,10 @@ const FormAutocompleteInput = forwardRef<
       readOnly,
       autoFocus,
       hasSelectOptions,
+      onRenderChange,
       onClick,
       onChange,
-      onRenderChange,
+      onBlur,
     },
     ref,
   ) => {
@@ -63,6 +65,7 @@ const FormAutocompleteInput = forwardRef<
             readOnly={readOnly}
             autoFocus={autoFocus}
             onChange={handleChange}
+            onBlur={onBlur}
           />
         ) : (
           <Input
@@ -74,6 +77,7 @@ const FormAutocompleteInput = forwardRef<
             readOnly={readOnly}
             autoFocus={autoFocus}
             onChange={handleChange}
+            onBlur={onBlur}
           />
         )}
         {hasSelectOptions && !disabled && (
@@ -82,7 +86,7 @@ const FormAutocompleteInput = forwardRef<
             ref={buttonRef}
           >
             <Button variant="link" size="icon" onClick={onClick}>
-              <ChevronDown className="text-gray-460" width={16} height={16} />
+              <ChevronDown className="text-gray-460" size={16} />
             </Button>
           </div>
         )}

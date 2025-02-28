@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import UnAuthorizedIllustration from '../../../../public/images/illustrations/unauthorized-error.png'
+import UnAuthorizedIllustration from '/images/illustrations/unauthorized-error.png'
 
 export default function UnAuthorizedError({ message }: { message: string }) {
   return (

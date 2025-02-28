@@ -1,13 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import {
-  FormatColorFillIcon,
-  FormatColorTextIcon,
-  IconButtonProps,
-  SearchIcon,
-} from '.'
+import { FileMenuIcon, IconButtonProps } from '.'
 
-const meta: Meta<typeof SearchIcon> = {
-  component: SearchIcon,
+const meta: Meta<typeof FileMenuIcon> = {
+  component: FileMenuIcon,
   title: 'ui/Icon',
   argTypes: {
     color: {
@@ -53,14 +48,12 @@ const meta: Meta<typeof SearchIcon> = {
 }
 
 export default meta
-type Story = StoryObj<typeof SearchIcon>
+type Story = StoryObj<typeof FileMenuIcon>
 
 export const Standard: Story = {
   render: (args: IconButtonProps) => (
     <>
-      <FormatColorFillIcon {...args} color="red" />
-      <FormatColorTextIcon {...args} color="blue" />
-      <SearchIcon {...args} />
+      <FileMenuIcon {...args} />
     </>
   ),
 }

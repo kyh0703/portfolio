@@ -30,7 +30,6 @@ export default function useValidate() {
   }
 
   const validateSubFlow = (subFlowName: string) => {
-    // 예약어 검사
     const reservedWordsPattern = new RegExp(
       `\\b(${SUBFLOW_SYSTEM_RESERVE.join('|')})\\b`,
       'g',
@@ -40,7 +39,6 @@ export default function useValidate() {
       return false
     }
 
-    // 이름 형식 검사
     const validNamePattern = /^[a-zA-Z가-힣_][a-zA-Z가-힣0-9._]*$/
     if (!validNamePattern.test(subFlowName)) {
       toast.warn(

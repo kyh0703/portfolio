@@ -20,6 +20,7 @@ const Modal = ({ id, title = '', className, children }: ModalProps) => {
   const [isOpen, closeModal] = useModalStore(
     useShallow((state) => [state.modal[id], state.closeModal]),
   )
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -36,7 +37,7 @@ const Modal = ({ id, title = '', className, children }: ModalProps) => {
   return isOpen
     ? createPortal(
         <ModalProvider id={id}>
-          <section className="fixed left-0 top-0 z-30 flex h-full w-full items-center justify-center bg-black bg-opacity-25 animate-in fade-in-10">
+          <section className="fixed left-0 top-0 z-30 flex h-full w-full items-center justify-center bg-dialog-overlay animate-in fade-in-10">
             <div
               className={cn(
                 'w-2/6',
@@ -70,7 +71,7 @@ const Modal = ({ id, title = '', className, children }: ModalProps) => {
 }
 
 const ModalContent = ({ children }: PropsWithChildren) => (
-  <div className="z-10 h-full max-h-[440px] w-full overflow-y-scroll rounded-sm bg-[#F9F9F9] p-5 dark:bg-[#272C31]">
+  <div className="z-10 h-full max-h-[440px] w-full overflow-y-scroll whitespace-pre-line rounded-sm bg-[#F9F9F9] p-5 dark:bg-[#272C31]">
     {children}
   </div>
 )

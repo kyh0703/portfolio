@@ -1,29 +1,33 @@
-import { useUpdateNodes } from '@/services/subflow'
+import { useUpdateEdge, useUpdateNodes } from '@/services/subflow'
 import logger from '@/utils/logger'
 import {
   useReactFlow,
   useStoreApi,
   type AppEdge,
   type AppNode,
+  type XYPosition,
 } from '@xyflow/react'
-import { useCallback } from 'react'
-import { useUndoRedo } from '.'
+import { useCallback, useMemo } from 'react'
+import { useEdges, useUndoRedo } from '.'
 
 export function useAlign(subFlowId: number) {
-  const { syncSaveHistory } = useUndoRedo(subFlowId)
-  const { setNodes } = useReactFlow<AppNode, AppEdge>()
   const store = useStoreApi<AppNode, AppEdge>()
-  const { getNodes } = useReactFlow<AppNode, AppEdge>()
-  const selectedNodes = getNodes().filter((node) => node.selected)
-  const alignSelectedNodes = selectedNodes.filter((node) => !node.parentId)
+  const { updateEdgeToDB } = useEdges()
+  const { syncSaveHistory } = useUndoRedo(subFlowId)
+  const { getInternalNode, getNodes, setNodes, updateEdge } = useReactFlow<
+    AppNode,
+    AppEdge
+  >()
 
   const { mutateAsync: updateNodesMutate } = useUpdateNodes()
 
-  const canAlign = useCallback(() => {
+  const canAlignNode = useMemo(() => {
+    const selectedNodes = getNodes().filter((node) => node.selected)
+    const alignSelectedNodes = selectedNodes.filter((node) => !node.parentId)
     return alignSelectedNodes.length > 1
-  }, [alignSelectedNodes.length])
+  }, [getNodes])
 
-  const align = useCallback(
+  const alignNode = useCallback(
     async (
       targetNode: AppNode,
       selectedNodes: AppNode[],
@@ -64,5 +68,73 @@ export function useAlign(subFlowId: number) {
     [getNodes, setNodes, store, syncSaveHistory, updateNodesMutate],
   )
 
-  return { canAlign, align }
+  const alignEdge = useCallback(
+    async (edge: AppEdge) => {
+      if (!edge.data?.points) {
+        return
+      }
+
+      const sourceNode = getInternalNode(edge.source)
+      const targetNode = getInternalNode(edge.target)
+      if (!sourceNode || !targetNode) {
+        return
+      }
+
+      try {
+        const sourceX =
+          sourceNode.internals.positionAbsolute.x + (sourceNode.width ?? 0) / 2
+        const sourceY =
+          sourceNode.internals.positionAbsolute.y + (sourceNode.height ?? 0) / 2
+        const targetX =
+          targetNode.internals.positionAbsolute.x + (targetNode.width ?? 0) / 2
+        const targetY =
+          targetNode.internals.positionAbsolute.y + (targetNode.height ?? 0) / 2
+
+        if (
+          (sourceX === targetX || sourceY === targetY) &&
+          edge.data.points.length === 1
+        ) {
+          edge.data.points = undefined
+          await updateEdgeToDB(edge)
+          updateEdge(edge.id, edge)
+          return
+        }
+
+        for (let i = 0; i < edge.data.points.length; i++) {
+          const prev: XYPosition = edge.data.points[i - 1] ?? {
+            x: sourceX,
+            y: sourceY,
+          }
+          const next: XYPosition = edge.data.points[i + 1] ?? {
+            x: targetX,
+            y: targetY,
+          }
+          const current: XYPosition = edge.data.points[i]
+
+          const candidate1: XYPosition = { x: prev.x, y: next.y }
+          const candidate2: XYPosition = { x: next.x, y: prev.y }
+
+          const dist1 = Math.hypot(
+            current.x - candidate1.x,
+            current.y - candidate1.y,
+          )
+          const dist2 = Math.hypot(
+            current.x - candidate2.x,
+            current.y - candidate2.y,
+          )
+          const newPoint = dist1 < dist2 ? candidate1 : candidate2
+          edge.data.points[i].x = newPoint.x
+          edge.data.points[i].y = newPoint.y
+        }
+
+        await updateEdgeToDB(edge)
+        updateEdge(edge.id, edge)
+      } catch (error) {
+        logger.error('Failed to update edge', error)
+      }
+    },
+    [getInternalNode, updateEdge, updateEdgeToDB],
+  )
+
+  return { canAlignNode, alignNode, alignEdge }
 }

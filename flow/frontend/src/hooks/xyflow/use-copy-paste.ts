@@ -31,7 +31,7 @@ export function useCopyPaste(subFlowId: number) {
 
   const { ydoc } = useYjs()
   const { sharedNodePropertiesMap } = useYjsData(ydoc)
-  const { localIp } = useUserContext()
+  const { localIp, mode: flowMode } = useUserContext()
   const { getNodeMaxCount, issueEdgeId } = useId()
   const { getNodes, setNodes, setEdges, screenToFlowPosition, deleteElements } =
     useReactFlow<AppNode, AppEdge>()
@@ -284,7 +284,7 @@ export function useCopyPaste(subFlowId: number) {
             const bufferedNode = response.nodes.find(
               (node) => node.nodeId === bufferedNodeId,
             )!
-            if (hasPropertyNode(bufferedNode.kind)) {
+            if (hasPropertyNode(flowMode, bufferedNode.kind)) {
               await updateNodePropertyMutate({
                 nodeId: node.data.databaseId!,
                 nodeProperty: bufferedNode.property,
@@ -318,13 +318,14 @@ export function useCopyPaste(subFlowId: number) {
       screenToFlowPosition,
       localIp,
       getPastePositionXY,
-      setNodes,
-      setEdges,
       getNodeMaxCount,
       issueEdgeId,
       saveHistory,
+      setNodes,
+      setEdges,
       addNodesMutate,
       subFlowId,
+      flowMode,
       updateNodePropertyMutate,
       addEdgesMutate,
     ],

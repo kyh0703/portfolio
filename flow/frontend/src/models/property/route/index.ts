@@ -1,6 +1,0 @@
-export * from './route-acd'
-export * from './route-group'
-export * from './route-queue-rule'
-export * from './route-skill-group'
-export * from './route-skill'
-export * from './userdata'

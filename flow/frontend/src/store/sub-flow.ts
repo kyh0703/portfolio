@@ -17,8 +17,10 @@ type History = {
 
 interface SubFlowState {
   editMode: EditMode
+  bookmarkNodeId: string | undefined
   history: Record<number, History>
   setEditMode: (editMode: EditMode) => void
+  setBookmarkNodeId: (nodeId?: string) => void
   setSelectedNode: (
     subFlowId: number,
     selectedNode: SelectedNode | null,
@@ -29,10 +31,16 @@ interface SubFlowState {
 export const useSubFlowStore = createStore<SubFlowState>(
   (set) => ({
     editMode: 'grab',
+    bookmarkNodeId: undefined,
     history: {},
     setEditMode(editMode) {
       set((state) => {
         state.editMode = editMode
+      })
+    },
+    setBookmarkNodeId(nodeId) {
+      set((state) => {
+        state.bookmarkNodeId = nodeId
       })
     },
     setSelectedNode(subFlowId, selectedNode) {

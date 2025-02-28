@@ -17,11 +17,11 @@ import logger from '@/utils/logger'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useReactFlow, type AppEdge, type AppNode } from '@xyflow/react'
 import { useForm } from 'react-hook-form'
-import * as Yup from 'yup'
+// import * as Yup from 'yup'
 
-const schema = Yup.object().shape({
-  name: Yup.string().required('Name을 입력해주세요'),
-})
+// const schema = Yup.object().shape({
+//   name: Yup.string().required('Name을 입력해주세요'),
+// })
 
 export default function BookmarkDialog() {
   const [bookmarkNodeId, setBookmarkNodeId] = useSubFlowStore((state) => [
@@ -38,7 +38,7 @@ export default function BookmarkDialog() {
     reset,
     formState: { errors },
   } = useForm<{ name: string }>({
-    resolver: yupResolver(schema),
+    // resolver: yupResolver(schema),
   })
 
   const handleClose = () => {
@@ -62,7 +62,6 @@ export default function BookmarkDialog() {
           ...node,
           data: {
             ...node.data,
-            bookmark: data.name,
           },
         },
       })

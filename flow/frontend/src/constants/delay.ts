@@ -1,0 +1,3 @@
+const REQUEST_DELAY_TIME = 300
+
+export { REQUEST_DELAY_TIME }

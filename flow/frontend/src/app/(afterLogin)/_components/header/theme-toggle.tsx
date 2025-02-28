@@ -5,6 +5,8 @@ import { useEffect, useState, type MouseEventHandler } from 'react'
 import { Button } from '../../../_components/button'
 import { MoonIcon, SunIcon } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)

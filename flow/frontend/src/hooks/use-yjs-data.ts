@@ -1,5 +1,7 @@
 import { hasPropertyNode } from '@/app/(afterLogin)/subflows/[id]/_components/flow-main/tools'
 import type { FieldValues } from '@/contexts/node-properties-context'
+import type { FlowMode } from '@/models/flow'
+import type { Option } from '@/models/options'
 import type { Cursor } from '@/types/collaboration'
 import type { AppEdge, AppNode } from '@xyflow/react'
 import { useCallback, useMemo } from 'react'
@@ -26,6 +28,7 @@ export default function useYjsData(ydoc: Y.Doc) {
     () => ydoc.getMap<{ undoCount: number; redoCount: number }>(`history`),
     [ydoc],
   )
+  const sharedOptionsMap = useMemo(() => ydoc.getMap<Option>(`options`), [ydoc])
 
   const getCursorsMap = useCallback(
     (subFlowId: number) => {
@@ -58,12 +61,12 @@ export default function useYjsData(ydoc: Y.Doc) {
   )
 
   const clearSubFlow = useCallback(
-    (subFlowId: string) => {
+    (flowMode: FlowMode, subFlowId: string) => {
       sharedCursorsMap.delete(subFlowId)
       const nodesMap = sharedNodesMap.get(subFlowId)
       if (nodesMap) {
         for (const node of nodesMap.values()) {
-          if (hasPropertyNode(node.type!)) {
+          if (hasPropertyNode(flowMode, node.type!)) {
             sharedNodePropertiesMap.delete('' + node.data.databaseId)
           }
         }
@@ -87,6 +90,7 @@ export default function useYjsData(ydoc: Y.Doc) {
     sharedNodePropertiesMap,
     sharedEdgesMap,
     sharedHistoryMap,
+    sharedOptionsMap,
     getCursorsMap,
     getNodesMap,
     getEdgesMap,

@@ -1,6 +1,8 @@
 'use client'
 
-import { getTokens } from '@/services/lib/token'
+import type { RecvMessageType, SendMessageType } from '@/constants/message'
+import type { Message } from '@/models/web-socket/message'
+import { getToken } from '@/services/lib/token'
 import logger from '@/utils/logger'
 import {
   createContext,
@@ -18,13 +20,23 @@ type Subscribers = {
 
 type WebSocketState = {
   isConnected: boolean
-  subscribe: (type: string, callback: (message: any) => void) => () => void
-  send: (message: any) => void
+  subscribe: (
+    type: RecvMessageType,
+    callback: (message: any) => void,
+  ) => () => void
+  send: (type: SendMessageType, data: any) => void
 }
 
 const WebSocketContext = createContext<WebSocketState | undefined>(undefined)
 
-export const WebSocketProvider = ({ children }: PropsWithChildren) => {
+type WebSocketProviderProps = {
+  baseUrl?: string
+} & PropsWithChildren
+
+export const WebSocketProvider = ({
+  baseUrl,
+  children,
+}: WebSocketProviderProps) => {
   const wsRef = useRef<WebSocket | null>(null)
   const subscribersRef = useRef<Subscribers>({})
   const reconnectRef = useRef<{
@@ -39,9 +51,15 @@ export const WebSocketProvider = ({ children }: PropsWithChildren) => {
   const [waitingToReconnect, setWaitingToReconnect] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
-  const send = useCallback((message: any) => {
+  const send = useCallback((type: SendMessageType, data: any) => {
     if (wsRef.current) {
-      wsRef.current.send(JSON.stringify(message))
+      const message: string = JSON.stringify({
+        type,
+        data,
+        timestamp: new Date().toISOString(),
+      } as Message<any>)
+      logger.debug('Ⓜ️[WS] >', message)
+      wsRef.current.send(message)
     }
   }, [])
 
@@ -65,88 +83,90 @@ export const WebSocketProvider = ({ children }: PropsWithChildren) => {
   )
 
   useEffect(() => {
-    if (waitingToReconnect) {
-      return
-    }
-    if (wsRef.current) {
+    if (waitingToReconnect || wsRef.current) {
       return
     }
 
-    logger.info('[WS] Initialized')
-    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_API_WS_BASE_URL}`)
-    wsRef.current = ws
-
-    const token = getTokens()!
-    const accessToken = token.accessToken
-
-    ws.onopen = () => {
-      logger.info('[WS] Opened')
-      ws.send(
-        JSON.stringify({
-          type: 'auth',
-          data: {
-            token: accessToken,
-          },
-          timestamp: new Date(),
-        }),
-      )
-      reconnectRef.current.try = 1
-      setIsConnected(true)
+    if (!baseUrl) {
+      throw new Error('[WS] WebSocket URL is not defined')
     }
 
-    ws.onerror = (error) => {
-      logger.error('[WS] Error:', error)
-    }
+    const connectWebSocket = () => {
+      logger.info('[WS] Attempting to connect', baseUrl)
+      const ws = new WebSocket(baseUrl)
+      wsRef.current = ws
 
-    ws.onclose = () => {
-      if (wsRef.current) {
-        logger.warn('[WS] Closed by server')
-      } else {
-        logger.warn('[WS] Closed by app component unmount')
-      }
+      const token = getTokens()!
+      const accessToken = token.accessToken
 
-      if (waitingToReconnect) {
-        return
-      }
-
-      setIsConnected(false)
-      setWaitingToReconnect(true)
-
-      if (reconnectRef.current.max < reconnectRef.current.try) {
-        logger.info('[WS] Reconnect max attempts reached')
-        setError(
-          new Error(
-            'WebSocket 연결에 실패했습니다. 잠시후 다시 시도해주시기 바랍니다.',
-          ),
+      ws.onopen = () => {
+        logger.info('[WS] Opened')
+        ws.send(
+          JSON.stringify({
+            type: 'auth',
+            data: {
+              token: accessToken,
+            },
+            timestamp: new Date(),
+          }),
         )
-      }
-
-      logger.info(
-        `[WS] Reconnect attempt: ${reconnectRef.current.try} ${3000 * reconnectRef.current.try}`,
-      )
-      reconnectRef.current.try += 1
-      setTimeout(() => {
+        reconnectRef.current.try = 1
+        setIsConnected(true)
         setWaitingToReconnect(false)
-      }, 3000 * reconnectRef.current.try)
-    }
+      }
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      logger.debug('[WS] message:', data)
+      ws.onerror = (error) => {
+        logger.error('[WS] Error', error)
+      }
 
-      const dataType = data.type
-      const callbacks = subscribersRef.current[dataType]
-      if (callbacks) {
-        callbacks.forEach((callback) => callback(data))
+      ws.onclose = () => {
+        if (wsRef.current) {
+          logger.warn('[WS] Closed by server')
+        } else {
+          logger.warn('[WS] Closed by app component unmount')
+        }
+
+        setIsConnected(false)
+
+        if (reconnectRef.current.max < reconnectRef.current.try) {
+          logger.info('[WS] Reconnect max attempts reached')
+          setError(
+            new Error(
+              'WebSocket 연결에 실패했습니다. 잠시후 다시 시도해주시기 바랍니다.',
+            ),
+          )
+          return
+        }
+
+        setWaitingToReconnect(true)
+        setTimeout(() => {
+          logger.info(
+            `[WS] Reconnect attempt try ${reconnectRef.current.try} sleep ${3000 * reconnectRef.current.try}`,
+          )
+          reconnectRef.current.try += 1
+          setWaitingToReconnect(false)
+        }, 3000 * reconnectRef.current.try)
+      }
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        logger.debug('Ⓜ️[WS] <', JSON.stringify(data))
+
+        const callbacks = subscribersRef.current[data.type]
+        if (callbacks) {
+          callbacks.forEach((callback) => callback(data))
+        }
       }
     }
+
+    connectWebSocket()
 
     return () => {
       logger.info('[WS] cleanup')
+      wsRef.current?.close()
       wsRef.current = null
-      ws.close()
     }
-  }, [waitingToReconnect])
+  }, [baseUrl, waitingToReconnect])
 
   if (error) {
     throw error

@@ -1,23 +1,17 @@
-import { ManagementType } from '@/models/manage'
-import { createJSONStorage } from 'zustand/middleware'
+import type { ConfigKeys } from '@/app/(afterLogin)/_components/config-sidebar/items'
 import { createPersistStore } from './store'
 
 interface ManagementState {
-  page: ManagementType
-  useSnapshot: boolean
-  setUseSnapshot: (snapshot: boolean) => void
-  setPage: (page: ManagementType) => void
+  page: ConfigKeys
+  setPage: (page: ConfigKeys) => void
 }
 
 export const useManagementStore = createPersistStore<ManagementState>(
   (set) => ({
     page: 'options',
-    useSnapshot: false,
     setPage: (page) => set({ page }),
-    setUseSnapshot: (useSnapshot) => set({ useSnapshot }),
   }),
   {
     name: 'managementStore',
-    storage: createJSONStorage(() => sessionStorage),
   },
 )

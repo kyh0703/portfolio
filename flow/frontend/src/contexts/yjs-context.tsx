@@ -22,24 +22,29 @@ type YjsState = {
 
 const YjsContext = createContext<YjsState | undefined>(undefined)
 
-export default function YjsProvider({ children }: PropsWithChildren) {
+type YjsProviderProps = {
+  baseUrl?: string
+} & PropsWithChildren
+
+export default function YjsProvider({ baseUrl, children }: YjsProviderProps) {
   const ydocRef = useRef<Y.Doc>(new Y.Doc())
-  const startTimeRef = useRef<number>(performance.now())
+  const startTimeRef = useRef(performance.now())
   const flowId = useContextStore(useShallow((state) => state.ctx?.id))
   const [isConnected, setIsConnected] = useState(false)
   const [isSynced, setIsSynced] = useState(false)
 
   useEffect(() => {
+    if (!baseUrl) {
+      throw new Error('[WS] WebSocket URL is not defined')
+    }
+
     const ydoc = ydocRef.current
-    const provider = new WebsocketProvider(
-      `${process.env.NEXT_PUBLIC_API_YJS_BASE_URL}`,
-      `bt/${flowId}`,
-      ydoc,
-    )
+    const provider = new WebsocketProvider(baseUrl, `bt/${flowId}`, ydoc)
     ydoc.gc = true
+    logger.info('[YJS] Initialized', baseUrl)
 
     provider.on('status', (event: any) => {
-      logger.info('[YJS] Status:', ydoc, event.status, new Date())
+      logger.info('[YJS] Status', ydoc, event.status, new Date())
       if (event.status === 'connected') {
         setIsConnected(true)
       } else {
@@ -52,7 +57,7 @@ export default function YjsProvider({ children }: PropsWithChildren) {
       const endTime = performance.now()
       const loadTime = ((endTime - startTimeRef.current) / 1000).toFixed(2)
 
-      logger.info(`[YJS] Data synced loadTime: ${loadTime}s`, ydoc, new Date())
+      logger.info(`[YJS] Data synced loadTime ${loadTime}s`, ydoc, new Date())
       setIsSynced(true)
     })
 
@@ -60,7 +65,7 @@ export default function YjsProvider({ children }: PropsWithChildren) {
       provider?.destroy()
       ydoc.destroy()
     }
-  }, [flowId])
+  }, [baseUrl, flowId])
 
   return (
     <YjsContext.Provider

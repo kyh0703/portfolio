@@ -37,14 +37,14 @@ export default function FormAutocomplete<T extends FieldValues>(
   const { control, name, options, selectOptions, onValueChange } = props
 
   const [optionType, setOptionType] = useState<'option' | 'select' | null>(null)
-  const [isListOpen, setIsListOpen] = useState<boolean>(false)
+  const [isListOpen, setIsListOpen] = useState(false)
 
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null)
   const inputButtonRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
-  const cursorPosition = useRef<number>(0)
-  const originalWord = useRef<string>('')
+  const cursorPosition = useRef(0)
+  const originalWord = useRef('')
 
   const methods = useForm<T>()
 
@@ -136,6 +136,7 @@ export default function FormAutocomplete<T extends FieldValues>(
                 hasSelectOptions={!!selectOptions?.length}
                 onClick={handleClick}
                 onChange={handleChange}
+                onBlur={() => setIsListOpen(false)}
                 onRenderChange={onChange}
               />
               {isListOpen && (

@@ -14,7 +14,7 @@ export default function TabLabel({
   return (
     <span
       className={cn(
-        'grow overflow-hidden text-ellipsis text-nowrap text-base font-medium text-gray-550',
+        'grow overflow-hidden text-ellipsis text-nowrap font-medium text-gray-550',
         `text-${align}`,
         'dark:text-white',
         className,

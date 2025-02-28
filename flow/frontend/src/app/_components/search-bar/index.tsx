@@ -18,7 +18,7 @@ export default function SearchBox({
   return (
     <div className="flex w-full items-center justify-end rounded border border-search-border bg-search">
       <div className="ml-3">
-        <InputSearchIcon width={24} height={24} />
+        <InputSearchIcon />
       </div>
       <Input
         className={cn(

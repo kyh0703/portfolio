@@ -1,6 +1,5 @@
 import type { ApiResponse } from '@/services'
 import { fetchExtended } from '@/services/lib/fetch'
-import camelcaseKeys from 'camelcase-keys'
 
 export const signin = async ({
   email,
@@ -16,5 +15,5 @@ export const signin = async ({
     body: JSON.stringify({ email, password }),
   })
 
-  return camelcaseKeys(response.body.data, { deep: true })
+  return response.body.data
 }
