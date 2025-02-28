@@ -1,5 +1,0 @@
-<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect x="8" y="7" width="12" height="14" stroke="#5D5D5D" stroke-width="2"/>
-<path fill-rule="evenodd" clip-rule="evenodd" d="M16 2V4L4 4V2H16ZM17 11V13H11V11H17ZM14 17V15H11V17H14Z" fill="#5D5D5D"/>
-<rect x="5" y="17" width="2" height="15" transform="rotate(-180 5 17)" fill="#5D5D5D"/>
-</svg>
