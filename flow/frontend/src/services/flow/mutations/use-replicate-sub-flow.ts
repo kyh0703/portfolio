@@ -1,4 +1,4 @@
-import { SubFlow } from '@/models/subflow'
+import { SubFlow } from '@/models/sub-flow'
 import type { CustomResponse } from '@/services'
 import {
   useMutation,

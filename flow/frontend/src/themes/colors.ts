@@ -62,4 +62,14 @@ export const colors = {
   'blue-850': '#405189',
   'left-tool': '#1F78D4',
   'left-tool-focus': '#1960AA',
+  sidebar: {
+    DEFAULT: 'hsl(var(--sidebar-background))',
+    foreground: 'hsl(var(--sidebar-foreground))',
+    primary: 'hsl(var(--sidebar-primary))',
+    'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+    accent: 'hsl(var(--sidebar-accent))',
+    'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+    border: 'hsl(var(--sidebar-border))',
+    ring: 'hsl(var(--sidebar-ring))'
+  }
 }

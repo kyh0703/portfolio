@@ -1,4 +1,4 @@
-import type { SubFlow } from '@/models/subflow'
+import type { SubFlow } from '@/models/sub-flow'
 import { fetchExtended } from '@/services/lib/fetch'
 import type { ApiResponse } from '@/services/types'
 

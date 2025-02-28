@@ -1,23 +1,11 @@
 import { generateShortId } from "./id"
 
-function getMenuPath(rootId: number): string {
-  return `/defines/global/menu/${rootId}`
-}
-
-function getDefinePath(scope: string, type: string, defineId?: number): string {
-  let absolutePath = `/defines/${scope}/${type}`
-  if (defineId) {
-    absolutePath += `/${defineId}`
-  }
-  return absolutePath
-}
-
 function getSubFlowPath(
   subFlowId?: number,
   focusNode?: string,
   focusTab?: string,
 ): string {
-  let absolutePath = `/subflows`
+  let absolutePath = `/sub-flows`
   if (!subFlowId) {
     return absolutePath
   }
@@ -35,4 +23,4 @@ function getSubFlowPath(
   return absolutePath
 }
 
-export { getDefinePath, getMenuPath, getSubFlowPath }
+export { getSubFlowPath }
