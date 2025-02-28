@@ -1,7 +1,8 @@
 export interface Flow {
   id: number
+  projectId: number
   name: string
-  version: string
-  desc: string
-  updateDate: Date
+  description: string
+  updateAt: Date
+  createAt: Date
 }

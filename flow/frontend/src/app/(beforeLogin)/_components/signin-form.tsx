@@ -1,8 +1,8 @@
 'use client'
 
-import { Button } from '@/app/_components/button'
 import FormInput from '@/app/_components/form-input'
 import { signin } from '@/services/auth/api/singin'
+import { Button } from '@/ui/button'
 import logger from '@/utils/logger'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
@@ -10,8 +10,8 @@ import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
 const SigninSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string({required_error: "이메일을 입력하여 주세요"}).email(),
+  password: z.string({required_error: "패스워드를 입력하여 주세요"}).min(6),
 })
 
 type Signin = z.infer<typeof SigninSchema>
@@ -41,12 +41,14 @@ export function SigninForm() {
       <FormInput
         control={control}
         name="email"
+        className='rounded p-2'
         type="email"
         placeholder="your@email.com"
       />
       {errors.email && <p className="error-msg">{errors.email.message}</p>}
       <FormInput
         control={control}
+        className='rounded p-2'
         name="password"
         type="password"
         placeholder="••••••••"

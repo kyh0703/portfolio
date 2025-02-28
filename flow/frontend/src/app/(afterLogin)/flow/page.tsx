@@ -4,8 +4,8 @@ import { colors } from '@/themes'
 export default function Page() {
   return (
     <div className="relative min-h-screen bg-background">
-      <div className="absolute inset-0 flex items-center justify-center opacity-10">
-        <LogoIcon size={500} color={colors.foreground} />
+      <div className="absolute inset-0 flex items-center justify-center opacity-10 text-foreground">
+        <LogoIcon size={500} />
       </div>
       <section className="container relative flex min-h-screen flex-col items-center justify-center gap-4 pb-8 pt-24 md:pb-12 md:pt-32 lg:py-32">
         <div className="space-y-4 text-center">

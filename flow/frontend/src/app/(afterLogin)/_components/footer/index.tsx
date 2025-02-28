@@ -5,7 +5,7 @@ import { Separator } from '@/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/ui/tabs'
 import { useShallow } from 'zustand/react/shallow'
 import FooterIcon from './icon'
-import BuildTab from './tabs/build-tab'
+import BuildTab from './tabs/log-tab'
 import CompileTab from './tabs/compile-tab'
 
 const tabList: FooterTab[] = ['build', 'compile']

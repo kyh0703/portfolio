@@ -1,8 +1,8 @@
 'use client'
 
-import { Button } from '@/app/_components/button'
 import FormInput from '@/app/_components/form-input'
 import { signup } from '@/services/auth/api/signup'
+import { Button } from '@/ui/button'
 import logger from '@/utils/logger'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'

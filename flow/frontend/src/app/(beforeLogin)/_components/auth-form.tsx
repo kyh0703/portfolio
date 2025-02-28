@@ -1,6 +1,6 @@
 'use client'
 
-import { Button } from '@/app/_components/button'
+import { Button } from '@/ui/button'
 import {
   Card,
   CardContent,
@@ -16,7 +16,7 @@ export function AuthForm() {
   const [isLogin, setIsLogin] = useState(true)
 
   return (
-    <Card className="mx-auto w-full max-w-2xl bg-main shadow-2xl">
+    <Card className="mx-auto w-full max-w-2xl bg-main shadow-2xl p-3">
       <CardHeader className="space-y-2">
         <CardTitle className="text-center text-4xl font-bold">
           {isLogin ? '로그인' : '회원가입'}

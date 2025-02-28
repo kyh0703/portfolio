@@ -15,22 +15,19 @@ type Style = {
   hidden: boolean
 }
 
-type Group = {
+type Parent = {
   width: number
   height: number
   collapsed: boolean
 }
 
 export interface Node {
-  id: number
+  id: string
   flowId: number
-  nodeId: string
-  kind: CustomNodeType
+  type: CustomNodeType
   label: string
-  groupId: string
-  pos: PositionXY
+  position: PositionXY
   style: Style
-  group: Group
-  property?: unknown
-  desc: string
+  parent: Parent
+  description: string
 }

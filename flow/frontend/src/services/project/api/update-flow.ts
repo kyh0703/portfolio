@@ -1,16 +1,19 @@
-import type { FlowTree } from '@/models/subflow-list'
+import type { Flow } from '@/models/flow'
 import { fetchExtended } from '@/services/lib/fetch'
 import { CustomResponse } from '@/services/types'
 
-export const updateSubFlowTree = async (tree: { flowtree: FlowTree[] }) => {
+export const updateSubFlow = async (
+  id: number,
+  data: Partial<Flow>,
+) => {
   const response = await fetchExtended<CustomResponse>(
-    `${process.env.NEXT_PUBLIC_API_BASE_PATH}/flows/subflowtree`,
+    `${process.env.NEXT_PUBLIC_API_BASE_PATH}/flows/${id}`,
     {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(tree),
+      body: JSON.stringify(data),
     },
   )
 

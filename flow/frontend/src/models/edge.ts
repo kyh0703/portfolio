@@ -1,13 +1,12 @@
 import type { ControlPointData, CustomEdgeType } from '@xyflow/react'
 
 export interface Edge {
-  id: number
-  subFlowId: number
-  edgeId: string
-  kind: CustomEdgeType
-  cond: string
-  srcNodeId: string
-  dstNodeId: string
+  id: string
+  flowId: number
+  source: string
+  target: string
+  type: CustomEdgeType
+  label: string
   hidden: boolean
   markerEnd?: {
     width: number
@@ -16,4 +15,6 @@ export interface Edge {
     color: string
   }
   points: ControlPointData[]
+  updateAt: Date
+  createAt: Date
 }

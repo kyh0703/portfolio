@@ -1,18 +1,16 @@
 'use client'
 
-import Image from 'next/image'
-import UnAuthorizedIllustration from '/images/illustrations/unauthorized-error.png'
 
 export default function UnAuthorizedError({ message }: { message: string }) {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center">
-      <Image
+      {/* <Image
         src={UnAuthorizedIllustration}
         width={292}
         height={183}
         alt="not-found"
         priority
-      />
+      /> */}
       <h1 className="mt-14 text-center font-poppins text-3xl font-semibold text-gray-550">
         Return Home(to SWAT)
         <br />

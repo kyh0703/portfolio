@@ -1,10 +1,8 @@
 'use client'
 
-import Image from 'next/image'
+import { Button } from '@/ui/button'
+import { RefreshCwIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { Button } from '../button'
-import { RefreshIcon } from '../icon'
-// import InternalServerIllustration from '/images/illustrations/unauthorized-error.png'
 
 export default function InternalServerError({ message }: { message?: string }) {
   const router = useRouter()
@@ -34,7 +32,7 @@ export default function InternalServerError({ message }: { message?: string }) {
         variant="outline"
         onClick={router.back}
       >
-        <RefreshIcon size={20} />
+        <RefreshCwIcon size={20} />
         <h4 className="text-base">Refresh</h4>
       </Button>
     </div>
