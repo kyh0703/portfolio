@@ -16,7 +16,7 @@ enum ErrorCode {
   EXIST_NOT_DEFINED_TYPE = 4014,
   DEFINE_MENU_ERROR = 4025,
   DB_TOKEN_NOT_FOUND = 4302,
-  SUBFLOW_DUPLICATE_NAME = 4303,
+  SUB_FLOW_DUPLICATE_NAME = 4303,
 }
 
 const errorMessages = new Map<ErrorCode, string>([
@@ -39,7 +39,7 @@ const errorMessages = new Map<ErrorCode, string>([
   [ErrorCode.INTERFACE_PARSING_ERROR, 'Interface Parsing Error'],
   [ErrorCode.PROPERTY_KEY_NOT_EXIST, 'Not Exist Property Key'],
   [ErrorCode.EXIST_NOT_DEFINED_TYPE, 'Exist Not Define Type'],
-  [ErrorCode.SUBFLOW_DUPLICATE_NAME, 'SubFlow or CommSubFlow Duplicate Name'],
+  [ErrorCode.SUB_FLOW_DUPLICATE_NAME, 'SubFlow or CommSubFlow Duplicate Name'],
 ])
 
 export { ErrorCode, errorMessages }
