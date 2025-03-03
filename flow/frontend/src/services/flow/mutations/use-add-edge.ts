@@ -6,14 +6,14 @@ import { toast } from 'react-toastify'
 import { addEdge } from '..'
 
 type Response = { id: number }
-type Variables = { subFlowId: number; edge: AppEdge }
+type Variables = { flowId: number; data: AppEdge }
 type MutationOptions = UseMutationOptions<Response, CustomResponse, Variables>
 
 export const useAddEdge = (options?: MutationOptions) => {
   return useMutation<Response, CustomResponse, Variables>({
     ...options,
-    mutationFn: ({ subFlowId, edge }) => {
-      return addEdge(subFlowId, toModelEdge(edge))
+    mutationFn: ({ flowId, data }) => {
+      return addEdge(flowId, toModelEdge(data))
     },
     onSuccess: (data, variables, context) => {
       if (options?.onSuccess) {

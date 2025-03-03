@@ -7,16 +7,16 @@ import { addNodes } from '..'
 
 // NOTE: 기존 아이디를 노드 데이터안에 넣어서 타겟 플로우 프로퍼티를 복사할 수 있게 지정하여서 사용
 type Response = { id: number }[]
-type Variables = { subFlowId: number; nodes: AppNode[] }
+type Variables = { flowId: number; data: AppNode[] }
 type MutationOptions = UseMutationOptions<Response, CustomResponse, Variables>
 
 export const useCopyNodes = (options?: MutationOptions) => {
   return useMutation<Response, CustomResponse, Variables>({
     ...options,
-    mutationFn: ({ subFlowId, nodes }) => {
+    mutationFn: ({ flowId, data }) => {
       return addNodes(
-        subFlowId,
-        nodes.map((node) => toModelNode(node)),
+        flowId,
+        data.map((node) => toModelNode(node)),
       )
     },
     onSuccess: (data, variables, context) => {

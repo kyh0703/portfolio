@@ -4,7 +4,7 @@ import { createStore } from './store'
 export type EditMode = 'grab' | 'pointer' | 'link'
 
 export type SelectedNode = {
-  subFlowId: number
+  flowId: number
   databaseId: number
   nodeId: string
   nodeType: CustomNodeType
@@ -22,10 +22,10 @@ interface SubFlowState {
   setEditMode: (editMode: EditMode) => void
   setBookmarkNodeId: (nodeId?: string) => void
   setSelectedNode: (
-    subFlowId: number,
+    projectId: number,
     selectedNode: SelectedNode | null,
   ) => void
-  setViewPort: (subFlowId: number, viewPort: Viewport) => void
+  setViewPort: (projectId: number, viewPort: Viewport) => void
 }
 
 export const useSubFlowStore = createStore<SubFlowState>(
@@ -43,18 +43,18 @@ export const useSubFlowStore = createStore<SubFlowState>(
         state.bookmarkNodeId = nodeId
       })
     },
-    setSelectedNode(subFlowId, selectedNode) {
+    setSelectedNode(projectId, selectedNode) {
       set((state) => {
-        state.history[subFlowId] = {
-          ...state.history[subFlowId],
+        state.history[projectId] = {
+          ...state.history[projectId],
           selectedNode,
         }
       })
     },
-    setViewPort(subFlowId, viewPort) {
+    setViewPort(projectId, viewPort) {
       set((state) => {
-        state.history[subFlowId] = {
-          ...state.history[subFlowId],
+        state.history[projectId] = {
+          ...state.history[projectId],
           viewPort,
         }
       })

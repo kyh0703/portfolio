@@ -1,4 +1,4 @@
-import type { EditMode } from '@/store/sub-flow'
+import type { EditMode } from '@/store/flow'
 
 export const getCursorMode = (mode: EditMode) => {
   switch (mode) {

@@ -19,13 +19,13 @@ export type HistoryType =
   | 'group' // now
   | 'ungroup' // now
 
-export function useUndoRedo(subFlowId: number) {
+export function useUndoRedo(flowId: number) {
   const isProcessingRef = useRef(false)
 
   const { ydoc } = useYjs()
   const { sharedNodePropertiesMap, sharedHistoryMap } = useYjsData(ydoc)
 
-  const id = useMemo(() => '' + subFlowId, [subFlowId])
+  const id = useMemo(() => '' + flowId, [flowId])
   const { getNodes, getNode, setNodes, getEdges, setEdges, deleteElements } =
     useReactFlow<AppNode, AppEdge>()
   const history = sharedHistoryMap.get(id) ?? { undoCount: 0, redoCount: 0 }
@@ -147,7 +147,7 @@ export function useUndoRedo(subFlowId: number) {
 
       try {
         const response = await addHistoryMutateAsync({
-          subFlowId,
+          flowId,
           data: {
             type,
             nodes: nodes.map((node) => toModelNode(node)),
@@ -156,14 +156,14 @@ export function useUndoRedo(subFlowId: number) {
         })
 
         sharedHistoryMap.set(id, {
-          undoCount: response.undocnt,
-          redoCount: response.redocnt,
+          undoCount: response.undoCount,
+          redoCount: response.redoCount,
         })
       } catch (error) {
         logger.debug('Failed to save history', error)
       }
     },
-    [addHistoryMutateAsync, id, sharedHistoryMap, subFlowId],
+    [addHistoryMutateAsync, flowId, id, sharedHistoryMap],
   )
 
   const saveHistory = useCallback(
@@ -174,7 +174,7 @@ export function useUndoRedo(subFlowId: number) {
 
       addHistoryMutate(
         {
-          subFlowId,
+          flowId,
           data: {
             type,
             nodes: nodes.map((node) => toModelNode(node)),
@@ -184,14 +184,14 @@ export function useUndoRedo(subFlowId: number) {
         {
           onSuccess: (response) => {
             sharedHistoryMap.set(id, {
-              undoCount: response.undocnt,
-              redoCount: response.redocnt,
+              undoCount: response.undoCount,
+              redoCount: response.redoCount,
             })
           },
         },
       )
     },
-    [addHistoryMutate, id, sharedHistoryMap, subFlowId],
+    [addHistoryMutate, flowId, id, sharedHistoryMap],
   )
 
   const undo = useCallback(async () => {
@@ -204,7 +204,7 @@ export function useUndoRedo(subFlowId: number) {
     isProcessingRef.current = true
 
     try {
-      const response = await getUndo(subFlowId)
+      const response = await getUndo(flowId)
       const nodes = response.nodes.map((node) => toAppNode(node))
       const edges = response.edges.map((edge) => toAppEdge(edge))
 
@@ -243,10 +243,10 @@ export function useUndoRedo(subFlowId: number) {
     doGroupNodes,
     doUngroupNodes,
     doUpdateItems,
+    flowId,
     history.undoCount,
     id,
     sharedHistoryMap,
-    subFlowId,
   ])
 
   const redo = useCallback(async () => {
@@ -259,7 +259,7 @@ export function useUndoRedo(subFlowId: number) {
     isProcessingRef.current = true
 
     try {
-      const response = await getRedo(subFlowId)
+      const response = await getRedo(flowId)
       const nodes = response.nodes.map((node) => toAppNode(node))
       const edges = response.edges.map((edge) => toAppEdge(edge))
 
@@ -298,10 +298,10 @@ export function useUndoRedo(subFlowId: number) {
     doGroupNodes,
     doUngroupNodes,
     doUpdateItems,
+    flowId,
     history.redoCount,
     id,
     sharedHistoryMap,
-    subFlowId,
   ])
 
   return {

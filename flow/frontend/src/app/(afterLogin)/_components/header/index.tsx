@@ -1,10 +1,6 @@
 import { cn } from '@/utils/cn'
 import Title from '../title'
-import BookmarkButton from './bookmark-button'
-import BotButton from './bot-button'
-import BuildButton from './build-button'
 import ThemeToggle from './theme-toggle'
-import UploadButton from './upload-button'
 
 export default function Header() {
   return (
@@ -29,15 +25,10 @@ export default function Header() {
             'backdrop-blur-md',
           )}
         >
-          <BookmarkButton />
-          <BotButton />
           <ThemeToggle />
         </div>
       </section>
-      <nav className="flex items-center gap-5">
-        <BuildButton />
-        <UploadButton />
-      </nav>
+      <nav className="flex items-center gap-5"></nav>
     </header>
   )
 }

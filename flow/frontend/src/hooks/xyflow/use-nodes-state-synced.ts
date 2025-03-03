@@ -11,7 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import useYjsData from '../use-yjs-data'
 
 export function useNodesStateSynced(
-  subFlowId: number,
+  flowId: number,
   initialNodes: AppNode[],
 ): [
   AppNode[],
@@ -22,14 +22,8 @@ export function useNodesStateSynced(
 ] {
   const { ydoc } = useYjs()
   const { getNodesMap, getEdgesMap } = useYjsData(ydoc)
-  const nodesMap = useMemo(
-    () => getNodesMap(subFlowId),
-    [getNodesMap, subFlowId],
-  )
-  const edgesMap = useMemo(
-    () => getEdgesMap(subFlowId),
-    [getEdgesMap, subFlowId],
-  )
+  const nodesMap = useMemo(() => getNodesMap(flowId), [getNodesMap, flowId])
+  const edgesMap = useMemo(() => getEdgesMap(flowId), [getEdgesMap, flowId])
 
   const [nodes, setNodes] = useState<AppNode[]>([])
   const [verticalLine, setVerticalLine] = useState<HelperLine>(undefined)

@@ -7,13 +7,13 @@ import useYjsData from '../use-yjs-data'
 
 const MAX_IDLE_TIME = 10000
 
-export function useCursorStateSynced(subFlowId: number) {
+export function useCursorStateSynced(flowId: number) {
   const [cursors, setCursors] = useState<Cursor[]>([])
   const { ydoc } = useYjs()
   const { getCursorsMap } = useYjsData(ydoc)
   const cursorsMap = useMemo(
-    () => getCursorsMap(subFlowId),
-    [getCursorsMap, subFlowId],
+    () => getCursorsMap(flowId),
+    [getCursorsMap, flowId],
   )
   const clientId = ydoc.clientID.toString()
   const { screenToFlowPosition } = useReactFlow()

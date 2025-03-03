@@ -1,18 +1,18 @@
-import { useSubFlowStore } from '@/store/sub-flow'
+import { useSubFlowStore } from '@/store/flow'
 import { useKeyPress, useOnViewportChange, type Viewport } from '@xyflow/react'
 import { useEffect, useRef } from 'react'
 import { useCopyPaste, useRemove, useSelect, useShortcut, useUndoRedo } from '.'
 import { useGlobalStateSynced } from './use-global-state-synced'
 
-export function useInitialize(subFlowId: number) {
-  useGlobalStateSynced(subFlowId)
+export function useInitialize(flowId: number) {
+  useGlobalStateSynced(flowId)
 
-  const { cut, copy, paste } = useCopyPaste(subFlowId)
-  const { removeSelectedNode } = useRemove(subFlowId)
+  const { cut, copy, paste } = useCopyPaste(flowId)
+  const { removeSelectedNode } = useRemove(flowId)
   const { selectAll } = useSelect()
-  const { undo, redo } = useUndoRedo(subFlowId)
+  const { undo, redo } = useUndoRedo(flowId)
 
-  const viewPortRef = useRef<Viewport>()
+  const viewPortRef = useRef<Viewport | null>(null)
   const [setViewPort, setEditMode] = useSubFlowStore((state) => [
     state.setViewPort,
     state.setEditMode,
@@ -33,7 +33,7 @@ export function useInitialize(subFlowId: number) {
   useEffect(() => {
     return () => {
       if (viewPortRef.current) {
-        setViewPort(subFlowId, viewPortRef.current)
+        setViewPort(flowId, viewPortRef.current)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

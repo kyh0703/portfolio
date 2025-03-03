@@ -20,29 +20,24 @@ import {
   PointerIcon,
   RedoIcon,
   SelectAllIcon,
-  UndoIcon
+  UndoIcon,
 } from '@/app/_components/icon'
 import { useWebSocket } from '@/contexts/websocket-context'
 import { useOptionsStateSynced } from '@/hooks/use-options-state-synced'
 import { useCopyPaste, useRemove, useSelect, useUndoRedo } from '@/hooks/xyflow'
-import { useBuildStore } from '@/store/build'
 import { useLayoutStore } from '@/store/layout'
 import { useModalStore } from '@/store/modal'
-import { useSubFlowStore } from '@/store/sub-flow'
+import { useSubFlowStore } from '@/store/flow'
 import { useTheme } from 'next-themes'
-import { useRef } from 'react'
 import { Tooltip } from 'react-tooltip'
-import { useShallow } from 'zustand/react/shallow'
-import CompileHandler from './compile-handler'
 
-export function IconToolbar({ subFlowId }: { subFlowId: number }) {
+export function IconToolbar({ flowId }: { flowId: number }) {
   const { resolvedTheme } = useTheme()
   const { send } = useWebSocket()
   const [triggerFooter, setFooterTab] = useLayoutStore((state) => [
     state.triggerFooter,
     state.setFooterTab,
   ])
-  const startCompile = useBuildStore(useShallow((state) => state.startCompile))
   const [options, setOptions] = useOptionsStateSynced()
   const openModal = useModalStore((state) => state.openModal)
   const [editMode, setEditMode] = useSubFlowStore((state) => [
@@ -50,16 +45,10 @@ export function IconToolbar({ subFlowId }: { subFlowId: number }) {
     state.setEditMode,
   ])
 
-  const tempSnapshotName = useRef('') // 복원할 스냅샷name을 임시로 저장한다
-  const { canUndo, undo, canRedo, redo } = useUndoRedo(subFlowId)
-  const { canCopy, copy, cut, canPaste, paste } = useCopyPaste(subFlowId)
+  const { canUndo, undo, canRedo, redo } = useUndoRedo(flowId)
+  const { canCopy, copy, cut, canPaste, paste } = useCopyPaste(flowId)
   const { isSelected, selectAll } = useSelect()
-  const { removeSelectedNode } = useRemove(subFlowId)
-
-  const openSnapshotModal = (name: string) => {
-    tempSnapshotName.current = name
-    openModal('confirm-modal', null)
-  }
+  const { removeSelectedNode } = useRemove(flowId)
 
   return (
     <div className="flex items-start gap-4 rounded border border-solid border-gray-350 bg-white p-2 dark:border-[#636669] dark:bg-[#383C40]">
@@ -192,7 +181,6 @@ export function IconToolbar({ subFlowId }: { subFlowId: number }) {
       <Tooltip opacity={1} id="compile" />
       <Tooltip opacity={1} id="edit" />
       <Tooltip opacity={1} id="snapshot" />
-      <CompileHandler />
     </div>
   )
 }

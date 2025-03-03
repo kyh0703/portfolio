@@ -23,7 +23,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import { useEdges, useId, useNodes, useUndoRedo } from '.'
 import useYjsData from '../use-yjs-data'
 
-export function useCopyPaste(subFlowId: number) {
+export function useCopyPaste(flowId: number) {
   const mousePosRef = useRef<XYPosition>({ x: 0, y: 0 })
   const isProcessingRef = useRef(false)
   const rfDomNode = useStore((state) => state.domNode)
@@ -35,7 +35,7 @@ export function useCopyPaste(subFlowId: number) {
     useReactFlow<AppNode, AppEdge>()
   const { getSelectedNodes } = useNodes()
   const { getSelectedEdges } = useEdges()
-  const { saveHistory, syncSaveHistory } = useUndoRedo(subFlowId)
+  const { saveHistory, syncSaveHistory } = useUndoRedo(flowId)
 
   const { mutateAsync: addClipboardMutate } = useAddClipboard()
   const { mutateAsync: addNodesMutate } = useAddNodes()
@@ -166,7 +166,7 @@ export function useCopyPaste(subFlowId: number) {
             id: node.data.databaseId!,
           })),
           edges: selectedEdges.map((edge) => ({
-            id: edge.data?.databaseId!,
+            id: edge.data!.databaseId!,
           })),
         },
       })
@@ -191,7 +191,6 @@ export function useCopyPaste(subFlowId: number) {
     deleteElements,
     getSelectedEdges,
     getSelectedNodes,
-    localIp,
     removeEdgesMutate,
     removeNodesMutate,
     sharedNodePropertiesMap,
@@ -314,7 +313,6 @@ export function useCopyPaste(subFlowId: number) {
     },
     [
       screenToFlowPosition,
-      localIp,
       getPastePositionXY,
       getNodeMaxCount,
       issueEdgeId,
@@ -323,7 +321,6 @@ export function useCopyPaste(subFlowId: number) {
       setEdges,
       addNodesMutate,
       subFlowId,
-      flowMode,
       updateNodePropertyMutate,
       addEdgesMutate,
     ],

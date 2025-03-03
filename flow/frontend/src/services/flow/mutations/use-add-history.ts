@@ -6,9 +6,9 @@ import { useMutation, type UseMutationOptions } from '@tanstack/react-query'
 import { toast } from 'react-toastify'
 import { addHistory } from '..'
 
-type Response = { undocnt: number; redocnt: number }
+type Response = { undoCount: number; redoCount: number }
 type Variables = {
-  subFlowId: number
+  flowId: number
   data: {
     type: HistoryType
     nodes: Node[]
@@ -20,8 +20,8 @@ type MutationOptions = UseMutationOptions<Response, CustomResponse, Variables>
 export const useAddHistory = (options?: MutationOptions) => {
   return useMutation<Response, CustomResponse, Variables>({
     ...options,
-    mutationFn: ({ subFlowId, data }) => {
-      return addHistory(subFlowId, data)
+    mutationFn: ({ flowId, data }) => {
+      return addHistory(flowId, data)
     },
     onSuccess: (data, variables, context) => {
       if (options?.onSuccess) {

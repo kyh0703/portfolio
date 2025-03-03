@@ -1,11 +1,6 @@
 'use client'
 
 import {
-  DEFAULT_COMMAND_NODE_HEIGHT,
-  DEFAULT_COMMAND_NODE_WIDTH,
-} from '@/constants/xyflow'
-import {
-  useAlign,
   useCursorStateSynced,
   useEdges,
   useEdgesStateSynced,
@@ -16,12 +11,11 @@ import {
   useUndoRedo,
 } from '@/hooks/xyflow'
 import { useAddNode, useUpdateNodes } from '@/services/flow'
-import { useSubFlowStore } from '@/store/sub-flow'
+import { useSubFlowStore } from '@/store/flow'
 import { colors } from '@/themes'
-import { isAllowTarget, isTargetGroup, isTargetPane, toPoints } from '@/utils'
+import { isTargetGroup, isTargetPane, toPoints } from '@/utils'
 import logger from '@/utils/logger'
 import { getCursorMode } from '@/utils/xyflow/cursor-mode'
-import { getNodePositionInsideParent } from '@/utils/xyflow/dynamic-grouping'
 import {
   Background,
   BackgroundVariant,
@@ -67,28 +61,20 @@ import { NodeContextMenu, nodeTypes, type NodeContextMenuProps } from './node'
 import { defaultEdgeOptions, fitViewOptions, proOptions } from './options'
 import { IconToolbar } from './toolbar'
 import { ConnectionLine, Cursors, HelperLines } from './tools'
-import {
-  hasParentNode,
-  hasPropertyNode,
-  isValidConnection,
-} from './tools/validator'
+import { isValidConnection } from './tools/validator'
 
 import '@xyflow/react/dist/style.css'
 import { EdgeContextMenu, type EdgeContextMenuProps } from './edge/context-menu'
-import BookmarkDialog from './node/bookmark-dialog'
-import type { FlowMode } from '@/models/project'
 
 type FlowMainProps = {
-  flowMode: FlowMode
-  subFlowId: number
+  flowId: number
   initialNodes: AppNode[]
   initialEdges: AppEdge[]
   focusNode?: string
 }
 
 export default function FlowMain({
-  flowMode,
-  subFlowId,
+  flowId,
   initialNodes,
   initialEdges,
   focusNode,
@@ -96,7 +82,7 @@ export default function FlowMain({
   const searchParams = useSearchParams()
 
   const flowRef = useRef<HTMLDivElement>(null)
-  const connectionRef = useRef<Connection | null>()
+  const connectionRef = useRef<Connection | null>(null)
   const connectingInfoRef = useRef<{
     origin: string | null
     latest: string | null
@@ -111,29 +97,28 @@ export default function FlowMain({
       useShallow((state) => [
         state.editMode,
         state.setEditMode,
-        state.history[subFlowId]?.viewPort,
-        state.history[subFlowId]?.selectedNode,
+        state.history[flowId]?.viewPort,
+        state.history[flowId]?.selectedNode,
         state.setSelectedNode,
       ]),
     )
 
   const [init, setInit] = useState(false)
   const [nodes, setNodes, onNodesChange, horizontalLine, verticalLine] =
-    useNodesStateSynced(subFlowId, initialNodes)
+    useNodesStateSynced(flowId, initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesStateSynced(
-    subFlowId,
+    flowId,
     initialEdges,
   )
-  const [cursors, onMouseMove] = useCursorStateSynced(subFlowId)
+  const [cursors, onMouseMove] = useCursorStateSynced(flowId)
   const [nodeContextMenu, setNodeContextMenu] =
     useState<NodeContextMenuProps | null>(null)
   const [edgeContextMenu, setEdgeContextMenu] =
     useState<EdgeContextMenuProps | null>(null)
   const [edgeMenu, setEdgeMenu] = useState<EdgeMenuProps | null>(null)
 
-  useInitialize(subFlowId)
-  const { nodeFactory, getNodeType, getGhostNodesBySource, focusingNode } =
-    useNodes()
+  useInitialize(flowId)
+  const { nodeFactory, getNodeType, focusingNode } = useNodes()
   const {
     edgeFactory,
     isMenuEdge,
@@ -149,8 +134,7 @@ export default function FlowMain({
     deleteElements,
   } = useReactFlow<AppNode, AppEdge>()
   const { selectNode, unselectNode } = useSelect()
-  const { saveHistory } = useUndoRedo(subFlowId)
-  const { alignEdge } = useAlign(subFlowId)
+  const { saveHistory } = useUndoRedo(flowId)
 
   const { mutateAsync: addNodeMutate } = useAddNode()
   const { mutateAsync: updateNodesMutate } = useUpdateNodes()
@@ -167,103 +151,27 @@ export default function FlowMain({
     [saveHistory],
   )
 
-  const handleNodeDragStop: OnNodeDrag<AppNode> = useCallback(
-    async (event, dragNode, dragNodes) => {
-      logger.debug('onNodeDragStop', dragNodes)
-      dragNodes.map((dragNode) => {
-        if (!hasParentNode(dragNode.type!)) {
-          return dragNode
-        }
-
-        const groupNodes = getIntersectingNodes(dragNode).filter(
-          (node) => node.type === 'Group',
-        )
-        if (groupNodes.length === 0) {
-          return dragNode
-        }
-
-        const groupNode = groupNodes[groupNodes.length - 1]
-        if (dragNode.type === 'Group') {
-          const topGroupNode = groupNodes[0]
-          if (
-            topGroupNode.parentId === dragNode.id ||
-            groupNodes.some((node) => node.parentId === dragNode.id)
-          ) {
-            return dragNode
-          }
-        }
-
-        if (dragNode.parentId !== groupNode.id) {
-          dragNode.position = getNodePositionInsideParent(
-            dragNode,
-            groupNodes,
-          ) ?? {
-            x: 0,
-            y: 0,
-          }
-          dragNode.parentId = groupNode.id
-          dragNode.dragging = false
-          dragNode.extent = 'parent'
-          dragNode.expandParent = true
-        }
-
-        return dragNode
-      })
-      await updateNodesMutate({ nodes: dragNodes })
-      setNodes((nodes) => [...nodes, ...dragNodes])
-    },
-    [getIntersectingNodes, setNodes, updateNodesMutate],
-  )
-
   const handleNodeClick: NodeMouseHandler<AppNode> = useCallback(
     (_, node) => {
       if (editMode === 'grab') {
-        if (!hasPropertyNode(flowMode, node.type!)) {
-          setNodeContextMenu(null)
-        } else {
-          setSelectedNode(subFlowId, {
-            subFlowId,
-            databaseId: node.data.databaseId!,
-            nodeId: node.id,
-            nodeType: node.type as CustomNodeType,
-          })
-        }
+        setSelectedNode(flowId, {
+          flowId,
+          databaseId: node.data.databaseId!,
+          nodeId: node.id,
+          nodeType: node.type as CustomNodeType,
+        })
       }
     },
-    [editMode, flowMode, setSelectedNode, subFlowId],
+    [editMode, flowId, setSelectedNode],
   )
 
   const handleNodesDelete: OnNodesDelete<AppNode> = useCallback(
     (deletes) => {
       if (deletes.some((node) => node.id === selectedNode?.nodeId)) {
-        setSelectedNode(subFlowId, null)
+        setSelectedNode(flowId, null)
       }
     },
-    [selectedNode?.nodeId, setSelectedNode, subFlowId],
-  )
-
-  const handleConnectStart: OnConnectStart = useCallback(
-    (_, { nodeId }) => {
-      logger.debug('onConnectStart', nodeId, connectingInfoRef.current)
-      if (nodeId && !nodeId.includes('Ghost')) {
-        // 타겟 노드에서 타겟 노드가 만든 고스트노드들을 삭제 하는 경우
-        const ghostNodes = getGhostNodesBySource(nodeId)
-        // 다른 노드가 만든 고스트노드를 삭제하는 경우
-        if (
-          connectingInfoRef.current.origin &&
-          nodeId !== connectingInfoRef.current.origin
-        ) {
-          const nodes = getGhostNodesBySource(connectingInfoRef.current.origin)
-          ghostNodes.push(...nodes)
-        }
-        if (ghostNodes.length > 0) {
-          deleteElements({ nodes: ghostNodes })
-        }
-        connectingInfoRef.current.origin = nodeId
-      }
-      connectingInfoRef.current.latest = nodeId
-    },
-    [deleteElements, getGhostNodesBySource],
+    [flowId, selectedNode?.nodeId, setSelectedNode],
   )
 
   const handleConnect: OnConnect = useCallback(
@@ -278,19 +186,11 @@ export default function FlowMain({
         sourceNodeId = connection.source
       }
 
-      const edgeType = getNodeType(sourceNodeId) as CustomEdgeType
-      if (isMenuEdge(edgeType as CustomEdgeType)) {
-        return
-      }
-
       connectingInfoRef.current.origin = null
       connectingInfoRef.current.latest = null
 
       try {
         const oldEdge = getEdgeBySource(sourceNodeId)
-        const ghostNodes = getGhostNodesBySource(sourceNodeId)
-        const points = toPoints(ghostNodes)
-        deleteElements({ nodes: ghostNodes })
 
         if (oldEdge) {
           saveHistory('update', [], [oldEdge])
@@ -298,7 +198,7 @@ export default function FlowMain({
           await updateEdgeConnectionToDB(oldEdge, connection)
         } else {
           const newEdge = edgeFactory(
-            subFlowId,
+            flowId,
             connection,
             getNode(sourceNodeId)!.type,
             'next',
@@ -307,7 +207,7 @@ export default function FlowMain({
           if (!newEdge) {
             return
           }
-          const databaseId = await addEdgeToDB(subFlowId, newEdge)
+          const databaseId = await addEdgeToDB(flowId, newEdge)
           newEdge.data!.databaseId = databaseId
           saveHistory('create', [], [newEdge])
         }
@@ -316,75 +216,13 @@ export default function FlowMain({
       }
     },
     [
-      getNodeType,
-      isMenuEdge,
-      getGhostNodesBySource,
       getEdgeBySource,
-      deleteElements,
       saveHistory,
       updateEdgeConnectionToDB,
       edgeFactory,
-      subFlowId,
+      flowId,
       getNode,
       addEdgeToDB,
-    ],
-  )
-
-  const handleConnectEnd: OnConnectEnd = useCallback(
-    async (event) => {
-      logger.debug('onConnectEnd')
-      if (!(event instanceof MouseEvent)) {
-        return
-      }
-
-      const connection = connectionRef.current!
-      connectionRef.current = null
-
-      if (isAllowTarget(event)) {
-        const position = screenToFlowPosition({
-          x: event.clientX,
-          y: event.clientY,
-        })
-        const newNode = nodeFactory(subFlowId, position, 'Ghost')
-        const connection: Connection = {
-          source: connectingInfoRef.current.latest!,
-          target: newNode.id,
-          sourceHandle: null,
-          targetHandle: null,
-        }
-        const newEdge = edgeFactory(subFlowId, connection, 'Ghost')
-        if (!newEdge) {
-          return
-        }
-        setNodes((nodes) => [...nodes, newNode])
-        setEdges((edges) => addEdge(newEdge, edges))
-        return
-      }
-
-      if (!connection) {
-        return
-      }
-
-      const edgeType = getNodeType(connection.source!) as CustomEdgeType
-      if (isMenuEdge(edgeType as CustomEdgeType)) {
-        setEdgeMenu({
-          connection,
-          mouse: {
-            x: event.clientX,
-            y: event.clientY,
-          },
-        })
-      }
-    },
-    [
-      edgeFactory,
-      getNodeType,
-      isMenuEdge,
-      nodeFactory,
-      screenToFlowPosition,
-      setEdges,
-      setNodes,
-      subFlowId,
     ],
   )
 
@@ -415,27 +253,9 @@ export default function FlowMain({
       y: event.clientY,
     })
 
-    const newNode = nodeFactory(subFlowId, position, nodeType)
-    const groupNodes = getIntersectingNodes({ ...newNode }).filter(
-      (node) => node.type === 'Group',
-    )
-    const groupNode = groupNodes[groupNodes.length - 1]
-    if (groupNode && hasParentNode(newNode.type!)) {
-      newNode.position = getNodePositionInsideParent(
-        {
-          position,
-          height: DEFAULT_COMMAND_NODE_HEIGHT,
-          width: DEFAULT_COMMAND_NODE_WIDTH,
-        },
-        groupNodes,
-      ) ?? { x: 0, y: 0 }
-      newNode.parentId = groupNode?.id
-      newNode.extent = 'parent'
-      newNode.expandParent = true
-    }
-
     try {
-      const response = await addNodeMutate({ subFlowId, node: newNode })
+      const newNode = nodeFactory(flowId, position, nodeType)
+      const response = await addNodeMutate({ flowId, data: newNode })
       newNode.data.databaseId = response.id
       setNodes((nodes) => [...nodes, newNode])
       saveHistory('create', [newNode], [])
@@ -466,8 +286,8 @@ export default function FlowMain({
     setNodeContextMenu(null)
     setEdgeMenu(null)
     setEdgeContextMenu(null)
-    setSelectedNode(subFlowId, null)
-  }, [setSelectedNode, subFlowId])
+    setSelectedNode(flowId, null)
+  }, [setSelectedNode, flowId])
 
   const handleNodeContextMenu: NodeMouseHandler<AppNode> = useCallback(
     (event, node) => {
@@ -578,8 +398,8 @@ export default function FlowMain({
     }
     focusingNode(node.id)
     selectNode(node.id)
-    setSelectedNode(subFlowId, {
-      subFlowId,
+    setSelectedNode(flowId, {
+      flowId,
       databaseId: node.data.databaseId!,
       nodeId: node.id,
       nodeType: node.type as CustomNodeType,
@@ -592,7 +412,7 @@ export default function FlowMain({
     searchParams,
     selectNode,
     setSelectedNode,
-    subFlowId,
+    flowId,
   ])
 
   // pane을 dragging 중에는 nodeProperty를 열지 않는다.
@@ -600,7 +420,7 @@ export default function FlowMain({
     const handleMouseDown = () => {
       if (selectedNode) {
         unselectNode(selectedNode.nodeId)
-        setSelectedNode(subFlowId, null)
+        setSelectedNode(flowId, null)
       }
     }
 
@@ -614,7 +434,7 @@ export default function FlowMain({
         pane.removeEventListener('mousedown', handleMouseDown)
       }
     }
-  }, [selectedNode, setSelectedNode, subFlowId, unselectNode])
+  }, [selectedNode, setSelectedNode, flowId, unselectNode])
 
   return (
     <div
@@ -645,15 +465,12 @@ export default function FlowMain({
           isValidConnection={isValidConnection}
           onInit={handleInit}
           onNodeDragStart={handleNodeDragStart}
-          onNodeDragStop={handleNodeDragStop}
           onNodeClick={handleNodeClick}
           onNodesChange={onNodesChange}
           onNodesDelete={handleNodesDelete}
           onEdgesChange={onEdgesChange}
           onEdgeDoubleClick={(_, edge) => alignEdge(edge)}
-          onConnectStart={handleConnectStart}
           onConnect={handleConnect}
-          onConnectEnd={handleConnectEnd}
           onReconnect={handleReconnect}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -679,7 +496,7 @@ export default function FlowMain({
           <Cursors cursors={cursors} />
           <HelperLines horizontal={horizontalLine} vertical={verticalLine} />
           <Panel position="top-left">
-            <IconToolbar subFlowId={subFlowId} />
+            <IconToolbar flowId={flowId} />
           </Panel>
           {nodeContextMenu && (
             <NodeContextMenu {...nodeContextMenu} onClick={handleDeselect} />
@@ -689,7 +506,6 @@ export default function FlowMain({
           )}
           {edgeMenu && <EdgeMenu {...edgeMenu} onClick={handleDeselect} />}
           {process.env.NODE_ENV === 'development' && <DevTools />}
-          <BookmarkDialog />
         </ReactFlow>
       </div>
     </div>

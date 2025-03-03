@@ -4,13 +4,13 @@ import { toast } from 'react-toastify'
 import { removeNode } from '..'
 
 type Response = unknown
-type Variables = { nodeId: number }
+type Variables = number
 type MutationOptions = UseMutationOptions<Response, CustomResponse, Variables>
 
 export const useRemoveNode = (options?: MutationOptions) => {
   return useMutation<Response, CustomResponse, Variables>({
     ...options,
-    mutationFn: ({ nodeId }) => {
+    mutationFn: (nodeId) => {
       return removeNode(nodeId)
     },
     onSuccess: (data, variables, context) => {

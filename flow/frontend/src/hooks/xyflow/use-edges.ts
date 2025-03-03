@@ -118,7 +118,7 @@ export function useEdges() {
 
   const setMarkerEnd = useCallback(
     (type: CustomEdgeType, condition?: string): EdgeMarker | undefined => {
-      let markerEnd: EdgeMarker = {
+      const markerEnd: EdgeMarker = {
         type: MarkerType.ArrowClosed,
         width: 12,
         height: 12,
@@ -165,7 +165,7 @@ export function useEdges() {
 
   const edgeFactory = useCallback(
     (
-      subFlowId: number,
+      flowId: number,
       connection: Connection,
       type: CustomEdgeType,
       condition?: string,
@@ -180,7 +180,7 @@ export function useEdges() {
         id: issueEdgeId(),
         type,
         data: {
-          subFlowId,
+          flowId,
           condition,
           points,
         },
@@ -202,8 +202,8 @@ export function useEdges() {
   )
 
   const addEdgeToDB = useCallback(
-    async (subFlowId: number, edge: AppEdge) => {
-      const response = await addEdgeMutate({ subFlowId, edge })
+    async (flowId: number, edge: AppEdge) => {
+      const response = await addEdgeMutate({ flowId, data: edge })
       edge.data!.databaseId = response.id
       setEdges((edges) => addEdge(edge, edges))
       return response.id

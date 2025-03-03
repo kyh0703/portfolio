@@ -55,10 +55,10 @@ export default function FlowTabs() {
   }
 
   const handleClose = useCallback(
-    (event: React.MouseEvent, closeSubFlowId: number) => {
+    (event: React.MouseEvent, closeFlowId: number) => {
       event.stopPropagation()
-      removeHistoryMutate({ subFlowId: closeSubFlowId })
-      const subFlowId = closeTab(flowId, closeSubFlowId)
+      removeHistoryMutate({ flowId: closeSubFlowId })
+      const subFlowId = closeTab(flowId, flowId)
       router.push(getSubFlowPath(subFlowId))
     },
     [closeTab, flowId, removeHistoryMutate, router],

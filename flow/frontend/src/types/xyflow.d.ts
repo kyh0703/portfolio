@@ -26,7 +26,7 @@ declare module '@xyflow/react' {
   }
 
   type CustomNodeData = {
-    subFlowId: number
+    flowId: number
     databaseId: number
     label: string
     group: Partial<Group>
@@ -130,7 +130,7 @@ declare module '@xyflow/react' {
   }
 
   type CustomEdgeData = {
-    subFlowId: number
+    flowId: number
     databaseId: number
     condition: string
     points: ControlPointData[]

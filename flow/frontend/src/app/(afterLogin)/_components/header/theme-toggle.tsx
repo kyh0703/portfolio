@@ -1,9 +1,9 @@
 'use client'
 
+import { Button } from '@/ui/button'
+import { MoonIcon, SunIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState, type MouseEventHandler } from 'react'
-import { Button } from '../../../_components/button'
-import { MoonIcon, SunIcon } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 

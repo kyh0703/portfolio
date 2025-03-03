@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import useYjsData from '../use-yjs-data'
 
 export function useEdgesStateSynced(
-  subFlowId: number,
+  flowId: number,
   initialEdges: AppEdge[],
 ): [
   AppEdge[],
@@ -17,10 +17,7 @@ export function useEdgesStateSynced(
 ] {
   const { ydoc } = useYjs()
   const { getEdgesMap } = useYjsData(ydoc)
-  const edgesMap = useMemo(
-    () => getEdgesMap(subFlowId),
-    [getEdgesMap, subFlowId],
-  )
+  const edgesMap = useMemo(() => getEdgesMap(flowId), [getEdgesMap, flowId])
   const [edges, setEdges] = useState<AppEdge[]>([])
 
   const setEdgesSynced = useCallback(

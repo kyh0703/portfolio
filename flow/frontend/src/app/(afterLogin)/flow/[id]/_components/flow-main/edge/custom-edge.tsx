@@ -36,7 +36,7 @@ export function CustomEdge({
   ...props
 }: CustomEdgeProps) {
   const store = useStoreApi<AppNode, AppEdge>()
-  const { subFlowId, databaseId } = data!
+  const { flowId, databaseId } = data!
   const { setEdges } = useReactFlow<AppNode, AppEdge>()
   const { setColor } = useEdges()
   const shouldCaptureEdge = useRef<{
@@ -49,7 +49,7 @@ export function CustomEdge({
 
   const [shouldMutationTrigger, setShouldMutationTrigger] = useState(true)
   const updateEdgeMutation = useUpdateEdge()
-  const { saveHistory } = useUndoRedo(subFlowId!)
+  const { saveHistory } = useUndoRedo(flowId!)
 
   const sourceNode = useInternalNode(source)!
   const targetNode = useInternalNode(target)!

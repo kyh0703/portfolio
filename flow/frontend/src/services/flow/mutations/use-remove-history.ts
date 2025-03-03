@@ -4,14 +4,14 @@ import { toast } from 'react-toastify'
 import { removeHistory } from '..'
 
 type Response = unknown
-type Variables = { subFlowId: number }
+type Variables = { flowId: number }
 type MutationOptions = UseMutationOptions<Response, CustomResponse, Variables>
 
 export const useRemoveHistory = (options?: MutationOptions) => {
   return useMutation<Response, CustomResponse, Variables>({
     ...options,
-    mutationFn: ({ subFlowId }) => {
-      return removeHistory(subFlowId)
+    mutationFn: ({ flowId }) => {
+      return removeHistory(flowId)
     },
     onSuccess: (data, variables, context) => {
       if (options?.onSuccess) {

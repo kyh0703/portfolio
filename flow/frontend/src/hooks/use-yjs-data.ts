@@ -1,4 +1,3 @@
-import { hasPropertyNode } from '@/app/(afterLogin)/flow/[id]/_components/flow-main/tools'
 import type { FieldValues } from '@/contexts/node-properties-context'
 import type { Cursor } from '@/types/collaboration'
 import type { AppEdge, AppNode } from '@xyflow/react'
@@ -28,49 +27,50 @@ export default function useYjsData(ydoc: Y.Doc) {
   )
 
   const getCursorsMap = useCallback(
-    (subFlowId: number) => {
-      if (!sharedCursorsMap.has('' + subFlowId)) {
-        sharedCursorsMap.set('' + subFlowId, new Y.Map<Cursor>())
+    (flowId: number) => {
+      const id = '' + flowId
+      if (!sharedCursorsMap.has(id)) {
+        sharedCursorsMap.set(id, new Y.Map<Cursor>())
       }
-      return sharedCursorsMap.get('' + subFlowId)!
+      return sharedCursorsMap.get(id)!
     },
     [sharedCursorsMap],
   )
 
   const getNodesMap = useCallback(
-    (subFlowId: number) => {
-      if (!sharedNodesMap.has('' + subFlowId)) {
-        sharedNodesMap.set('' + subFlowId, new Y.Map<AppNode>())
+    (flowId: number) => {
+      const id = '' + flowId
+      if (!sharedNodesMap.has(id)) {
+        sharedNodesMap.set(id, new Y.Map<AppNode>())
       }
-      return sharedNodesMap.get('' + subFlowId)!
+      return sharedNodesMap.get(id)!
     },
     [sharedNodesMap],
   )
 
   const getEdgesMap = useCallback(
-    (subFlowId: number) => {
-      if (!sharedEdgesMap.has('' + subFlowId)) {
-        sharedEdgesMap.set('' + subFlowId, new Y.Map<AppEdge>())
+    (flowId: number) => {
+      const id = '' + flowId
+      if (!sharedEdgesMap.has(id)) {
+        sharedEdgesMap.set(id, new Y.Map<AppEdge>())
       }
-      return sharedEdgesMap.get('' + subFlowId)!
+      return sharedEdgesMap.get(id)!
     },
     [sharedEdgesMap],
   )
 
-  const clearSubFlow = useCallback(
-    (subFlowId: string) => {
-      sharedCursorsMap.delete(subFlowId)
-      const nodesMap = sharedNodesMap.get(subFlowId)
+  const clearFlow = useCallback(
+    (flowId: string) => {
+      sharedCursorsMap.delete(flowId)
+      const nodesMap = sharedNodesMap.get(flowId)
       if (nodesMap) {
         for (const node of nodesMap.values()) {
-          if (hasPropertyNode(node.type!)) {
-            sharedNodePropertiesMap.delete('' + node.data.databaseId)
-          }
+          sharedNodePropertiesMap.delete('' + node.data.databaseId)
         }
       }
-      sharedNodesMap.delete(subFlowId)
-      sharedEdgesMap.delete(subFlowId)
-      sharedHistoryMap.delete(subFlowId)
+      sharedNodesMap.delete(flowId)
+      sharedEdgesMap.delete(flowId)
+      sharedHistoryMap.delete(flowId)
     },
     [
       sharedCursorsMap,
@@ -90,6 +90,6 @@ export default function useYjsData(ydoc: Y.Doc) {
     getCursorsMap,
     getNodesMap,
     getEdgesMap,
-    clearSubFlow,
+    clearFlow,
   }
 }

@@ -1,16 +1,14 @@
 'use client'
 
-import { useAlign, useEdges, useNodes, useSelect } from '@/hooks/xyflow'
+import { useEdges, useNodes, useSelect } from '@/hooks/xyflow'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/ui/dropdown-menu'
 import { useReactFlow, type AppEdge, type AppNode } from '@xyflow/react'
 import {
-  CableIcon,
   FlagTriangleLeftIcon,
   FlagTriangleRightIcon,
   TrashIcon,
@@ -29,9 +27,7 @@ export type EdgeContextMenuProps = {
 
 export function EdgeContextMenu({ id, ...props }: EdgeContextMenuProps) {
   const { getEdge } = useReactFlow<AppNode, AppEdge>()
-
   const targetEdge = getEdge(id)!
-  const { alignEdge } = useAlign(targetEdge.data?.subFlowId!)
 
   const { removeEdgeToDB } = useEdges()
   const { selectNode } = useSelect()
@@ -78,14 +74,6 @@ export function EdgeContextMenu({ id, ...props }: EdgeContextMenuProps) {
           >
             <FlagTriangleRightIcon size={12} />
             ToTarget
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="flex gap-3 text-xs"
-            onSelect={() => alignEdge(targetEdge)}
-          >
-            <CableIcon size={12} />
-            Align
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

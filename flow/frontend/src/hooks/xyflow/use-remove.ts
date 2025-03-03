@@ -13,7 +13,7 @@ import { useEdges } from './use-edges'
 import { useNodes } from './use-nodes'
 import { useUndoRedo } from './use-undo-redo'
 
-export function useRemove(subFlowId: number) {
+export function useRemove(flowId: number) {
   const isProcessingRef = useRef(false)
 
   const { ydoc } = useYjs()
@@ -22,8 +22,8 @@ export function useRemove(subFlowId: number) {
     AppNode,
     AppEdge
   >()
-  const { syncSaveHistory } = useUndoRedo(subFlowId)
-  const { getSelectedNodes, getAllChildNodes } = useNodes()
+  const { syncSaveHistory } = useUndoRedo(flowId)
+  const { getSelectedNodes } = useNodes()
   const { getSelectedEdgesByNodes } = useEdges()
   const { mutateAsync: removeNodesMutate } = useRemoveNodes()
   const { mutateAsync: removeEdgesMutate } = useRemoveEdges()
@@ -43,7 +43,7 @@ export function useRemove(subFlowId: number) {
       }))
       const dbTxEdges = selectedEdges.filter((edge) => edge.type !== 'Ghost')
       const dbTxEdgeIds = dbTxEdges.map((edge) => ({
-        id: edge.data?.databaseId!,
+        id: edge.data!.databaseId!,
       }))
       if (selectedNodes.length === 0 && selectedEdges.length === 0) {
         isProcessingRef.current = false
@@ -93,12 +93,7 @@ export function useRemove(subFlowId: number) {
           return
         }
 
-        let childNodes: AppNode[] = []
-        if (node.type === 'Group') {
-          childNodes = getAllChildNodes(node)
-        }
-
-        const selectedNodes = [node, ...childNodes]
+        const selectedNodes = [node]
         const selectedEdges = getConnectedEdges(selectedNodes, getEdges())
         const dbTxNodes = selectedNodes.filter((node) => node.type !== 'Ghost')
         const dbTxNodeIds = selectedNodes.map((node) => ({
@@ -106,7 +101,7 @@ export function useRemove(subFlowId: number) {
         }))
         const dbTxEdges = selectedEdges.filter((edge) => edge.type !== 'Ghost')
         const dbTxEdgeIds = selectedEdges.map((edge) => ({
-          id: edge.data?.databaseId!,
+          id: edge.data!.databaseId!,
         }))
 
         if (selectedNodes.length === 0 && selectedEdges.length === 0) {
@@ -128,7 +123,6 @@ export function useRemove(subFlowId: number) {
     },
     [
       deleteElements,
-      getAllChildNodes,
       getEdges,
       getNode,
       removeEdgesMutate,

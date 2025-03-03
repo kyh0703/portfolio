@@ -1,16 +1,16 @@
-import { generateShortId } from "./id"
+import { generateShortId } from './id'
 
-function getSubFlowPath(
-  subFlowId?: number,
+function getFlowPath(
+  flowId?: number,
   focusNode?: string,
   focusTab?: string,
 ): string {
-  let absolutePath = `/sub-flows`
-  if (!subFlowId) {
+  let absolutePath = `/flow`
+  if (!flowId) {
     return absolutePath
   }
 
-  absolutePath += `/${subFlowId}`
+  absolutePath += `/${flowId}`
   if (focusNode) {
     absolutePath += `?focusNode=${focusNode}`
   }
@@ -23,4 +23,4 @@ function getSubFlowPath(
   return absolutePath
 }
 
-export { getSubFlowPath }
+export { getFlowPath }

@@ -13,12 +13,12 @@ export default async function Page({ params, searchParams }: Props) {
   const { focusNode, focusTab } = await searchParams
 
   if (!id) {
-    redirect('/subflows')
+    redirect('/flow')
   }
 
   return (
     <Suspense fallback={<Spinner />}>
-      <FlowLayout subFlowId={+id} focusNode={focusNode} focusTab={focusTab} />
+      <FlowLayout id={+id} focusNode={focusNode} focusTab={focusTab} />
     </Suspense>
   )
 }

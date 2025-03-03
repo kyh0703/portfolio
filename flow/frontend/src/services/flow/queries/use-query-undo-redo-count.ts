@@ -1,6 +1,6 @@
 import { getUndoRedoCount, subFlowKeys } from '..'
 
-export const useQueryUndoRedoCount = (subFlowId: number) => ({
-  queryKey: [subFlowKeys.countUndoRedo(subFlowId)],
-  queryFn: () => getUndoRedoCount(subFlowId),
+export const useQueryUndoRedoCount = (flowId: number) => ({
+  queryKey: [subFlowKeys.countUndoRedo(flowId)],
+  queryFn: () => getUndoRedoCount(flowId),
 })

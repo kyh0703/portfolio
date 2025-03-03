@@ -6,19 +6,19 @@ import { toast } from 'react-toastify'
 import { addNodes } from '..'
 
 type Response = { id: number }[]
-type Variables = { subFlowId: number; nodes: AppNode[] }
+type Variables = { flowId: number; data: AppNode[] }
 type MutationOptions = UseMutationOptions<Response, CustomResponse, Variables>
 
 export const useAddNodes = (options?: MutationOptions) => {
   return useMutation<Response, CustomResponse, Variables>({
     ...options,
-    mutationFn: ({ subFlowId, nodes }) => {
-      if (nodes.length === 0) {
+    mutationFn: ({ flowId, data }) => {
+      if (data.length === 0) {
         return Promise.resolve([])
       }
       return addNodes(
-        subFlowId,
-        nodes.map((node) => toModelNode(node)),
+        flowId,
+        data.map((node) => toModelNode(node)),
       )
     },
     onSuccess: (data, variables, context) => {

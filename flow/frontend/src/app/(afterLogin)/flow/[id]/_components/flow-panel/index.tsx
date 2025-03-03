@@ -1,12 +1,6 @@
 'use client'
 
-import { useOptionsStateSynced } from '@/hooks/use-options-state-synced'
-import type { SubFlowList } from '@/models/subflow-list'
-import {
-  useQueryEdges,
-  useQueryNodes,
-} from '@/services/flow'
-import { useUserContext } from '@/store/context'
+import { useQueryEdges, useQueryNodes } from '@/services/flow'
 import { useFlowTabStore } from '@/store/flow-tab'
 import { toAppEdge, toAppNode } from '@/utils/xyflow/convert'
 import { useSuspenseQueries } from '@tanstack/react-query'
@@ -19,8 +13,6 @@ type FlowPanelProps = {
 }
 
 export default function FlowPanel({ subFlow, focusNode }: FlowPanelProps) {
-  const { id: flowId, mode: flowMode } = useUserContext()
-  const [options] = useOptionsStateSynced()
   const [isOpenTab, openTab] = useFlowTabStore((state) => [
     state.isOpenTab,
     state.openTab,
@@ -34,12 +26,10 @@ export default function FlowPanel({ subFlow, focusNode }: FlowPanelProps) {
     }),
   })
 
-
   return (
     <div className="relative h-full">
       <FlowMain
-        flowMode={flowMode}
-        subFlowId={subFlow.id}
+        flowId={subFlow.id}
         initialNodes={nodes}
         initialEdges={edges}
         focusNode={focusNode}

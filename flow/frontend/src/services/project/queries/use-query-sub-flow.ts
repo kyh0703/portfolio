@@ -1,6 +1,6 @@
-import { flowKeys, getSubFlow } from '..'
+import { flowKeys, getFlow } from '..'
 
-export const useQuerySubFlow = (subFlowId: number) => ({
-  queryKey: [flowKeys.subFlowDetail(subFlowId)],
-  queryFn: () => getSubFlow(subFlowId),
+export const useQueryFlow = (flowId: number) => ({
+  queryKey: [flowKeys.detail(flowId)],
+  queryFn: () => getFlow(flowId),
 })

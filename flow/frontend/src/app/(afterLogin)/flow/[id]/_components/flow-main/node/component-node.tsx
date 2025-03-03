@@ -71,7 +71,7 @@ import {
   type IconButtonProps,
 } from '@/app/_components/icon'
 import { useNodeDimensions } from '@/hooks/xyflow'
-import { useSubFlowStore } from '@/store/sub-flow'
+import { useSubFlowStore } from '@/store/flow'
 import { cn } from '@/utils/cn'
 import {
   Handle,
@@ -92,7 +92,7 @@ const withNodeIconStyle = (
 ): ComponentType<CustomNodeProps> => {
   const WithIcon = ({ id, selected, data }: CustomNodeProps) => {
     const editMode = useSubFlowStore(useShallow((state) => state.editMode))
-    const { bookmark, desc } = data
+    const { desc } = data
     const { width, height } = useNodeDimensions(id)
     const connectionNodeId = useStore(connectionNodeIdSelector)
     const isConnecting = !!connectionNodeId
@@ -132,15 +132,6 @@ const withNodeIconStyle = (
             type="target"
             isConnectable={true}
           />
-        </div>
-        <div
-          className={cn(
-            'absolute right-0 top-0',
-            'flex flex-col items-center justify-center',
-            editMode === 'grab' && 'z-20',
-          )}
-        >
-          {bookmark && <BookmarkCheckIcon size={10} color="green" />}
         </div>
         <div
           className={cn(

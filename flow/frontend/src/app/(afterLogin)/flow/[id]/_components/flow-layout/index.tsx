@@ -1,8 +1,7 @@
 'use client'
 
 import { useQueryCommonFlowInFlow, useQuerySubFlows } from '@/services/project'
-import { useBuildStore } from '@/store/build'
-import { useSubFlowStore } from '@/store/sub-flow'
+import { useSubFlowStore } from '@/store/flow'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -15,60 +14,29 @@ import { ReactFlowProvider } from '@xyflow/react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
 import { useShallow } from 'zustand/react/shallow'
-import BlockingOverlay from '../blocking-overlay'
 import FlowPanel from '../flow-panel'
 import FlowTabs from '../flow-tabs'
 
 type FlowLayoutProps = {
-  subFlowId: number
+  id: number
   focusNode?: string
   focusTab?: string
 }
 
-export default function FlowLayout({
-  subFlowId,
-  focusNode,
-  focusTab,
-}: FlowLayoutProps) {
-  const router = useRouter()
-  const [isBuilding, isCompiling] = useBuildStore(
-    useShallow((state) => [state.build.isBuilding, state.compile.isCompiling]),
-  )
+export default function FlowLayout({ id, focusNode }: FlowLayoutProps) {
   const selectedNode = useSubFlowStore(
-    useShallow((state) => state.history[subFlowId]?.selectedNode),
+    useShallow((state) => state.history[id]?.selectedNode),
   )
-
-  const { subFlows, commonFlows } = useSuspenseQueries({
-    queries: [useQuerySubFlows(), useQueryCommonFlowInFlow()],
-    combine: (results) => ({
-      commonFlows: results[1].data.flow,
-      subFlows: results[0].data.flow,
-    }),
-  })
-
-  const subFlow =
-    subFlows.find((subFlow) => subFlow.id === subFlowId) ??
-    commonFlows.find((item) => item.id === subFlowId)
-  if (!subFlow) {
-    toast.error(`SubFlow with id ${subFlowId} not found`)
-    router.push(getSubFlowPath())
-    return null
-  }
 
   return (
     <ReactFlowProvider>
       <ResizablePanelGroup direction="horizontal" className="relative">
-        {(isBuilding || isCompiling) && (
-          <BlockingOverlay>
-            {isBuilding ? 'building...' : 'compiling...'}
-          </BlockingOverlay>
-        )}
         <ResizablePanel>
           <div className="flex h-full w-full flex-col">
             <div className="flex h-full w-full flex-col">
               <FlowTabs />
               <Separator />
-              <FlowPanel subFlow={subFlow} focusNode={focusNode} />
+              <FlowPanel focusNode={focusNode} />
             </div>
           </div>
         </ResizablePanel>
@@ -78,8 +46,7 @@ export default function FlowLayout({
           maxSize={50}
           defaultSize={30}
           hidden={!selectedNode}
-        >
-        </ResizablePanel>
+        ></ResizablePanel>
       </ResizablePanelGroup>
     </ReactFlowProvider>
   )
