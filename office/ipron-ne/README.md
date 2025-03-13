@@ -12,4 +12,4 @@
 
 #### 기술 스택
 
-`OOP`, `golang`, `gRPC`, `kafka`, `redis`
+`OOP`, `golang`, `gRPC`, `grpc-gateway`, `kafka`, `redis`
