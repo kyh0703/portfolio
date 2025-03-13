@@ -12,4 +12,4 @@
 
 #### 기술 스택
 
-`OOP`, `golang`, `gRPC`, `grpc-gateway`, `kafka`, `redis`, `sip`, `pbx`, `ipt`
+`OOP`, `golang`, `gRPC`, `grpc-gateway`, `kafka`, `redis`, `sip`, `pbx`, `IPT`, `IPCC`
