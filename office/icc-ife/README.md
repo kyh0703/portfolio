@@ -26,7 +26,7 @@
 
 #### 기술 스택
 
-`react18`, `Next.Js 14 app router`, `xyflow`, `yup`, `react-hook-form`, `zustand`, `docker`, `nginx`, `ag-grid`, `tailwind-css`, `shadcn`, `story-book`, `jest`, `msw`, `yjs`, `w-socket`
+`react18`, `Next.Js 14 app router`, `xyflow`, `yup`, `react-hook-form`, `tanstack-query`,`zustand`, `docker`, `nginx`, `ag-grid`, `tailwind-css`, `shadcn`, `story-book`, `jest`, `msw`, `yjs`, `w-socket`
 
 
 
