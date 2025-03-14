@@ -4,17 +4,6 @@
 
 ![image-20250312175853439](README.assets/image-20250312175853439.png)
 
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/fa8d23bc-7b42-498a-b660-fc495d3e1ccc" width="600" height="400">
-</p>
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/f1b7fd54-faec-4ed7-ba79-300450376b01" width="500">
-</p>
-
-<p align="center">
-  <img src="https://github.com/user-attachments/assets/ac3dc7d1-e4aa-4b80-93d1-ee1eb0b2ee72" width="400" height="300">
-</p>
 
 #### 주요 특징
 
@@ -41,4 +30,10 @@
 `react18`, `Next.Js 14 app router`, `xyflow`, `yup`, `react-hook-form`, `tanstack-query`,`zustand`, `docker`, `nginx`, `ag-grid`, `tailwind-css`, `shadcn`, `story-book`, `jest`, `msw`, `yjs`, `w-socket`
 
 
+
+https://github.com/user-attachments/assets/fa8d23bc-7b42-498a-b660-fc495d3e1ccc
+
+https://github.com/user-attachments/assets/f1b7fd54-faec-4ed7-ba79-300450376b01
+
+https://github.com/user-attachments/assets/ac3dc7d1-e4aa-4b80-93d1-ee1eb0b2ee72
 
