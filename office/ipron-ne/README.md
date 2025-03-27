@@ -2,6 +2,62 @@
 
 ![2025-03-14 15.48.12.excalidraw](README.assets/2025-03-14 15.48.12.excalidraw.png)
 
+### 폴더 구조
+
+```bash
+.
+├── build
+│   ├── bin
+│   │   └── call
+│   ├── package
+│   │   └── Dockerfile
+│   └── report
+│       ├── coverage.out
+│       ├── lint.xml
+│       ├── test.log
+│       └── test.xml
+├── configs
+│   └── env.go
+├── go.mod
+├── go.sum
+├── internal
+│   ├── adaptor
+│   │   ├── broker
+│   │   ├── metric
+│   │   └── rpc
+│   ├── core
+│   │   ├── domain
+│   │   ├── dto
+│   │   ├── handler
+│   │   ├── repository
+│   │   ├── service
+│   │   └── usecase
+│   └── pkg
+│       ├── cache
+│       ├── crypto
+│       ├── eventhandler
+│       ├── exception
+│       ├── grpc
+│       ├── kafka
+│       ├── kms
+│       ├── logger
+│       ├── platform
+│       ├── prometheus
+│       ├── regex
+│       ├── tracer
+│       ├── types
+│       ├── utils
+│       └── validator
+├── Jenkinsfile
+├── Makefile
+├── README.md
+├── test
+├── tools
+└── values.yaml
+```
+
+### 트랜잭션 처리
+
 ![image-20250312175833099](README.assets/image-20250312175833099.png)
 
 주요 기능
